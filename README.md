@@ -1,0 +1,247 @@
+# 🛒 Proyecto E-commerce
+
+Plataforma de comercio electrónico basada en una arquitectura de **microservicios** con backend en **FastAPI** y frontend en **React + TypeScript**.
+
+> ⚠️ **Estado:** en desarrollo inicial. La estructura de los servicios, las migraciones y la infraestructura local ya están configuradas; la lógica de negocio se está implementando.
+
+---
+
+## 📑 Tabla de contenidos
+
+- [Características](#-características)
+- [Arquitectura](#-arquitectura)
+- [Tecnologías](#-tecnologías)
+- [Estructura del proyecto](#-estructura-del-proyecto)
+- [Requisitos previos](#-requisitos-previos)
+- [Instalación](#-instalación)
+- [Variables de entorno](#-variables-de-entorno)
+- [Uso](#-uso)
+- [Migraciones de base de datos](#-migraciones-de-base-de-datos)
+- [Pruebas y calidad de código](#-pruebas-y-calidad-de-código)
+- [Contribuir](#-contribuir)
+- [Licencia](#-licencia)
+
+---
+
+## ✨ Características
+
+- Registro e inicio de sesión de usuarios con **JWT** (access y refresh tokens).
+- Catálogo de productos con imágenes almacenadas en **S3 / MinIO**.
+- Control de inventario.
+- Carrito de compras.
+- Proceso de checkout.
+- Integración con proveedor de pagos.
+- Gestión de envíos.
+
+## 🏗 Arquitectura
+
+El backend está dividido en servicios independientes, cada uno con su propia aplicación y sus propias migraciones de base de datos:
+
+| Servicio      | Responsabilidad                                   |
+| ------------- | ------------------------------------------------- |
+| `users`       | Registro, autenticación y perfiles de usuario     |
+| `catalog`     | Productos, categorías e imágenes                  |
+| `inventory`   | Existencias y disponibilidad de productos         |
+| `cart`        | Carrito de compras                                |
+| `checkout`    | Creación y confirmación de órdenes                |
+| `payments`    | Procesamiento de pagos                            |
+| `shipping`    | Envíos y seguimiento                              |
+
+Servicios de infraestructura (vía Docker Compose):
+
+| Servicio     | Uso                               | Puerto(s)     |
+| ------------ | --------------------------------- | ------------- |
+| PostgreSQL 16 | Base de datos principal          | `5432`        |
+| Redis 7      | Caché y sesiones                  | `6379`        |
+| MinIO        | Almacenamiento de objetos (S3)    | `9000`, `9001` (consola) |
+
+## 🧰 Tecnologías
+
+**Backend**
+- [Python 3.12](https://www.python.org/)
+- [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/)
+- [SQLAlchemy](https://www.sqlalchemy.org/) + [Alembic](https://alembic.sqlalchemy.org/)
+- [Pydantic](https://docs.pydantic.dev/) / pydantic-settings
+- [PyJWT](https://pyjwt.readthedocs.io/), bcrypt
+- psycopg 3, redis-py, boto3
+- pytest, pytest-cov, ruff, mypy
+
+**Frontend**
+- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vite.dev/)
+- [React Router](https://reactrouter.com/), [TanStack Query](https://tanstack.com/query), Axios
+- Vitest, Testing Library, Playwright
+- Oxlint, Prettier
+
+**Infraestructura**
+- Docker / Docker Compose
+- PostgreSQL, Redis, MinIO
+
+## 📁 Estructura del proyecto
+
+```
+proyecto-eccomerce/
+├── backend/
+│   ├── requirements.txt
+│   └── services/
+│       ├── cart/
+│       │   ├── alembic/          # Migraciones del servicio
+│       │   ├── alembic.ini
+│       │   ├── app/              # Código de la aplicación
+│       │   └── tests/            # Pruebas del servicio
+│       ├── catalog/
+│       ├── checkout/
+│       ├── inventory/
+│       ├── payments/
+│       ├── shipping/
+│       └── users/
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.ts
+├── docker-compose.yml
+├── .env.example
+├── CHANGELOG.md
+└── README.md
+```
+
+## ✅ Requisitos previos
+
+- [Python 3.12+](https://www.python.org/downloads/)
+- [Node.js 20+](https://nodejs.org/) y npm
+- [Docker](https://www.docker.com/) y Docker Compose
+- [Git](https://git-scm.com/)
+
+## 🚀 Instalación
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/<usuario>/proyecto-eccomerce.git
+cd proyecto-eccomerce
+```
+
+### 2. Configurar variables de entorno
+
+```bash
+cp .env.example .env
+```
+
+Edita `.env` con tus valores (ver [Variables de entorno](#-variables-de-entorno)).
+
+### 3. Levantar la infraestructura
+
+```bash
+docker compose up -d
+```
+
+### 4. Backend
+
+```bash
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+# Linux / macOS
+source .venv/bin/activate
+
+pip install -r backend/requirements.txt
+```
+
+### 5. Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+## 🔐 Variables de entorno
+
+| Variable                   | Descripción                                   | Ejemplo                                                         |
+| -------------------------- | --------------------------------------------- | --------------------------------------------------------------- |
+| `DATABASE_URL`             | Cadena de conexión a PostgreSQL               | `postgresql+psycopg://ecommerce:ecommerce@localhost:5432/ecommerce` |
+| `REDIS_URL`                | URL de Redis                                  | `redis://localhost:6379/0`                                      |
+| `JWT_SECRET_KEY`           | Clave para firmar los tokens JWT              | `cambiar_esto`                                                  |
+| `JWT_ACCESS_EXPIRES_MIN`   | Duración del access token (minutos)           | `15`                                                            |
+| `JWT_REFRESH_EXPIRES_DAYS` | Duración del refresh token (días)             | `7`                                                             |
+| `S3_ENDPOINT`              | Endpoint de S3 / MinIO                        | `http://localhost:9000`                                         |
+| `S3_BUCKET`                | Bucket para imágenes de productos             | `product-images`                                                |
+| `PAYMENT_PROVIDER`         | Proveedor de pagos                            | —                                                               |
+| `PAYMENT_API_KEY`          | API key del proveedor de pagos                | —                                                               |
+
+> 🔒 Nunca subas el archivo `.env` al repositorio. Ya está incluido en `.gitignore`.
+
+## 💻 Uso
+
+### Frontend
+
+```bash
+cd frontend
+npm run dev        # Servidor de desarrollo (http://localhost:5173)
+npm run build      # Compilación para producción
+npm run preview    # Previsualizar la compilación
+npm run lint       # Análisis estático con Oxlint
+```
+
+### Infraestructura
+
+| Servicio      | URL                                             |
+| ------------- | ----------------------------------------------- |
+| Consola MinIO | http://localhost:9001 (`minioadmin` / `minioadmin`) |
+| PostgreSQL    | `localhost:5432` (`ecommerce` / `ecommerce`)     |
+| Redis         | `localhost:6379`                                 |
+
+Para detener los contenedores:
+
+```bash
+docker compose down
+```
+
+## 🗄 Migraciones de base de datos
+
+Cada servicio administra sus propias migraciones con Alembic. Desde la carpeta del servicio:
+
+```bash
+cd backend/services/<servicio>
+
+alembic revision --autogenerate -m "descripcion del cambio"   # Crear migración
+alembic upgrade head                                           # Aplicar migraciones
+alembic downgrade -1                                           # Revertir la última
+```
+
+## 🧪 Pruebas y calidad de código
+
+### Backend
+
+```bash
+pytest                                   # Ejecutar pruebas
+pytest --cov=app --cov-report=html       # Cobertura (reporte en htmlcov/)
+ruff check .                             # Linter
+ruff format .                            # Formateo
+mypy .                                   # Verificación de tipos
+```
+
+### Frontend
+
+```bash
+cd frontend
+npx vitest                # Pruebas unitarias
+npx playwright test       # Pruebas end-to-end
+npx prettier --write .    # Formateo
+```
+
+## 🤝 Contribuir
+
+1. Haz un fork del proyecto.
+2. Crea una rama para tu cambio: `git checkout -b feature/nueva-funcionalidad`
+3. Haz commit de tus cambios: `git commit -m "feat: agrega nueva funcionalidad"`
+4. Sube la rama: `git push origin feature/nueva-funcionalidad`
+5. Abre un Pull Request.
+
+Se recomienda seguir la convención de [Conventional Commits](https://www.conventionalcommits.org/es/) y registrar los cambios relevantes en [CHANGELOG.md](CHANGELOG.md).
+
+## 📄 Licencia
+
+Este proyecto fue desarrollado con fines académicos para la materia de **Auditoría**. Consulta el archivo `LICENSE` si se agrega uno.
