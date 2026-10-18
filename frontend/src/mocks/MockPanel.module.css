@@ -1,0 +1,46 @@
+.panel {
+  position: fixed;
+  z-index: 60;
+  left: 8px;
+  bottom: 8px;
+  max-width: calc(100vw - 16px);
+  font-size: 13px;
+}
+
+.toggle {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px dashed var(--color-naranja);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-naranja);
+  font-weight: 600;
+}
+
+.body {
+  margin-top: 6px;
+  padding: 10px;
+  width: 320px;
+  max-width: 100%;
+  border: 1px dashed var(--color-naranja);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.label select {
+  min-height: 36px;
+}
+
+.users {
+  color: var(--color-texto-2);
+}

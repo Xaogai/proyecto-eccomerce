@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mis pedidos en móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 1100px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF; padding: 8px 10px; display: flex; align-items: center; gap: 4px">
+    <a href="Movil-17-MiCuenta.dc.html" aria-label="Volver a Mi cuenta" style="width: 44px; height: 44px; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1 style="margin: 0; flex: 1; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Mis pedidos</h1>
+  </header>
+  <main style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+    <div role="group" aria-label="Filtrar por estado" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{chips}}" as="c" hint-placeholder-count="3">
+        <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="min-height: 44px; border-radius: 999px; border: 1px solid #15181B; background: {{c.bg}}; color: {{c.fg}}; font: inherit; font-size: 15px; font-weight: 600">{{c.label}}</button>
+      </sc-for>
+    </div>
+    <p aria-live="polite" style="margin: 0; color: #4E5862; font-size: 15px">{{countText}}</p>
+    <sc-for list="{{orders}}" as="o" hint-placeholder-count="5">
+      <a href="Movil-19-Seguimiento.dc.html" style="background: #FFFFFF; border-radius: 6px; padding: 14px; text-decoration: none; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><strong>Pedido {{o.id}}</strong><span style="font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 4px; background: {{o.bg}}; color: {{o.fg}}">{{o.status}}</span></div>
+        <span style="font-size: 15px; color: #4E5862">{{o.date}} · {{o.items}}</span>
+        <span style="font-size: 15px; color: #4E5862">{{o.how}}</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 700">{{o.total}}</span>
+      </a>
+    </sc-for>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { f: 'todos' }; }
+  renderVals() {
+    const S = { listo: ['Listo para recoger', '#FBEFD6', '#6B4100', 'curso'], env: ['Enviado', '#E1E9F5', '#1D4480', 'curso'], ent: ['Entregado', '#E2F1E8', '#1E7A46', 'fin'], dev: ['Reembolsado', '#E6EAEE', '#3F4851', 'fin'], can: ['Cancelado', '#FBE6E4', '#B42318', 'fin'] };
+    const O = [
+      { id: '10482', date: '16 oct', items: '2 productos', how: 'Recoger en Toluca Centro', total: '$3,337', s: 'listo' },
+      { id: '10450', date: '12 oct', items: '1 producto', how: 'Envío · guía MX123456789', total: '$998', s: 'env' },
+      { id: '10311', date: '2 oct', items: '3 productos', how: 'Recogido en Metepec', total: '$1,048', s: 'ent' },
+      { id: '10107', date: '14 sep', items: '1 producto', how: 'Devolución aprobada', total: '$429', s: 'dev' },
+      { id: '10044', date: '3 sep', items: '1 producto', how: 'Cancelado antes del pago', total: '$219', s: 'can' }
+    ];
+    const f = this.state.f;
+    const list = O.filter(o => f === 'todos' || S[o.s][3] === f);
+    return {
+      chips: [['todos', 'Todos'], ['curso', 'En curso'], ['fin', 'Terminados']].map(([k, label]) => ({ label, on: f === k ? 'true' : 'false', bg: f === k ? '#15181B' : '#FFFFFF', fg: f === k ? '#FFFFFF' : '#15181B', pick: () => this.setState({ f: k }) })),
+      countText: list.length + (list.length === 1 ? ' pedido' : ' pedidos'),
+      orders: list.map(o => ({ ...o, status: S[o.s][0], bg: S[o.s][1], fg: S[o.s][2] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

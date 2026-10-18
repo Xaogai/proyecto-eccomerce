@@ -1,0 +1,23 @@
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tactil-min);
+  height: var(--tactil-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radio-control);
+  background: transparent;
+}
+
+.claro {
+  color: var(--color-carbon);
+}
+
+.oscuro {
+  color: var(--color-superficie);
+}
+
+.icon:disabled {
+  color: var(--color-deshabilitado);
+}

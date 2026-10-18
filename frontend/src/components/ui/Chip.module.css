@@ -1,0 +1,40 @@
+.removable {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radio-control);
+  background: var(--color-carbon);
+  color: var(--color-superficie);
+  font-size: 14px;
+  position: relative;
+}
+
+/* Se ve de 36 px como en el diseño, pero el área táctil llega a 44 px (F6). */
+.removable::before {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toggle {
+  min-height: var(--tactil-min);
+  padding: 0 14px;
+  border: 1px solid var(--color-carbon);
+  border-radius: 999px;
+  background: var(--color-superficie);
+  color: var(--color-carbon);
+  font-weight: 600;
+}
+
+.toggle[aria-pressed='true'] {
+  background: var(--color-carbon);
+  color: var(--color-superficie);
+}

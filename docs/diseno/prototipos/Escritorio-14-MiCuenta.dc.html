@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mi cuenta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1100px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="Escritorio-6-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <span style="flex: 1"></span>
+      <span style="color: #C9D0D6">Toluca Centro · CP 50000</span>
+      <a href="Escritorio-14-MiCuenta.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Hola, Ana</a>
+      <a href="Escritorio-3-Carrito.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Carrito (3)</a>
+    </div>
+  </header>
+  <div style="max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <nav aria-label="Mi cuenta" style="flex: 1 1 220px; background: #FFFFFF; border-radius: 6px; padding: 8px; display: flex; flex-direction: column">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="6">
+        <a href="{{n.href}}" aria-current="{{n.cur}}" style="min-height: 46px; padding: 0 14px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.w}}">{{n.label}}</a>
+      </sc-for>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 48px; line-height: 1; text-transform: uppercase">Hola, Ana</h1>
+      <section aria-labelledby="act" style="background: #15181B; color: #FFFFFF; border-radius: 6px; padding: 20px 22px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center">
+        <div style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #F26B2A">Pedido en curso</span>
+          <h2 id="act" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 30px">Pedido 10482 · Listo para recoger</h2>
+          <span style="color: #C9D0D6">En Toluca Centro hasta el 23 de octubre. Lleva tu folio o tu INE.</span>
+        </div>
+        <a href="Escritorio-16-Seguimiento.dc.html" style="min-height: 48px; padding: 0 20px; border-radius: 4px; background: #C2410C; color: #FFFFFF; font-weight: 600; text-decoration: none; display: flex; align-items: center">Ver seguimiento</a>
+      </section>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
+        <a href="Escritorio-15-Pedidos.dc.html" style="background: #FFFFFF; border-radius: 6px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 600; font-size: 17px">Mis pedidos</span><span style="color: #4E5862">4 pedidos · 1 en curso</span></a>
+        <a href="Escritorio-17-Direcciones.dc.html" style="background: #FFFFFF; border-radius: 6px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 600; font-size: 17px">Direcciones</span><span style="color: #4E5862">2 guardadas · Casa es la principal</span></a>
+        <a href="Escritorio-18-ListaDeseos.dc.html" style="background: #FFFFFF; border-radius: 6px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 600; font-size: 17px">Lista de deseos</span><span style="color: #4E5862">3 productos · 1 bajó de precio</span></a>
+        <a href="Escritorio-19-Datos.dc.html" style="background: #FFFFFF; border-radius: 6px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 600; font-size: 17px">Datos y privacidad</span><span style="color: #4E5862">Ver, corregir o eliminar tus datos</span></a>
+      </div>
+      <section aria-labelledby="rec" style="background: #FFFFFF; border-radius: 6px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 id="rec" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Pedidos recientes</h2><a href="Escritorio-15-Pedidos.dc.html" style="font-weight: 600">Ver todos</a></div>
+        <sc-for list="{{orders}}" as="o" hint-placeholder-count="3">
+          <a href="Escritorio-16-Seguimiento.dc.html" style="border-top: 1px solid #E3E7EA; padding: 12px 0; text-decoration: none; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center">
+            <span style="font-weight: 600; flex: 1 1 180px">Pedido {{o.id}}</span>
+            <span style="color: #4E5862; flex: 1 1 140px">{{o.date}}</span>
+            <span style="flex: 1 1 100px; font-weight: 600">{{o.total}}</span>
+            <span style="font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 4px; background: {{o.bg}}; color: {{o.fg}}">{{o.status}}</span>
+          </a>
+        </sc-for>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cur = 0;
+    const N = [['Resumen', 'Escritorio-14-MiCuenta.dc.html'], ['Mis pedidos', 'Escritorio-15-Pedidos.dc.html'], ['Direcciones', 'Escritorio-17-Direcciones.dc.html'], ['Lista de deseos', 'Escritorio-18-ListaDeseos.dc.html'], ['Datos y privacidad', 'Escritorio-19-Datos.dc.html'], ['Cerrar sesión', 'Escritorio-6-Inicio.dc.html']];
+    const S = { listo: ['Listo para recoger', '#FBEFD6', '#6B4100'], ent: ['Entregado', '#E2F1E8', '#1E7A46'], dev: ['Reembolsado', '#E6EAEE', '#3F4851'] };
+    return {
+      nav: N.map(([label, href], i) => ({ label, href, cur: i === cur ? 'page' : 'false', bg: i === cur ? '#15181B' : '#FFFFFF', fg: i === cur ? '#FFFFFF' : '#15181B', w: i === cur ? '600' : '400' })),
+      orders: [
+        { id: '10482', date: '16 oct 2026', total: '$3,337', s: 'listo' },
+        { id: '10311', date: '2 oct 2026', total: '$1,048', s: 'ent' },
+        { id: '10107', date: '14 sep 2026', total: '$429', s: 'dev' }
+      ].map(o => ({ ...o, status: S[o.s][0], bg: S[o.s][1], fg: S[o.s][2] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

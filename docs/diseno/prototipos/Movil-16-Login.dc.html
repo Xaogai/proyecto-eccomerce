@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Iniciar sesión en móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF; padding: 8px 10px; display: flex; align-items: center; gap: 4px">
+    <a href="Movil-9-Inicio.dc.html" aria-label="Volver" style="width: 44px; height: 44px; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700">[MARCA]<span style="color: #F26B2A">.</span></span>
+  </header>
+  <main style="padding: 20px 16px; display: flex; flex-direction: column; gap: 14px">
+    <div role="tablist" aria-label="Acceso" style="display: grid; grid-template-columns: 1fr 1fr; background: #FFFFFF; border-radius: 6px; padding: 4px; gap: 4px">
+      <a href="Movil-8-Registro.dc.html" role="tab" aria-selected="false" style="min-height: 46px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; justify-content: center">Crear cuenta</a>
+      <a href="Movil-16-Login.dc.html" role="tab" aria-selected="true" style="min-height: 46px; border-radius: 4px; background: #15181B; color: #FFFFFF; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Iniciar sesión</a>
+    </div>
+    <form novalidate style="background: #FFFFFF; border-radius: 6px; padding: 18px 16px; display: flex; flex-direction: column; gap: 14px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 34px; line-height: 1; text-transform: uppercase">Iniciar sesión</h1>
+      <sc-if value="{{isErr}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background: #FBE6E4; color: #B42318; border-radius: 4px; padding: 12px; font-weight: 600; font-size: 15px">El correo o la contraseña no coinciden. Te quedan 2 intentos.</div>
+      </sc-if>
+      <sc-if value="{{isLock}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background: #FBEFD6; color: #15181B; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 15px"><strong style="color: #6B4100">Bloqueamos tu cuenta por seguridad</strong><span>Hubo 5 intentos fallidos. Intenta a las 21:52 o restablece tu contraseña.</span><a href="#" style="font-weight: 600">Restablecer contraseña</a></div>
+      </sc-if>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Correo electrónico<input type="email" autocomplete="email" value="ana@ejemplo.com" style="height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Contraseña<input type="password" autocomplete="current-password" value="contraseña" aria-invalid="{{pwInvalid}}" disabled="{{isLock}}" style="height: 50px; border: {{pwBorder}}; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <a href="#" style="font-size: 15px; min-height: 36px; display: flex; align-items: center">¿Olvidaste tu contraseña?</a>
+      <a href="Movil-17-MiCuenta.dc.html" style="min-height: 52px; border-radius: 4px; background: {{btnBg}}; color: {{btnFg}}; font-weight: 600; font-size: 17px; text-decoration: none; display: flex; align-items: center; justify-content: center">Entrar</a>
+    </form>
+    <a href="Movil-6-Checkout.dc.html" style="min-height: 52px; border-radius: 4px; border: 1px solid #15181B; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Comprar como invitado</a>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"estado":{"editor":"enum","options":["normal","error","bloqueada"],"default":"bloqueada"},"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const e = this.props.estado ?? 'bloqueada';
+    const err = e === 'error', lock = e === 'bloqueada';
+    return { isErr: err, isLock: lock, pwInvalid: err ? 'true' : 'false', pwBorder: err ? '2px solid #B42318' : '1px solid #B9C1C8', btnBg: lock ? '#E3E7EA' : '#C2410C', btnFg: lock ? '#4E5862' : '#FFFFFF' };
+  }
+}
+</script>
+</body>
+</html>

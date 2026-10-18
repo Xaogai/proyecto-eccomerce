@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Lista de deseos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="Escritorio-6-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <span style="flex: 1"></span>
+      <a href="Escritorio-14-MiCuenta.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Hola, Ana</a>
+      <a href="Escritorio-3-Carrito.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Carrito (3)</a>
+    </div>
+  </header>
+  <div style="max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <nav aria-label="Mi cuenta" style="flex: 1 1 220px; background: #FFFFFF; border-radius: 6px; padding: 8px; display: flex; flex-direction: column">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="6">
+        <a href="{{n.href}}" aria-current="{{n.cur}}" style="min-height: 46px; padding: 0 14px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.w}}">{{n.label}}</a>
+      </sc-for>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 48px; line-height: 1; text-transform: uppercase">Lista de deseos</h1>
+      <p aria-live="polite" style="margin: 0; color: #4E5862">{{msg}}</p>
+      <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+        <div style="background: #FFFFFF; border-radius: 6px; padding: 28px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start">
+          <strong style="font-size: 18px">Tu lista está vacía</strong>
+          <span style="color: #4E5862">Guarda productos desde su ficha con "Guardar en lista de deseos".</span>
+          <a href="Escritorio-1-Listado.dc.html" style="min-height: 46px; padding: 0 18px; border-radius: 4px; background: #C2410C; color: #FFFFFF; font-weight: 600; text-decoration: none; display: flex; align-items: center">Explorar productos</a>
+        </div>
+      </sc-if>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px">
+        <sc-for list="{{items}}" as="p" hint-placeholder-count="3">
+          <article style="background: #FFFFFF; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column">
+            <div style="height: 150px; background: #F5F6F7; color: #4E5862; display: flex; align-items: center; justify-content: center"><svg width="100" height="75" viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{{p.alt}}"><path d="M18 20h60a8 8 0 0 1 8 8v10a8 8 0 0 1-8 8H58l-6 30H34l4-30H18a6 6 0 0 1-6-6V26a6 6 0 0 1 6-6z"/><path d="M86 33h14"/><path d="M100 30v6l14-3z"/><path d="M30 76h26"/></svg></div>
+            <div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1">
+              <a href="Escritorio-2-Ficha.dc.html" style="font-weight: 600; font-size: 16px; text-decoration: none">{{p.name}}</a>
+              <div style="display: flex; align-items: baseline; gap: 8px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700">{{p.price}}</span><span style="font-size: 14px; color: #1E7A46; font-weight: 600">{{p.drop}}</span></div>
+              <span style="font-size: 14px; font-weight: 600; color: {{p.c}}">{{p.stock}}</span>
+              <a href="{{p.href}}" style="margin-top: auto; min-height: 46px; border-radius: 4px; background: {{p.bg}}; color: {{p.fg}}; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">{{p.cta}}</a>
+              <button type="button" onClick="{{p.remove}}" style="min-height: 36px; border: 0; background: transparent; font: inherit; color: #4E5862; text-decoration: underline">Quitar de la lista</button>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { msg: '3 productos guardados', list: [
+      { id: 1, name: 'Rotomartillo SDS Plus 800 W', price: '$2,899', drop: 'Antes $3,199', stock: 'Quedan 3 en Toluca Centro', s: 'low' },
+      { id: 2, name: 'Taladro de banco 1/2 HP, 5 velocidades', price: '$4,590', drop: '', stock: 'Solo envío a domicilio', s: 'ship' },
+      { id: 3, name: 'Taladro atornillador compacto 12 V', price: '$1,299', drop: '', stock: 'Agotado en tu sucursal', s: 'out' }
+    ] };
+  }
+  renderVals() {
+    const N = [['Resumen', 'Escritorio-14-MiCuenta.dc.html'], ['Mis pedidos', 'Escritorio-15-Pedidos.dc.html'], ['Direcciones', 'Escritorio-17-Direcciones.dc.html'], ['Lista de deseos', 'Escritorio-18-ListaDeseos.dc.html'], ['Datos y privacidad', 'Escritorio-19-Datos.dc.html'], ['Cerrar sesión', 'Escritorio-6-Inicio.dc.html']];
+    const C = { low: '#8A5300', ship: '#4E5862', out: '#B42318' };
+    const list = this.state.list;
+    return {
+      nav: N.map(([label, href], i) => ({ label, href, cur: i === 3 ? 'page' : 'false', bg: i === 3 ? '#15181B' : '#FFFFFF', fg: i === 3 ? '#FFFFFF' : '#15181B', w: i === 3 ? '600' : '400' })),
+      msg: this.state.msg, empty: list.length === 0,
+      items: list.map(p => ({
+        ...p, alt: 'Foto de ' + p.name, c: C[p.s],
+        cta: p.s === 'out' ? 'Avisarme cuando llegue' : 'Agregar al carrito',
+        href: p.s === 'out' ? '#' : 'Escritorio-3-Carrito.dc.html',
+        bg: p.s === 'out' ? '#E3E7EA' : '#C2410C', fg: p.s === 'out' ? '#15181B' : '#FFFFFF',
+        remove: () => { const l = this.state.list.filter(x => x.id !== p.id); this.setState({ list: l, msg: 'Quitamos "' + p.name + '". Quedan ' + l.length }); }
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

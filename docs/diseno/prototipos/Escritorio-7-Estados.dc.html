@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Sin resultados, error y carga</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</helmet>
+<div style="min-height: 1300px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="Escritorio-6-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <form role="search" style="flex: 1 1 360px; display: flex; min-width: 0">
+        <label for="q" class="vh">Buscar productos</label>
+        <input id="q" type="search" value="taladro inalambico rojo 36v" style="flex: 1; min-width: 0; height: 46px; border: 0; padding: 0 14px; font: inherit; font-size: 16px; border-radius: 4px 0 0 4px">
+        <button type="submit" style="height: 46px; padding: 0 20px; border: 0; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600; border-radius: 0 4px 4px 0">Buscar</button>
+      </form>
+      <span style="color: #C9D0D6">Toluca Centro · CP 50000</span>
+      <a href="Escritorio-3-Carrito.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Carrito (3)</a>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 22px">
+    <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #C2410C">Estados del listado y la búsqueda</div>
+
+    <section aria-labelledby="e1" style="background: #FFFFFF; border-radius: 6px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+      <span style="font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #4E5862">Estado 1 · Sin resultados</span>
+      <h1 id="e1" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 40px; line-height: 1">No encontramos "taladro inalambico rojo 36v"</h1>
+      <p style="margin: 0; font-size: 17px">¿Quisiste decir <a href="Escritorio-1-Listado.dc.html" style="font-weight: 600">taladro inalámbrico</a>? Hay 18 resultados.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 24px">
+        <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 6px">
+          <h2 style="margin: 0; font-size: 16px">Prueba así</h2>
+          <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; color: #4E5862">
+            <li>Revisa la ortografía o usa menos palabras.</li>
+            <li>Busca por SKU, por ejemplo: SKU 100245.</li>
+            <li>Quita filtros como color o voltaje.</li>
+          </ul>
+        </div>
+        <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 8px">
+          <h2 style="margin: 0; font-size: 16px">Categorías relacionadas</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <a href="Escritorio-1-Listado.dc.html" style="min-height: 40px; padding: 0 14px; border-radius: 4px; background: #EDEFF1; text-decoration: none; display: flex; align-items: center">Taladros</a>
+            <a href="Escritorio-1-Listado.dc.html" style="min-height: 40px; padding: 0 14px; border-radius: 4px; background: #EDEFF1; text-decoration: none; display: flex; align-items: center">Rotomartillos</a>
+            <a href="Escritorio-1-Listado.dc.html" style="min-height: 40px; padding: 0 14px; border-radius: 4px; background: #EDEFF1; text-decoration: none; display: flex; align-items: center">Baterías y cargadores</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section role="alert" aria-labelledby="e2" style="background: #FFFFFF; border-radius: 6px; padding: 28px; display: flex; flex-direction: column; gap: 12px; border: 2px solid #B42318">
+      <span style="font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #4E5862">Estado 2 · Error de conexión</span>
+      <h2 id="e2" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 36px; line-height: 1">No pudimos cargar los productos</h2>
+      <p style="margin: 0; font-size: 17px; max-width: 640px">Revisa tu conexión a internet y vuelve a intentarlo. Tu carrito y tus filtros siguen guardados.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <button type="button" style="min-height: 48px; padding: 0 20px; border: 0; border-radius: 4px; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600">Reintentar</button>
+        <a href="Escritorio-6-Inicio.dc.html" style="min-height: 48px; padding: 0 20px; border-radius: 4px; border: 1px solid #15181B; font-weight: 600; text-decoration: none; display: flex; align-items: center">Ir al inicio</a>
+      </div>
+    </section>
+
+    <section aria-labelledby="e3" aria-busy="true" style="display: flex; flex-direction: column; gap: 12px">
+      <span id="e3" style="font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #4E5862">Estado 3 · Cargando resultados</span>
+      <span class="vh" role="status">Cargando productos</span>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px">
+        <sc-for list="{{skeletons}}" as="s" hint-placeholder-count="4">
+          <div aria-hidden="true" style="background: #FFFFFF; border-radius: 6px; padding: 0 0 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden">
+            <div style="height: 150px; background: #E3E7EA"></div>
+            <div style="height: 14px; margin: 0 16px; border-radius: 3px; background: #E3E7EA"></div>
+            <div style="height: 14px; width: 60%; margin: 0 16px; border-radius: 3px; background: #E3E7EA"></div>
+            <div style="height: 28px; width: 40%; margin: 0 16px; border-radius: 3px; background: #E3E7EA"></div>
+            <div style="height: 46px; margin: 0 16px; border-radius: 4px; background: #E3E7EA"></div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section aria-labelledby="e4" style="background: #FFFFFF; border-radius: 6px; padding: 28px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #4E5862">Estado 4 · Mucha demanda (degradación controlada, sec. 24.3)</span>
+      <h2 id="e4" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 36px; line-height: 1">Hay muchas personas comprando ahora</h2>
+      <p style="margin: 0; font-size: 17px; max-width: 640px">Estás en la fila para entrar al checkout. Lugar aproximado: 42. No cierres esta página; tus productos siguen apartados.</p>
+      <div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="65" aria-label="Avance en la fila" style="height: 10px; border-radius: 5px; background: #E3E7EA; overflow: hidden"><div style="width: 65%; height: 100%; background: #C2410C"></div></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() { return { skeletons: [1, 2, 3, 4] }; }
+}
+</script>
+</body>
+</html>

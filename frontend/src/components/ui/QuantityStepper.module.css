@@ -1,0 +1,36 @@
+.stepper {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--color-borde-campo);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+}
+
+.btn {
+  width: var(--tactil-min);
+  min-height: var(--boton-alto);
+  border: 0;
+  background: transparent;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.btn:disabled {
+  color: var(--color-deshabilitado);
+}
+
+.input {
+  width: 48px;
+  border: 0;
+  border-inline: 1px solid var(--color-separador);
+  text-align: center;
+  font-weight: 600;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

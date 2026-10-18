@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Checklist del Documento de Calidad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+</style>
+</helmet>
+<div style="width: 1280px; min-height: 3900px; box-sizing: border-box; padding: 64px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45; display: flex; flex-direction: column; gap: 32px">
+  <header style="display: flex; flex-direction: column; gap: 10px">
+    <div style="font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #C2410C">Sistema Taller · Frontend React</div>
+    <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 72px; line-height: .95; font-weight: 700; text-transform: uppercase">Checklist del Documento de Calidad</h1>
+    <p style="margin: 0; max-width: 860px; color: #4E5862; font-size: 17px">Cada punto de interfaz que pide el documento, con su sección de origen, la pantalla donde se resuelve y su estado. Las pantallas están en cuatro páginas del lienzo: Sistema Taller (flujo de compra), Catálogo y herramientas, Cuenta del cliente, y Administración y sucursal. Están enlazadas: usa Play para recorrerlas.</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+    <div style="background: #15181B; color: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1">{{total}}</span>
+      <span style="color: #C9D0D6">puntos revisados · 58 pantallas</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px; box-shadow: inset 0 -4px 0 #1E7A46">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1; color: #1E7A46">{{nOk}}</span>
+      <span>Cumple en el prototipo</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px; box-shadow: inset 0 -4px 0 #8A5300">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1; color: #8A5300">{{nPar}}</span>
+      <span>Parcial: falta una parte</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px; box-shadow: inset 0 -4px 0 #4E5862">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1; color: #4E5862">{{nPen}}</span>
+      <span>Pendiente: solo pruebas con el sitio construido o con usuarios</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 28px">
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="9">
+      <section style="display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 30px; text-transform: uppercase; border-bottom: 3px solid #15181B; padding-bottom: 4px">{{g.title}}</h2>
+        <table style="width: 100%; border-collapse: collapse; background: #FFFFFF; border-radius: 6px; overflow: hidden">
+          <thead>
+            <tr style="background: #F5F6F7; text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #4E5862">
+              <th scope="col" style="padding: 10px 14px; width: 52px">#</th>
+              <th scope="col" style="padding: 10px 14px">Requisito</th>
+              <th scope="col" style="padding: 10px 14px; width: 150px">Fuente</th>
+              <th scope="col" style="padding: 10px 14px; width: 340px">Dónde se resuelve</th>
+              <th scope="col" style="padding: 10px 14px; width: 120px">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{g.items}}" as="it" hint-placeholder-count="5">
+              <tr style="border-top: 1px solid #E3E7EA; vertical-align: top">
+                <td style="padding: 12px 14px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; color: #C2410C">{{it.id}}</td>
+                <td style="padding: 12px 14px; font-weight: 500">{{it.req}}</td>
+                <td style="padding: 12px 14px; color: #4E5862">{{it.src}}</td>
+                <td style="padding: 12px 14px; color: #4E5862">{{it.where}}</td>
+                <td style="padding: 12px 14px"><span style="display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 4px; background: {{it.bg}}; color: {{it.fg}}">{{it.label}}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </section>
+    </sc-for>
+  </div>
+
+  <section style="background: #15181B; color: #F4F5F6; border-radius: 6px; padding: 24px 28px; display: flex; flex-direction: column; gap: 10px">
+    <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 28px; text-transform: uppercase">Estándar visual Taller</h2>
+    <p style="margin: 0; color: #C9D0D6; max-width: 900px">Tipografía Barlow Condensed para títulos y precios, Barlow para texto. Fondo gris acero, tarjetas blancas, negro carbón para encabezado y pie, naranja de seguridad para la acción principal. Verde, ámbar y rojo solo para estados. Botones y áreas táctiles de 44 px o más, foco visible con contorno naranja. Los paneles internos usan el mismo sistema con menú lateral.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px">
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 4px; background: #15181B; border: 1px solid #4A535C"></span>Carbón #15181B</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 4px; background: #C2410C"></span>Naranja #C2410C</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 4px; background: #EDEFF1"></span>Acero #EDEFF1</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 4px; background: #4E5862"></span>Gris texto #4E5862</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 4px; background: #1E7A46"></span>Disponible #1E7A46</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 4px; background: #8A5300"></span>Pocas piezas #8A5300</span>
+      <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 4px; background: #B42318"></span>Agotado o error #B42318</span>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":3900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S = {
+      ok:  { label: 'Cumple',    bg: '#E2F1E8', fg: '#1E7A46' },
+      par: { label: 'Parcial',   bg: '#FBEFD6', fg: '#8A5300' },
+      pen: { label: 'Pendiente', bg: '#E6EAEE', fg: '#3F4851' }
+    };
+    const G = [
+      ['A · Catálogo y búsqueda', [
+        ['A1', 'Categorías jerárquicas de hasta 3 niveles, con menú visible desde 769 px', 'HU-01, 27.4', 'Escritorio: barra de categorías y migas. Móvil: Departamentos con 3 niveles', 'ok'],
+        ['A2', 'Listado de productos paginado por categoría', 'HU-01, 13.1', 'Listado (escritorio y móvil)', 'ok'],
+        ['A3', 'Variantes con SKU, precio y stock; el precio cambia al elegir variante', 'HU-02', 'Ficha de producto (escritorio y móvil, interactiva)', 'ok'],
+        ['A4', 'Buscador con autocompletado', '3.2, 27.5', 'Móvil: Buscar. Mismo componente en el encabezado de escritorio', 'ok'],
+        ['A5', 'Filtros por atributo que se combinan y actualizan sin recargar', 'HU-09', 'Escritorio: panel lateral. Móvil: pantalla Filtros', 'ok'],
+        ['A6', 'Filtros activos anunciados al lector de pantalla', '28.3', 'Aviso "2 filtros activos" en región aria-live', 'ok'],
+        ['A7', 'Ordenar resultados', '3.2', 'Listado (escritorio y móvil)', 'ok'],
+        ['A8', 'Comparador de productos como tabla accesible', '27.4, 28.3', 'Comparador (escritorio y móvil): tabla con encabezados y "solo diferencias"', 'ok'],
+        ['A9', 'Imágenes con zoom o vista 360°', '27.5', 'Vista 360° (escritorio y móvil) con giro por teclado', 'ok'],
+        ['A10', 'Calculadora de materiales con etiquetas y errores accesibles', '27.5, 28.3', 'Calculadora: pintura completa e interactiva. Piso y taquetes solo como pestañas', 'par'],
+        ['A11', 'Localizador de tiendas con lista de texto además del mapa', '27.5, 28.3', 'Sucursales (escritorio y móvil): lista completa, mapa complementario', 'ok'],
+        ['A12', 'Reseñas de producto', '3.2', 'Ficha: sección de reseñas. Escribir reseña (escritorio y móvil)', 'ok'],
+        ['A13', 'Página de inicio con departamentos y productos disponibles', '3.6', 'Inicio (escritorio y móvil)', 'ok'],
+        ['A14', 'Estados sin resultados, error de conexión, carga y fila de espera', '24.3, anexo 1.8', 'Estados (escritorio) y Sin resultados (móvil)', 'ok']
+      ]],
+      ['B · Cuenta de usuario', [
+        ['B1', 'Registro con correo válido y contraseña de 8 caracteres o más', 'HU-03', 'Registro (escritorio y móvil) con error de ejemplo', 'ok'],
+        ['B2', 'Aviso de privacidad visible y aceptado durante el registro', '4.5', 'Registro (escritorio y móvil)', 'ok'],
+        ['B3', 'Comprar como invitado, sin crear cuenta', '3.3, anexo 1.8', 'Checkout, Login y Registro', 'ok'],
+        ['B4', 'Mensaje claro de cuenta bloqueada por intentos fallidos', '18.1', 'Iniciar sesión: estados normal, error y bloqueada (Tweaks)', 'ok'],
+        ['B5', 'Mi cuenta: pedidos, direcciones, lista de deseos y derechos ARCO', '3.3, 4.5', 'Mi cuenta, Pedidos, Direcciones, Lista de deseos y Datos (escritorio y móvil)', 'ok'],
+        ['B6', 'Restablecer contraseña', '18.1', 'Enlace en Iniciar sesión. Falta la pantalla del correo y nueva contraseña', 'par']
+      ]],
+      ['C · Carrito', [
+        ['C1', 'Agregar al carrito sin iniciar sesión', 'HU-04', 'Listado y Ficha', 'ok'],
+        ['C2', 'Cambiar cantidad, eliminar y recalcular el total', 'HU-04', 'Carrito (escritorio y móvil, interactivo)', 'ok'],
+        ['C3', 'Mostrar el precio vigente de cada variante', 'anexo 2.2.2', 'Carrito: precio unitario y fecha de vigencia', 'ok'],
+        ['C4', 'Aviso de producto agotado con una salida', 'anexo 1.8', 'Listado y Carrito', 'ok'],
+        ['C5', 'Elegir la variante antes de agregar un producto que tiene varias', 'HU-02', 'Listado: botón Elegir variante', 'ok']
+      ]],
+      ['D · Checkout, pago y posventa', [
+        ['D1', 'Envío a domicilio con costo calculado por código postal', 'HU-07', 'Checkout (interactivo)', 'ok'],
+        ['D2', 'Recolección en tienda, mostrando sucursales con stock', 'HU-07', 'Checkout', 'ok'],
+        ['D3', 'Pago en la pasarela hospedada, sin campos de tarjeta en el sitio', 'HU-06, 4.4, 18.2', 'Checkout', 'ok'],
+        ['D4', 'Confirmación con folio y estado pendiente mientras se confirma el pago', 'anexo 1.5', 'Confirmación: estados pendiente y pagado', 'ok'],
+        ['D5', 'Pago rechazado con opción de reintentar', 'anexo 1.8', 'Confirmación: estado rechazado', 'ok'],
+        ['D6', 'Estados del pedido visibles para el cliente', 'anexo 1.3', 'Seguimiento de pedido (escritorio y móvil) con línea de tiempo y código de entrega', 'ok'],
+        ['D7', 'Checkout completo solo con teclado y lector de pantalla', '28.3', 'Controles nativos con etiqueta. Falta la prueba con NVDA y VoiceOver', 'pen'],
+        ['D8', 'Correo de confirmación del pedido', '3.2 (módulo 9)', 'Correo de confirmación', 'ok'],
+        ['D9', 'Solicitar devolución', 'anexo 1.3, 1.4', 'Devolución (escritorio y móvil)', 'ok']
+      ]],
+      ['E · Responsive y dispositivos', [
+        ['E1', 'Mobile-first de 320 a 480 px, con buscador y filtros al alcance del pulgar', '27.4', '25 pantallas móviles a 390 px', 'ok'],
+        ['E2', '2 columnas de 481 a 768 px y 3 de 769 a 1024 px', '27.4', 'Grilla fluida de las pantallas de escritorio', 'ok'],
+        ['E3', 'Filtros laterales y comparador de 1025 a 1440 px', '27.4', 'Listado y Comparador de escritorio', 'ok'],
+        ['E4', 'Más productos por fila desde 1441 px', '27.4', 'Grilla fluida', 'ok'],
+        ['E5', 'Chrome, Edge, Safari y Firefox; iOS 15+ y Android 10+', '27.2, 27.3', 'Se valida en QA con el sitio construido', 'pen'],
+        ['E6', 'Rendimiento de imágenes y 360° en Android de gama baja', '27.5', 'Se valida en QA; la vista 360° tiene feature flag', 'pen']
+      ]],
+      ['F · Accesibilidad WCAG 2.1 AA', [
+        ['F1', 'Contraste de texto de 4.5:1 o más', '28.2', 'Paleta medida: de 5.2:1 a 9.7:1', 'ok'],
+        ['F2', 'Foco visible y navegación completa con teclado', '28.2', 'Contorno naranja de 3 px en todos los controles', 'ok'],
+        ['F3', 'Etiquetas visibles y errores específicos por campo', '28.2', 'Registro, Checkout, Calculadora, Admin producto', 'ok'],
+        ['F4', 'Texto alternativo en imágenes de producto', '28.2', 'Todas; el admin exige el texto al subir imágenes', 'ok'],
+        ['F5', 'Idioma declarado con lang="es"', '28.2', 'Todas las pantallas', 'ok'],
+        ['F6', 'Áreas táctiles de 44 px o más', '28.2', 'Todas las pantallas', 'ok']
+      ]],
+      ['G · Contenido y confianza', [
+        ['G1', 'Pie con aviso de privacidad, envíos, plazos y devoluciones', '4.5, 6.1', 'Pantallas de compra de escritorio, Inicio y Listado móvil', 'ok'],
+        ['G2', 'Costo de envío, plazos y total claros antes de pagar', '6.1', 'Ficha, Carrito y Checkout', 'ok'],
+        ['G3', 'Sucursal y código postal visibles', 'HU-07', 'Encabezado de las pantallas de compra', 'ok']
+      ]],
+      ['H · Proceso de usabilidad (sec. 26)', [
+        ['H1', 'Evaluación con las 10 heurísticas de Nielsen antes de la UI definitiva', '26.1', 'Hacer sobre este prototipo', 'pen'],
+        ['H2', 'Prueba con 5 a 8 usuarios: compra sin guía en menos de 5 minutos', 'RQ-USA-001, 26.1', 'Hacer sobre este prototipo', 'pen'],
+        ['H3', 'Puntaje SUS de 68 o más', '26.3', 'Medir en la prueba con usuarios', 'pen']
+      ]],
+      ['I · Paneles internos', [
+        ['I1', 'Administración de productos, variantes y categorías', 'HU-08, 3.3', 'Admin: Productos, Editar producto, Categorías', 'ok'],
+        ['I2', 'No publicar un producto sin variante con precio y stock', '19, HU-08', 'Admin: Editar producto (validación interactiva)', 'ok'],
+        ['I3', 'Gestión de pedidos con solo transiciones válidas y registro de cambios', 'anexo 1.3', 'Admin: Pedidos y Detalle de pedido', 'ok'],
+        ['I4', 'Usuarios, roles y desbloqueo de cuentas', '3.3, 18.1', 'Admin: Usuarios y roles', 'ok'],
+        ['I5', 'Reportes de ventas e inventario', '3.6', 'Admin: Resumen y Reportes', 'ok'],
+        ['I6', 'Configuración, pasarela sin exponer llaves y feature flags', '11.4, 15.3, 22.3', 'Admin: Configuración', 'ok'],
+        ['I7', 'Sucursal: inventario local y pedidos para recolección', '3.3', 'Sucursal: Inventario, Pedidos para recoger y Entregar (móvil)', 'ok']
+      ]]
+    ];
+    const groups = G.map(([title, rows]) => ({
+      title,
+      items: rows.map(([id, req, src, where, s]) => ({ id, req, src, where, label: S[s].label, bg: S[s].bg, fg: S[s].fg, s }))
+    }));
+    const all = groups.flatMap(g => g.items);
+    return {
+      groups,
+      total: all.length,
+      nOk: all.filter(i => i.s === 'ok').length,
+      nPar: all.filter(i => i.s === 'par').length,
+      nPen: all.filter(i => i.s === 'pen').length
+    };
+  }
+}
+</script>
+</body>
+</html>

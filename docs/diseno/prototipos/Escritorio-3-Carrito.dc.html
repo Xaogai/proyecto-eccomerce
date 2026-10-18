@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Carrito de compras</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45; display: flex; flex-direction: column">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="Escritorio-1-Listado.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none; letter-spacing: .02em">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <form role="search" style="flex: 1 1 360px; display: flex; min-width: 0">
+        <label for="q" class="vh">Buscar productos</label>
+        <input id="q" type="search" placeholder="Busca por producto, marca o SKU" style="flex: 1; min-width: 0; height: 46px; border: 0; padding: 0 14px; font: inherit; font-size: 16px; border-radius: 4px 0 0 4px">
+        <button type="submit" style="height: 46px; padding: 0 20px; border: 0; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600; border-radius: 0 4px 4px 0">Buscar</button>
+      </form>
+      <button type="button" style="height: 46px; padding: 0 12px; background: transparent; color: #FFFFFF; border: 1px solid #4A535C; border-radius: 4px; font: inherit; text-align: left; display: flex; flex-direction: column; justify-content: center; line-height: 1.15">
+        <span style="font-size: 12px; color: #B7C0C8">Tu sucursal · CP 50000</span>
+        <span style="font-weight: 600">Toluca Centro</span>
+      </button>
+      <a href="Movil-8-Registro.dc.html" style="color: #FFFFFF; text-decoration: none; min-height: 44px; display: flex; align-items: center">Mi cuenta</a>
+      <a href="Escritorio-3-Carrito.dc.html" aria-current="page" aria-label="Carrito, {{count}} productos" style="color: #FFFFFF; text-decoration: none; min-height: 44px; display: flex; align-items: center; gap: 8px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11h11l2-8H6.2"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>
+        Carrito <span style="background: #C2410C; border-radius: 999px; padding: 0 8px; font-weight: 600">{{count}}</span>
+      </a>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 18px; flex: 1">
+    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 1; text-transform: uppercase">Carrito</h1>
+      <span style="color: #4E5862">No necesitas cuenta para comprar</span>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+      <section aria-label="Productos en el carrito" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="3">
+          <article style="background: #FFFFFF; border-radius: 6px; padding: 16px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; border: {{it.mark}}">
+            <div style="width: 104px; height: 104px; background: #F5F6F7; border-radius: 4px; color: #4E5862; display: flex; align-items: center; justify-content: center; flex: none">
+              <svg width="72" height="54" viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{{it.alt}}"><path d="M18 20h60a8 8 0 0 1 8 8v10a8 8 0 0 1-8 8H58l-6 30H34l4-30H18a6 6 0 0 1-6-6V26a6 6 0 0 1 6-6z"/><path d="M86 33h14"/><path d="M100 30v6l14-3z"/><path d="M30 76h26"/></svg>
+            </div>
+            <div style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+              <a href="Escritorio-2-Ficha.dc.html" style="font-weight: 600; font-size: 17px; text-decoration: none">{{it.name}}</a>
+              <span style="font-size: 13px; color: #4E5862">{{it.sku}} · {{it.unitTxt}} c/u</span>
+              <span style="font-size: 14px; font-weight: 600; color: {{it.noteColor}}">{{it.note}}</span>
+              <sc-if value="{{it.out}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px">
+                  <button type="button" onClick="{{it.ship}}" style="min-height: 44px; padding: 0 14px; border: 0; border-radius: 4px; background: #15181B; color: #FFFFFF; font: inherit; font-weight: 600">Cambiar a envío a domicilio</button>
+                  <button type="button" onClick="{{it.remove}}" style="min-height: 44px; padding: 0 14px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit">Eliminar</button>
+                </div>
+              </sc-if>
+            </div>
+            <sc-if value="{{it.ok}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
+                <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; line-height: 1">{{it.lineTxt}}</span>
+                <div role="group" aria-label="Cantidad de {{it.name}}" style="display: flex; align-items: center; border: 1px solid #B9C1C8; border-radius: 4px">
+                  <button type="button" onClick="{{it.dec}}" aria-label="Quitar una pieza" style="width: 44px; height: 44px; border: 0; background: transparent; font: inherit; font-size: 20px">−</button>
+                  <span aria-live="polite" style="min-width: 28px; text-align: center; font-weight: 600">{{it.q}}</span>
+                  <button type="button" onClick="{{it.inc}}" aria-label="Agregar una pieza" style="width: 44px; height: 44px; border: 0; background: transparent; font: inherit; font-size: 20px">+</button>
+                </div>
+                <button type="button" onClick="{{it.remove}}" style="min-height: 36px; border: 0; background: transparent; font: inherit; color: #4E5862; text-decoration: underline">Eliminar</button>
+              </div>
+            </sc-if>
+          </article>
+        </sc-for>
+        <span style="font-size: 13px; color: #4E5862">Precios vigentes al 16 de octubre de 2026. Si un precio cambia antes de pagar, te avisamos en el checkout.</span>
+      </section>
+
+      <aside aria-labelledby="res" style="flex: 1 1 300px; background: #FFFFFF; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <h2 id="res" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Resumen</h2>
+        <div style="display: flex; justify-content: space-between"><span>Subtotal ({{count}} productos)</span><span style="font-weight: 600">{{subtotal}}</span></div>
+        <div style="display: flex; justify-content: space-between; color: #4E5862"><span>Envío o recolección</span><span>Se elige en el checkout</span></div>
+        <div style="border-top: 2px solid #15181B; padding-top: 10px; display: flex; justify-content: space-between; align-items: baseline">
+          <span style="font-weight: 600">Total estimado</span>
+          <span aria-live="polite" style="font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700">{{subtotal}}</span>
+        </div>
+        <a href="Escritorio-4-Checkout.dc.html" style="min-height: 52px; border-radius: 4px; background: #C2410C; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none; display: flex; align-items: center; justify-content: center">Continuar al pago</a>
+        <a href="Escritorio-1-Listado.dc.html" style="text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center">Seguir comprando</a>
+        <span style="font-size: 13px; color: #4E5862">Recoger en tienda es gratis. El envío a domicilio se calcula con tu código postal.</span>
+      </aside>
+    </div>
+  </main>
+
+  <footer style="background: #15181B; color: #C9D0D6">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 22px 24px; display: flex; flex-wrap: wrap; gap: 10px 28px; font-size: 14px">
+      <a href="#" style="color: #FFFFFF">Aviso de privacidad</a><a href="#" style="color: #FFFFFF">Envíos y plazos</a><a href="#" style="color: #FFFFFF">Devoluciones</a><a href="#" style="color: #FFFFFF">Localizador de tiendas</a>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { items: [
+      { id: 1, name: 'Taladro percutor inalámbrico 20 V, con 1 batería', sku: 'SKU 100245-1', unit: 2899, q: 1, ok: true, note: '8 disponibles en Toluca Centro' },
+      { id: 2, name: 'Juego de brocas para concreto, 5 piezas', sku: 'SKU 410032', unit: 219, q: 2, ok: true, note: '30 disponibles en Toluca Centro' },
+      { id: 3, name: 'Taladro atornillador compacto 12 V', sku: 'SKU 100402', unit: 1299, q: 1, ok: false, note: 'Agotado en Toluca Centro. No se suma al total.' }
+    ] };
+  }
+  renderVals() {
+    const fmt = n => '$' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const items = this.state.items;
+    const set = (id, fn) => this.setState({ items: this.state.items.map(x => x.id === id ? fn(x) : x) });
+    const ok = items.filter(x => x.ok);
+    return {
+      count: ok.reduce((a, x) => a + x.q, 0),
+      subtotal: fmt(ok.reduce((a, x) => a + x.unit * x.q, 0)),
+      items: items.map(x => ({
+        ...x,
+        out: !x.ok,
+        alt: 'Foto de ' + x.name,
+        unitTxt: fmt(x.unit),
+        lineTxt: fmt(x.unit * x.q),
+        noteColor: x.ok ? '#1E7A46' : '#B42318',
+        mark: x.ok ? '1px solid #FFFFFF' : '1px solid #B42318',
+        inc: () => set(x.id, y => ({ ...y, q: y.q + 1 })),
+        dec: () => set(x.id, y => ({ ...y, q: Math.max(1, y.q - 1) })),
+        ship: () => set(x.id, y => ({ ...y, ok: true, note: 'Con envío a domicilio a CP 50000' })),
+        remove: () => this.setState({ items: this.state.items.filter(y => y.id !== x.id) })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

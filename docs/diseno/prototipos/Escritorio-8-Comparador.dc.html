@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Comparador de productos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</helmet>
+<div style="min-height: 1200px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="Escritorio-6-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <form role="search" style="flex: 1 1 360px; display: flex; min-width: 0">
+        <label for="q" class="vh">Buscar productos</label>
+        <input id="q" type="search" placeholder="Busca por producto, marca o SKU" style="flex: 1; min-width: 0; height: 46px; border: 0; padding: 0 14px; font: inherit; font-size: 16px; border-radius: 4px 0 0 4px">
+        <button type="submit" style="height: 46px; padding: 0 20px; border: 0; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600; border-radius: 0 4px 4px 0">Buscar</button>
+      </form>
+      <span style="color: #C9D0D6">Toluca Centro · CP 50000</span>
+      <a href="Escritorio-3-Carrito.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Carrito (3)</a>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; margin: 0 auto; padding: 20px 24px 48px; display: flex; flex-direction: column; gap: 18px">
+    <a href="Escritorio-1-Listado.dc.html" style="font-size: 14px; color: #4E5862; min-height: 32px; display: flex; align-items: center">‹ Volver a Taladros</a>
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 1; text-transform: uppercase">Comparar 3 taladros</h1>
+      <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600"><input type="checkbox" checked="{{only}}" onChange="{{toggle}}" style="width: 20px; height: 20px; accent-color: #C2410C"> Mostrar solo diferencias</label>
+    </div>
+
+    <div style="overflow-x: auto; background: #FFFFFF; border-radius: 6px">
+      <table style="width: 100%; min-width: 820px; border-collapse: collapse; table-layout: fixed">
+        <caption class="vh">Comparación de especificaciones de 3 taladros</caption>
+        <thead>
+          <tr style="vertical-align: top">
+            <td style="width: 200px; padding: 18px"></td>
+            <sc-for list="{{products}}" as="p" hint-placeholder-count="3">
+              <th scope="col" style="padding: 18px; text-align: left; border-left: 1px solid #E3E7EA">
+                <div style="display: flex; flex-direction: column; gap: 8px; font-weight: 400">
+                  <div style="height: 120px; background: #F5F6F7; border-radius: 4px; color: #4E5862; display: flex; align-items: center; justify-content: center">
+                    <svg width="90" height="68" viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{{p.alt}}"><path d="M18 20h60a8 8 0 0 1 8 8v10a8 8 0 0 1-8 8H58l-6 30H34l4-30H18a6 6 0 0 1-6-6V26a6 6 0 0 1 6-6z"/><path d="M86 33h14"/><path d="M100 30v6l14-3z"/><path d="M30 76h26"/></svg>
+                  </div>
+                  <a href="Escritorio-2-Ficha.dc.html" style="font-weight: 600; font-size: 16px; text-decoration: none; line-height: 1.3">{{p.name}}</a>
+                  <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 700; line-height: 1">{{p.price}}</span>
+                  <span style="font-size: 14px; font-weight: 600; color: {{p.c}}">{{p.stock}}</span>
+                  <a href="Escritorio-3-Carrito.dc.html" style="min-height: 44px; border-radius: 4px; background: #C2410C; color: #FFFFFF; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Agregar al carrito</a>
+                  <button type="button" aria-label="Quitar {{p.name}} de la comparación" style="min-height: 36px; border: 0; background: transparent; font: inherit; color: #4E5862; text-decoration: underline; align-self: flex-start; padding: 0">Quitar</button>
+                </div>
+              </th>
+            </sc-for>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+            <tr style="border-top: 1px solid #E3E7EA; background: {{r.bg}}">
+              <th scope="row" style="padding: 12px 18px; text-align: left; font-weight: 600">{{r.k}}</th>
+              <sc-for list="{{r.vals}}" as="v" hint-placeholder-count="3">
+                <td style="padding: 12px 18px; border-left: 1px solid #E3E7EA; font-weight: {{v.w}}">{{v.t}}</td>
+              </sc-for>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin: 0; font-size: 14px; color: #4E5862">Puedes comparar hasta 4 productos. Las filas resaltadas tienen valores distintos.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1200}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { only: false }; }
+  renderVals() {
+    const products = [
+      { name: 'Taladro percutor inalámbrico 20 V', price: '$2,149', stock: '12 en Toluca Centro', c: '#1E7A46' },
+      { name: 'Rotomartillo SDS Plus 800 W', price: '$2,899', stock: 'Quedan 3 en Toluca Centro', c: '#8A5300' },
+      { name: 'Taladro eléctrico 3/8 pulg 600 W', price: '$849', stock: '20 en Toluca Centro', c: '#1E7A46' }
+    ].map(p => ({ ...p, alt: 'Foto de ' + p.name }));
+    const data = [
+      ['Marca', ['Volta', 'Brava', 'Ferro']],
+      ['Alimentación', ['Batería 20 V', 'Cable 127 V', 'Cable 127 V']],
+      ['Potencia', ['20 V', '800 W', '600 W']],
+      ['Mandril', ['1/2 pulg', 'SDS Plus', '3/8 pulg']],
+      ['Velocidad máxima', ['1,800 rpm', '1,100 rpm', '2,800 rpm']],
+      ['Percutor', ['Sí', 'Sí', 'No']],
+      ['Reversa', ['Sí', 'Sí', 'Sí']],
+      ['Peso', ['1.6 kg', '2.9 kg', '1.4 kg']],
+      ['Garantía', ['[Garantía]', '[Garantía]', '[Garantía]']],
+      ['Recoger hoy', ['Sí', 'Sí', 'Sí']]
+    ];
+    const only = this.state.only;
+    const rows = data
+      .map(([k, vals]) => ({ k, diff: new Set(vals).size > 1, vals }))
+      .filter(r => !only || r.diff)
+      .map(r => ({ k: r.k, bg: r.diff ? '#FFF4EC' : '#FFFFFF', vals: r.vals.map(t => ({ t, w: r.diff ? '600' : '400' })) }));
+    return { products, rows, only, toggle: () => this.setState({ only: !this.state.only }) };
+  }
+}
+</script>
+</body>
+</html>

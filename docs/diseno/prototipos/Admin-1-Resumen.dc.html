@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel de administración, resumen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1100px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700">[MARCA]<span style="color: #F26B2A">.</span> <span style="font-size: 18px; font-weight: 600; color: #C9D0D6; text-transform: uppercase; letter-spacing: .06em">Administración</span></span>
+      <span style="flex: 1"></span>
+      <span style="color: #C9D0D6">Luis Ramírez · Administrador</span>
+      <a href="Escritorio-12-Login.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Salir</a>
+    </div>
+  </header>
+  <div style="padding: 20px 24px 40px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+    <nav aria-label="Administración" style="flex: 1 1 200px; background: #FFFFFF; border-radius: 6px; padding: 8px; display: flex; flex-direction: column">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="7">
+        <a href="{{n.href}}" aria-current="{{n.cur}}" style="min-height: 44px; padding: 0 12px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.w}}">{{n.label}}<span style="font-size: 13px; font-weight: 600; color: {{n.bc}}">{{n.badge}}</span></a>
+      </sc-for>
+    </nav>
+    <main style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
+        <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1; text-transform: uppercase">Resumen de hoy</h1>
+        <span style="color: #4E5862">Viernes 16 de octubre · datos de ejemplo</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px">
+        <sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+          <a href="{{k.href}}" style="background: #FFFFFF; border-radius: 6px; padding: 16px 18px; text-decoration: none; display: flex; flex-direction: column; gap: 2px; border: {{k.border}}">
+            <span style="color: #4E5862">{{k.label}}</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 40px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums">{{k.value}}</span>
+            <span style="font-size: 14px; font-weight: 600; color: {{k.c}}">{{k.note}}</span>
+          </a>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section aria-labelledby="al" style="flex: 1 1 320px; background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+          <h2 id="al" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase">Requiere atención</h2>
+          <sc-for list="{{alerts}}" as="a" hint-placeholder-count="4">
+            <a href="{{a.href}}" style="border-top: 1px solid #E3E7EA; padding: 10px 0; text-decoration: none; display: flex; gap: 10px; align-items: flex-start">
+              <span style="font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: {{a.bg}}; color: {{a.fg}}; flex: none; margin-top: 2px">{{a.sev}}</span>
+              <span style="display: flex; flex-direction: column"><span style="font-weight: 600">{{a.title}}</span><span style="font-size: 14px; color: #4E5862">{{a.sub}}</span></span>
+            </a>
+          </sc-for>
+        </section>
+        <section aria-labelledby="vt" style="flex: 1 1 360px; background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 id="vt" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase">Ventas, últimos 7 días</h2><a href="Admin-8-Reportes.dc.html" style="font-weight: 600">Reportes</a></div>
+          <div role="img" aria-label="Ventas por día: {{chartAlt}}" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; align-items: end; height: 200px; border-bottom: 1px solid #B9C1C8; padding-top: 18px">
+            <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+              <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%">
+                <span style="font-size: 12px; font-variant-numeric: tabular-nums; color: #4E5862">{{d.short}}</span>
+                <span style="width: 100%; height: {{d.h}}; background: {{d.c}}; border-radius: 3px 3px 0 0"></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; text-align: center; font-size: 13px; color: #4E5862">
+            <sc-for list="{{days}}" as="d" hint-placeholder-count="7"><span>{{d.label}}</span></sc-for>
+          </div>
+          <span style="font-size: 13px; color: #4E5862">Miles de pesos MXN. Hoy va al corte de las 20:00.</span>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const N = [['Resumen', 'Admin-1-Resumen.dc.html', ''], ['Productos', 'Admin-2-Productos.dc.html', ''], ['Categorías', 'Admin-4-Categorias.dc.html', ''], ['Pedidos', 'Admin-5-Pedidos.dc.html', '12'], ['Usuarios y roles', 'Admin-7-Usuarios.dc.html', ''], ['Reportes', 'Admin-8-Reportes.dc.html', ''], ['Configuración', 'Admin-9-Configuracion.dc.html', '']];
+    const cur = 0;
+    const V = [[ 'Sáb', 41.2 ], ['Dom', 52.8], ['Lun', 33.1], ['Mar', 36.4], ['Mié', 39.9], ['Jue', 44.0], ['Hoy', 48.3]];
+    const max = 60;
+    return {
+      nav: N.map(([label, href, badge], i) => ({ label, href, badge, cur: i === cur ? 'page' : 'false', bg: i === cur ? '#15181B' : '#FFFFFF', fg: i === cur ? '#FFFFFF' : '#15181B', w: i === cur ? '600' : '400', bc: i === cur ? '#F7A26B' : '#C2410C' })),
+      kpis: [
+        { label: 'Ventas de hoy', value: '$48,320', note: '37 pedidos', c: '#4E5862', href: 'Admin-8-Reportes.dc.html', border: '1px solid #FFFFFF' },
+        { label: 'Por preparar', value: '12', note: '4 con más de 1 hora', c: '#8A5300', href: 'Admin-5-Pedidos.dc.html', border: '2px solid #8A5300' },
+        { label: 'Pagos rechazados', value: '3', note: 'Revisa la pasarela', c: '#B42318', href: 'Admin-5-Pedidos.dc.html', border: '2px solid #B42318' },
+        { label: 'Variantes agotadas', value: '18', note: 'En al menos 1 sucursal', c: '#4E5862', href: 'Admin-2-Productos.dc.html', border: '1px solid #FFFFFF' }
+      ],
+      alerts: [
+        { sev: 'ALTA', bg: '#FBE6E4', fg: '#B42318', title: 'Pedido 10477 en incidencia', sub: 'El cliente reporta producto dañado al recibir', href: 'Admin-6-Pedido.dc.html' },
+        { sev: 'ALTA', bg: '#FBE6E4', fg: '#B42318', title: 'Confirmación de pago duplicada', sub: 'Pedido 10479: llegaron 2 avisos de la pasarela; se procesó 1', href: 'Admin-6-Pedido.dc.html' },
+        { sev: 'MEDIA', bg: '#FBEFD6', fg: '#6B4100', title: 'Stock bajo: Rotomartillo SDS Plus', sub: 'Quedan 3 en Toluca Centro', href: 'Sucursal-1-Inventario.dc.html' },
+        { sev: 'BAJA', bg: '#E6EAEE', fg: '#3F4851', title: '6 productos en borrador', sub: 'Sin variante con precio y stock', href: 'Admin-2-Productos.dc.html' }
+      ],
+      days: V.map(([label, v], i) => ({ label, short: v.toFixed(1), h: (v / max * 100).toFixed(1) + '%', c: i === V.length - 1 ? '#C2410C' : '#4E5862' })),
+      chartAlt: V.map(([l, v]) => l + ' ' + v + ' mil').join(', ')
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+.star {
+  fill: var(--color-superficie);
+  stroke: var(--color-aviso);
+}
+
+.filled {
+  fill: var(--color-estrella);
+}
+
+.display {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.count {
+  margin-left: 4px;
+  font-size: 14px;
+  color: var(--color-texto-2);
+}
+
+.fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.inputs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tactil-min);
+  height: var(--tactil-min);
+  border-radius: var(--radio-control);
+  cursor: pointer;
+}
+
+/* El radio está oculto: el foco se pinta en la estrella */
+.option:has(input:focus-visible) {
+  outline: 3px solid var(--color-naranja-claro);
+  outline-offset: 2px;
+}
+
+.word {
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+.error {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-error);
+}

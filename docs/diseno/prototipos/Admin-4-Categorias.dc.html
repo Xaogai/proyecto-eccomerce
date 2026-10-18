@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración, categorías</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700">[MARCA]<span style="color: #F26B2A">.</span> <span style="font-size: 18px; font-weight: 600; color: #C9D0D6; text-transform: uppercase; letter-spacing: .06em">Administración</span></span>
+      <span style="flex: 1"></span>
+      <span style="color: #C9D0D6">Luis Ramírez · Administrador</span>
+    </div>
+  </header>
+  <div style="padding: 20px 24px 40px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+    <nav aria-label="Administración" style="flex: 1 1 200px; background: #FFFFFF; border-radius: 6px; padding: 8px; display: flex; flex-direction: column">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="7">
+        <a href="{{n.href}}" aria-current="{{n.cur}}" style="min-height: 44px; padding: 0 12px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.w}}">{{n.label}}</a>
+      </sc-for>
+    </nav>
+    <main style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+        <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1; text-transform: uppercase">Categorías</h1>
+        <button type="button" style="min-height: 46px; padding: 0 18px; border: 0; border-radius: 4px; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600">Nuevo departamento</button>
+      </div>
+      <p style="margin: 0; color: #4E5862">Hasta 3 niveles: departamento, categoría y subcategoría.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <section aria-label="Árbol de categorías" style="flex: 1 1 360px; background: #FFFFFF; border-radius: 6px; padding: 8px 0">
+          <ul role="tree" style="list-style: none; margin: 0; padding: 0">
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+              <li role="treeitem" aria-level="{{r.level}}" aria-expanded="{{r.exp}}" aria-selected="{{r.sel}}" style="display: flex; align-items: center; gap: 6px; min-height: 46px; padding: 0 12px 0 {{r.pad}}; background: {{r.bg}}; border-bottom: 1px solid #F0F2F4">
+                <sc-if value="{{r.hasKids}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{r.toggle}}" aria-label="{{r.tLabel}}" style="width: 32px; height: 32px; border: 0; background: transparent; font: inherit; font-size: 16px">{{r.icon}}</button></sc-if>
+                <sc-if value="{{r.leaf}}" hint-placeholder-val="{{ false }}"><span style="width: 32px"></span></sc-if>
+                <button type="button" onClick="{{r.pick}}" style="flex: 1; min-height: 40px; border: 0; background: transparent; font: inherit; text-align: left; font-weight: {{r.w}}">{{r.name}}</button>
+                <span style="font-size: 13px; color: #4E5862; font-variant-numeric: tabular-nums">{{r.count}}</span>
+              </li>
+            </sc-for>
+          </ul>
+        </section>
+        <section aria-labelledby="det" style="flex: 1 1 320px; background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+          <h2 id="det" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase">{{selName}}</h2>
+          <span style="color: #4E5862">Nivel {{selLevel}} de 3 · {{selPath}}</span>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Nombre<input type="text" value="{{selName}}" style="height: 44px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 10px; font: inherit; font-weight: 400"></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Dirección web (slug)<input type="text" value="{{selSlug}}" style="height: 44px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 10px; font: inherit; font-weight: 400"></label>
+          <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-weight: 600">Atributos para filtros</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="padding: 4px 10px; border-radius: 4px; background: #EDEFF1">Marca</span><span style="padding: 4px 10px; border-radius: 4px; background: #EDEFF1">Alimentación</span><span style="padding: 4px 10px; border-radius: 4px; background: #EDEFF1">Mandril</span><span style="padding: 4px 10px; border-radius: 4px; background: #EDEFF1">Potencia</span><button type="button" style="min-height: 32px; padding: 0 10px; border: 1px dashed #4E5862; border-radius: 4px; background: #FFFFFF; font: inherit">+ Atributo</button></div></div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <button type="button" style="min-height: 44px; padding: 0 16px; border: 0; border-radius: 4px; background: #15181B; color: #FFFFFF; font: inherit; font-weight: 600">Guardar</button>
+            <button type="button" disabled="{{atMax}}" style="min-height: 44px; padding: 0 16px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit; color: {{subColor}}">Agregar subcategoría</button>
+          </div>
+          <sc-if value="{{atMax}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: #4E5862">Esta es una subcategoría: no admite más niveles.</span></sc-if>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: { h: true, he: true }, sel: 'he-t' }; }
+  renderVals() {
+    const N = [['Resumen', 'Admin-1-Resumen.dc.html'], ['Productos', 'Admin-2-Productos.dc.html'], ['Categorías', 'Admin-4-Categorias.dc.html'], ['Pedidos', 'Admin-5-Pedidos.dc.html'], ['Usuarios y roles', 'Admin-7-Usuarios.dc.html'], ['Reportes', 'Admin-8-Reportes.dc.html'], ['Configuración', 'Admin-9-Configuracion.dc.html']];
+    const T = [
+      { id: 'h', name: 'Herramientas', slug: 'herramientas', n: 412, kids: [
+        { id: 'he', name: 'Herramientas eléctricas', slug: 'herramientas-electricas', n: 186, kids: [
+          { id: 'he-t', name: 'Taladros', slug: 'taladros', n: 48 }, { id: 'he-r', name: 'Rotomartillos', slug: 'rotomartillos', n: 22 }, { id: 'he-s', name: 'Sierras', slug: 'sierras', n: 31 } ] },
+        { id: 'hm', name: 'Herramientas manuales', slug: 'herramientas-manuales', n: 158, kids: [ { id: 'hm-m', name: 'Martillos', slug: 'martillos', n: 19 } ] } ] },
+      { id: 'c', name: 'Construcción', slug: 'construccion', n: 240, kids: [ { id: 'cc', name: 'Cemento y morteros', slug: 'cemento-y-morteros', n: 36, kids: [] } ] },
+      { id: 'p', name: 'Pintura', slug: 'pintura', n: 198, kids: [] }
+    ];
+    const s = this.state, rows = [];
+    let sel = null;
+    const walk = (list, level, path) => list.forEach(c => {
+      const kids = c.kids || [];
+      const isOpen = !!s.open[c.id];
+      if (c.id === s.sel) sel = { ...c, level, path: path.concat(c.name).join(' › ') };
+      rows.push({
+        name: c.name, level, count: c.n + ' productos', pad: (12 + (level - 1) * 24) + 'px',
+        hasKids: kids.length > 0, leaf: kids.length === 0, exp: kids.length ? (isOpen ? 'true' : 'false') : 'false',
+        icon: isOpen ? '▾' : '▸', tLabel: (isOpen ? 'Contraer ' : 'Expandir ') + c.name,
+        sel: c.id === s.sel ? 'true' : 'false', bg: c.id === s.sel ? '#FFF4EC' : '#FFFFFF', w: c.id === s.sel ? '600' : '400',
+        toggle: () => this.setState({ open: { ...this.state.open, [c.id]: !this.state.open[c.id] } }),
+        pick: () => this.setState({ sel: c.id })
+      });
+      if (isOpen) walk(kids, level + 1, path.concat(c.name));
+    });
+    walk(T, 1, []);
+    sel = sel || { name: 'Taladros', slug: 'taladros', level: 3, path: '' };
+    return {
+      nav: N.map(([label, href], i) => ({ label, href, cur: i === 2 ? 'page' : 'false', bg: i === 2 ? '#15181B' : '#FFFFFF', fg: i === 2 ? '#FFFFFF' : '#15181B', w: i === 2 ? '600' : '400' })),
+      rows, selName: sel.name, selSlug: sel.slug, selLevel: sel.level, selPath: sel.path,
+      atMax: sel.level >= 3, subColor: sel.level >= 3 ? '#8E979F' : '#15181B'
+    };
+  }
+}
+</script>
+</body>
+</html>

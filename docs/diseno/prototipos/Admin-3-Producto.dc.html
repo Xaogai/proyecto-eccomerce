@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración, editar producto</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1500px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700">[MARCA]<span style="color: #F26B2A">.</span> <span style="font-size: 18px; font-weight: 600; color: #C9D0D6; text-transform: uppercase; letter-spacing: .06em">Administración</span></span>
+      <span style="flex: 1"></span>
+      <span style="color: #C9D0D6">Luis Ramírez · Administrador</span>
+    </div>
+  </header>
+  <div style="padding: 20px 24px 40px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+    <nav aria-label="Administración" style="flex: 1 1 200px; background: #FFFFFF; border-radius: 6px; padding: 8px; display: flex; flex-direction: column">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="7">
+        <a href="{{n.href}}" aria-current="{{n.cur}}" style="min-height: 44px; padding: 0 12px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.w}}">{{n.label}}</a>
+      </sc-for>
+    </nav>
+    <main style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+      <a href="Admin-2-Productos.dc.html" style="font-size: 14px; color: #4E5862; min-height: 32px; display: flex; align-items: center">‹ Productos</a>
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 12px"><h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 40px; line-height: 1; text-transform: uppercase">Taladro magnético 1,100 W</h1><span style="font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 4px; background: {{stBg}}; color: {{stFg}}">{{stLabel}}</span></div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" style="min-height: 46px; padding: 0 16px; border: 1px solid #15181B; border-radius: 4px; background: #FFFFFF; font: inherit; font-weight: 600">Guardar borrador</button>
+          <button type="button" onClick="{{publish}}" style="min-height: 46px; padding: 0 18px; border: 0; border-radius: 4px; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600">Publicar</button>
+        </div>
+      </div>
+      <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background: #FBE6E4; color: #B42318; border-radius: 6px; padding: 12px 16px; font-weight: 600">No puedes publicar: agrega al menos una variante con precio y stock mayor a cero.</div>
+      </sc-if>
+      <sc-if value="{{isPub}}" hint-placeholder-val="{{ false }}">
+        <div role="status" style="background: #E2F1E8; color: #1E7A46; border-radius: 6px; padding: 12px 16px; font-weight: 600">Publicado. El producto aparece en el catálogo en menos de 1 minuto.</div>
+      </sc-if>
+
+      <section aria-labelledby="g" style="background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <h2 id="g" style="margin: 0; grid-column: 1 / -1; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase">Información general</h2>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600; grid-column: 1 / -1">Nombre del producto *<input type="text" value="Taladro magnético 1,100 W" style="height: 46px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Marca *<input type="text" value="Brava" style="height: 46px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Categoría *<select style="height: 46px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 8px; font: inherit; font-weight: 400; background: #FFFFFF"><option>Herramientas › Eléctricas › Taladros</option><option>Herramientas › Eléctricas › Rotomartillos</option></select></label>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600; grid-column: 1 / -1">Descripción<textarea rows="3" style="border: 1px solid #B9C1C8; border-radius: 4px; padding: 10px 12px; font: inherit; font-weight: 400">Base magnética para perforar acero estructural hasta 1 1/4 pulg.</textarea></label>
+      </section>
+
+      <section aria-labelledby="at" style="background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+        <h2 id="at" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase">Atributos de la categoría Taladros</h2>
+        <p style="margin: 0; color: #4E5862">Se usan como filtros en el catálogo.</p>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Potencia (W)<input type="text" value="1100" style="height: 46px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Mandril<select style="height: 46px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 8px; font: inherit; font-weight: 400; background: #FFFFFF"><option>3/4 pulg Weldon</option><option>1/2 pulg</option></select></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Alimentación<select style="height: 46px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 8px; font: inherit; font-weight: 400; background: #FFFFFF"><option>Eléctrico 127 V</option><option>Inalámbrico 20 V</option></select></label>
+        </div>
+      </section>
+
+      <section aria-labelledby="im" style="background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+        <h2 id="im" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase">Imágenes</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch">
+          <div style="width: 120px; height: 120px; background: #F5F6F7; border-radius: 4px; display: flex; flex-direction: column; justify-content: flex-end; padding: 6px; box-sizing: border-box"><label style="font-size: 12px; display: flex; flex-direction: column; gap: 2px">Texto alternativo<input type="text" value="Taladro magnético vista lateral" style="height: 28px; border: 1px solid #B9C1C8; border-radius: 3px; font: inherit; font-size: 12px; padding: 0 4px; min-width: 0"></label></div>
+          <label style="width: 240px; min-height: 120px; border: 2px dashed #B9C1C8; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 10px; box-sizing: border-box; cursor: pointer"><span style="font-weight: 600">Subir imágenes o fotos 360°</span><span style="font-size: 13px; color: #4E5862">JPG o PNG, hasta 5 MB. El texto alternativo es obligatorio.</span><input type="file" accept="image/*" multiple style="font-size: 13px; max-width: 100%"></label>
+        </div>
+      </section>
+
+      <section aria-labelledby="vr" style="background: #FFFFFF; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px"><h2 id="vr" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase">Variantes (SKU)</h2><button type="button" onClick="{{addVar}}" style="min-height: 42px; padding: 0 14px; border: 1px solid #15181B; border-radius: 4px; background: #FFFFFF; font: inherit; font-weight: 600">Agregar variante</button></div>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; min-width: 640px; border-collapse: collapse">
+            <thead><tr style="text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #4E5862"><th scope="col" style="padding: 8px">SKU</th><th scope="col" style="padding: 8px">Versión</th><th scope="col" style="padding: 8px">Precio (MXN)</th><th scope="col" style="padding: 8px">Stock inicial</th><th scope="col" style="padding: 8px"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Quitar</span></th></tr></thead>
+            <tbody>
+              <sc-for list="{{vars}}" as="v" hint-placeholder-count="1">
+                <tr style="border-top: 1px solid #E3E7EA">
+                  <td style="padding: 8px; font-variant-numeric: tabular-nums">{{v.sku}}</td>
+                  <td style="padding: 8px"><input type="text" value="{{v.attr}}" aria-label="Versión de {{v.sku}}" style="height: 42px; width: 100%; box-sizing: border-box; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 10px; font: inherit"></td>
+                  <td style="padding: 8px"><input type="text" inputmode="decimal" value="{{v.price}}" onInput="{{v.setPrice}}" aria-label="Precio de {{v.sku}}" aria-invalid="{{v.pInv}}" placeholder="0.00" style="height: 42px; width: 100%; box-sizing: border-box; border: {{v.pBorder}}; border-radius: 4px; padding: 0 10px; font: inherit"></td>
+                  <td style="padding: 8px"><input type="text" inputmode="numeric" value="{{v.stock}}" onInput="{{v.setStock}}" aria-label="Stock inicial de {{v.sku}}" aria-invalid="{{v.sInv}}" placeholder="0" style="height: 42px; width: 100%; box-sizing: border-box; border: {{v.sBorder}}; border-radius: 4px; padding: 0 10px; font: inherit"></td>
+                  <td style="padding: 8px"><button type="button" onClick="{{v.remove}}" aria-label="Quitar variante {{v.sku}}" style="min-height: 42px; padding: 0 10px; border: 0; background: transparent; font: inherit; color: #B42318; text-decoration: underline">Quitar</button></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 0; font-size: 14px; color: #4E5862">El stock por sucursal se ajusta después en <a href="Sucursal-1-Inventario.dc.html">Inventario</a>. Los precios cambian para pedidos nuevos; los pedidos existentes conservan su precio.</p>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tried: false, pub: false, n: 1, vars: [{ id: 0, sku: 'SKU 300301-0', attr: 'Con estuche', price: '', stock: '' }] }; }
+  renderVals() {
+    const N = [['Resumen', 'Admin-1-Resumen.dc.html'], ['Productos', 'Admin-2-Productos.dc.html'], ['Categorías', 'Admin-4-Categorias.dc.html'], ['Pedidos', 'Admin-5-Pedidos.dc.html'], ['Usuarios y roles', 'Admin-7-Usuarios.dc.html'], ['Reportes', 'Admin-8-Reportes.dc.html'], ['Configuración', 'Admin-9-Configuracion.dc.html']];
+    const s = this.state;
+    const pos = v => { const n = Number(String(v).replace(/[$,]/g, '')); return v !== '' && isFinite(n) && n > 0; };
+    const ok = s.vars.some(v => pos(v.price) && pos(v.stock));
+    const upd = (id, k, val) => this.setState({ pub: false, vars: this.state.vars.map(x => x.id === id ? { ...x, [k]: val } : x) });
+    const showErr = s.tried && !ok;
+    return {
+      nav: N.map(([label, href], i) => ({ label, href, cur: i === 1 ? 'page' : 'false', bg: i === 1 ? '#15181B' : '#FFFFFF', fg: i === 1 ? '#FFFFFF' : '#15181B', w: i === 1 ? '600' : '400' })),
+      hasErr: showErr, isPub: s.pub,
+      stLabel: s.pub ? 'Publicado' : 'Borrador', stBg: s.pub ? '#E2F1E8' : '#E6EAEE', stFg: s.pub ? '#1E7A46' : '#3F4851',
+      publish: () => this.setState({ tried: true, pub: ok }),
+      addVar: () => this.setState({ n: s.n + 1, vars: [...s.vars, { id: s.n, sku: 'SKU 300301-' + s.n, attr: '', price: '', stock: '' }] }),
+      vars: s.vars.map(v => {
+        const pBad = showErr && !pos(v.price), sBad = showErr && !pos(v.stock);
+        return { ...v, pInv: pBad ? 'true' : 'false', sInv: sBad ? 'true' : 'false',
+          pBorder: pBad ? '2px solid #B42318' : '1px solid #B9C1C8', sBorder: sBad ? '2px solid #B42318' : '1px solid #B9C1C8',
+          setPrice: e => upd(v.id, 'price', e.target.value), setStock: e => upd(v.id, 'stock', e.target.value),
+          remove: () => this.setState({ vars: this.state.vars.filter(x => x.id !== v.id) }) };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
