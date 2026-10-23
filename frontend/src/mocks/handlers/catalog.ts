@@ -1,6 +1,6 @@
 // EP-01 a EP-05
 import { http, HttpResponse } from 'msw'
-import { listProducts, parseQuery, reviewsFor, suggest, toDetail } from '../db/catalog'
+import { listProducts, parseQuery, reviewsFor, stockFor, suggest, toDetail, toSummary } from '../db/catalog'
 import { db, findProduct } from '../db/store'
 import { applyScenario, getScenario } from '../scenarios'
 import { API, businessError, requireUser, validationError } from './utils'
@@ -27,6 +27,57 @@ export const catalogHandlers = [
       })
     }
     return HttpResponse.json(listProducts(query))
+  }),
+
+  // EP-07: hasta 4 productos; filas con la unión de especificaciones y si sus valores difieren.
+  // Va antes de /products/:sku para que "compare" no se tome como SKU.
+  http.get(`${API}/products/compare`, async ({ request }) => {
+    const hijack = await applyScenario()
+    if (hijack) return hijack
+    const url = new URL(request.url)
+    const skus = (url.searchParams.get('skus') ?? '').split(',').filter(Boolean)
+    if (skus.length < 1 || skus.length > 4) return validationError({ skus: 'Compara de 1 a 4 productos.' })
+    const products = skus.map((sku) => findProduct(sku)).filter((p) => p !== null)
+    const storeId = url.searchParams.get('store_id')
+    const keys: string[] = []
+    for (const p of products) for (const s of p.specs) if (!keys.includes(s.k)) keys.push(s.k)
+    const row = (key: string, label: string, values: string[]) => ({
+      key,
+      label,
+      values,
+      differs: new Set(values).size > 1,
+    })
+    const rows = [
+      row(
+        'brand',
+        'Marca',
+        products.map((p) => p.brand),
+      ),
+      ...keys
+        .filter((k) => k !== 'Marca')
+        .map((k) =>
+          row(
+            k,
+            k,
+            products.map((p) => p.specs.find((s) => s.k === k)?.v ?? '—'),
+          ),
+        ),
+      row(
+        'rating',
+        'Calificación',
+        products.map((p) => (p.rating.count ? `${p.rating.avg.toFixed(1)} de 5` : 'Sin reseñas')),
+      ),
+      ...(storeId
+        ? [
+            row(
+              'today',
+              'Recoger hoy',
+              products.map((p) => (stockFor(p.variants, storeId).qty > 0 ? 'Sí' : 'No')),
+            ),
+          ]
+        : []),
+    ]
+    return HttpResponse.json({ products: products.map((p) => toSummary(p, storeId)), rows })
   }),
 
   http.get(`${API}/products/:sku`, async ({ params, request }) => {

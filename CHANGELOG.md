@@ -8,6 +8,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Frontend, fase 4 (herramientas), cada una con su bandera de funcionalidad:
+  - Comparador de hasta 4 productos: casilla "Comparar" en el listado, barra con los elegidos y tabla accesible con "Mostrar solo diferencias".
+  - Vista 360° en la ficha: giro con barra, botones, arrastre o teclado, con el ángulo anunciado y zoom.
+  - Calculadora de materiales: pintura, piso y azulejo, y taquetes y tornillos, con errores accesibles y pintura sugerida al carrito.
+  - Localizador de sucursales: búsqueda por CP o ciudad, distancia, stock de un producto o del carrito, elegir mi sucursal y cómo llegar; el mapa es solo apoyo visual.
+  - Pruebas: 17 de componentes y 14 end-to-end con revisión de accesibilidad.
 - Frontend, fase 3 (cuenta del cliente):
   - Iniciar sesión con aviso de intentos restantes, cuenta bloqueada, "Mantener mi sesión" y regreso a la página de origen; cada rol entra a su panel.
   - Crear cuenta con aviso de privacidad obligatorio y restablecer contraseña.

@@ -11,6 +11,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { plural } from '@/lib/format'
 import { useProducts } from '../api'
 import { activeFilters, PAGE_SIZE, readListing, SORT_OPTIONS, toApiParams, writeListing } from '../query'
+import { CompareBar } from '@/features/compare/CompareBar'
 import { ActiveFilters, Filters } from './Filters'
 import { ProductGrid } from './ProductGrid'
 import styles from './ProductListing.module.css'
@@ -162,6 +163,7 @@ export function ProductListing({ category, renderEmpty, onTotal }: ProductListin
           <ProductGrid products={data?.items} loading={query.isFetching || query.isPending} />
         )}
 
+        <CompareBar />
         {data && !empty && desktop && (
           <Pagination page={data.page} totalPages={Math.ceil(data.total / data.page_size)} />
         )}

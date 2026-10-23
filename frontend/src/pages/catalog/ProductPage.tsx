@@ -15,6 +15,7 @@ import { useProduct } from '@/features/catalog/api'
 import { type Delivery, DeliveryOptions } from '@/features/catalog/components/product/DeliveryOptions'
 import { ImageGallery } from '@/features/catalog/components/product/ImageGallery'
 import { ReviewsSection } from '@/features/catalog/components/product/ReviewsSection'
+import { View360 } from '@/features/catalog/components/product/View360'
 import { VariantSelector } from '@/features/catalog/components/product/VariantSelector'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -30,6 +31,8 @@ export function ProductPage() {
   const desktop = useMediaQuery('menu')
   const reviewsOn = useFeatureFlag('rev')
   const calcOn = useFeatureFlag('calc')
+  const v360On = useFeatureFlag('v360')
+  const [open360, setOpen360] = useState(false)
   const addToCart = useAddToCart()
   const wishlist = useToggleWishlist()
   const specsId = useId()
@@ -88,7 +91,20 @@ export function ProductPage() {
       <Breadcrumbs items={[{ label: 'Inicio', to: '/' }, ...crumbs, { label: data.name }]} />
 
       <div className={styles.top}>
-        <ImageGallery images={data.images} name={data.name} />
+        <ImageGallery
+          images={data.images}
+          name={data.name}
+          onOpen360={v360On && data.images_360?.length ? () => setOpen360(true) : undefined}
+        />
+        {v360On && data.images_360?.length ? (
+          <View360
+            open={open360}
+            onClose={() => setOpen360(false)}
+            name={data.name}
+            frames={data.images_360}
+            images={data.images}
+          />
+        ) : null}
 
         <section aria-labelledby={`${specsId}-nombre`} className={styles.info}>
           <div className={styles.heading}>

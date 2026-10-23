@@ -52,9 +52,9 @@ const shopRoutes: RouteObject[] = [
     ),
     children: [{ index: true, lazy: page(() => import('@/pages/account/ReviewPage'), 'ReviewPage') }],
   },
-  { path: 'comparar', element: todo('Comparar productos', '17, 24', 4) },
-  { path: 'calculadora/:tipo?', element: todo('Calculadora de materiales', '19, 26', 4) },
-  { path: 'sucursales', element: todo('Sucursales', '20, 27', 4) },
+  { path: 'comparar', lazy: page(() => import('@/pages/tools/ComparePage'), 'ComparePage') },
+  { path: 'calculadora/:tipo?', lazy: page(() => import('@/pages/tools/CalculatorPage'), 'CalculatorPage') },
+  { path: 'sucursales', lazy: page(() => import('@/pages/tools/StoresPage'), 'StoresPage') },
   { path: 'carrito', element: <CartPage /> },
   { path: 'ayuda/:tema', element: <HelpPage /> },
   {

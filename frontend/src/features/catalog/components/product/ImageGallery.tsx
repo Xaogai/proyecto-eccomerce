@@ -3,8 +3,19 @@ import type { Image } from '@/api/schemas/common'
 import { Dialog } from '@/components/ui/Dialog'
 import styles from './product.module.css'
 
-/** Imagen principal, miniaturas (botones con aria-pressed) y "Ampliar imagen" en un diálogo. */
-export function ImageGallery({ images, name }: { images: Image[]; name: string }) {
+/**
+ * Imagen principal, miniaturas (botones con aria-pressed) y "Ampliar imagen" en un diálogo.
+ * Con `onOpen360` aparece el botón "Vista 360°" (flag v360).
+ */
+export function ImageGallery({
+  images,
+  name,
+  onOpen360,
+}: {
+  images: Image[]
+  name: string
+  onOpen360?: () => void
+}) {
   const [current, setCurrent] = useState(0)
   const [zoom, setZoom] = useState(false)
   const image = images[current] ?? images[0]
@@ -30,6 +41,11 @@ export function ImageGallery({ images, name }: { images: Image[]; name: string }
           </svg>
           Ampliar imagen
         </button>
+        {onOpen360 && (
+          <button type="button" className={styles.view360Btn} onClick={onOpen360} aria-haspopup="dialog">
+            Vista 360°
+          </button>
+        )}
       </div>
       {images.length > 1 && (
         <div className={styles.thumbs}>

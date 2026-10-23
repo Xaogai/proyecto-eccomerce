@@ -44,6 +44,7 @@ export interface DbStore {
   phone: string
   lat: number
   lng: number
+  services: string[]
 }
 
 export interface DbUser {
@@ -120,6 +121,7 @@ export const stores: DbStore[] = [
     zip: '50000',
     hours: 'Lun a sáb 7:00–21:00 · Dom 8:00–18:00',
     phone: '722 000 0001',
+    services: ['recoger en tienda', 'renta de herramienta', 'corte de madera'],
     lat: 19.2925,
     lng: -99.6569,
   },
@@ -130,6 +132,7 @@ export const stores: DbStore[] = [
     zip: '52140',
     hours: 'Lun a sáb 7:00–21:00 · Dom 8:00–18:00',
     phone: '722 000 0002',
+    services: ['recoger en tienda', 'corte de madera', 'igualación de pintura'],
     lat: 19.2565,
     lng: -99.6047,
   },
@@ -140,6 +143,7 @@ export const stores: DbStore[] = [
     zip: '52000',
     hours: 'Lun a sáb 8:00–20:00 · Dom 9:00–17:00',
     phone: '728 000 0003',
+    services: ['recoger en tienda'],
     lat: 19.2847,
     lng: -99.5114,
   },
@@ -150,6 +154,7 @@ export const stores: DbStore[] = [
     zip: '51350',
     hours: 'Lun a sáb 8:00–20:00 · Dom 9:00–17:00',
     phone: '722 000 0004',
+    services: ['recoger en tienda', 'igualación de pintura'],
     lat: 19.2836,
     lng: -99.7339,
   },

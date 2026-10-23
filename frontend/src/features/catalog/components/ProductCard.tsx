@@ -4,6 +4,7 @@ import { StockLabel } from '@/components/ui/Badge'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Price } from '@/components/ui/Price'
 import { useAddToCart } from '@/features/cart/api'
+import { CompareToggle } from '@/features/compare/CompareToggle'
 import { plural } from '@/lib/format'
 import styles from './ProductCard.module.css'
 
@@ -77,6 +78,7 @@ export function ProductCard({ product, variant = 'completa' }: ProductCardProps)
         <Price amount={product.price} />
         <StockLabel status={product.stock.status}>{product.stock.label}</StockLabel>
         <div className={styles.action}>{action}</div>
+        {variant === 'completa' && <CompareToggle sku={product.sku} name={product.name} />}
       </div>
     </article>
   )

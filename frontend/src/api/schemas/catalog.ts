@@ -100,3 +100,12 @@ export const searchSuggestSchema = z.object({
   categories: z.array(z.object({ slug: z.string(), name: z.string() })),
 })
 export type SearchSuggest = z.infer<typeof searchSuggestSchema>
+
+// EP-07
+export const compareSchema = z.object({
+  products: z.array(productSummarySchema),
+  rows: z.array(
+    z.object({ key: z.string(), label: z.string(), values: z.array(z.string()), differs: z.boolean() }),
+  ),
+})
+export type Comparison = z.infer<typeof compareSchema>
