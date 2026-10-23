@@ -8,6 +8,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Frontend, fase 5 (administración), solo para el rol admin y cargada bajo demanda:
+  - Resumen: indicadores del día con enlace a su lista, alertas por prioridad y gráfica de ventas de 7 días con resumen para lectores de pantalla y vista de tabla.
+  - Productos: búsqueda, categoría y estado en la URL, con conteos por estado.
+  - Editar producto: información, atributos, variantes con precio y stock, e imágenes con texto alternativo obligatorio; no se publica sin una variante con precio y stock (I2).
+  - Categorías: árbol de hasta 3 niveles para agregar, renombrar y eliminar solo si está vacía.
+  - Pedidos: filtros por estado, sucursal y fecha; detalle con cambio de estado solo a los permitidos (I3), confirmación para cancelar o reembolsar, avisos de la pasarela y registro de cambios.
+  - Usuarios y roles: cambiar rol y sucursal (no el propio) y desbloquear cuentas.
+  - Reportes: indicadores por periodo, ventas por departamento, inventario por sucursal y exportar CSV.
+  - Configuración: funciones activas, pasarela con la llave enmascarada (I6), envío gratis y seguridad.
+  - Pruebas: 9 de componentes y 9 end-to-end con revisión de accesibilidad en escritorio y móvil.
 - Frontend, fase 4 (herramientas), cada una con su bandera de funcionalidad:
   - Comparador de hasta 4 productos: casilla "Comparar" en el listado, barra con los elegidos y tabla accesible con "Mostrar solo diferencias".
   - Vista 360° en la ficha: giro con barra, botones, arrastre o teclado, con el ángulo anunciado y zoom.

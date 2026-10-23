@@ -31,6 +31,8 @@ export interface DbProduct {
   rating: { avg: number; count: number }
   variants: DbVariant[]
   has360: boolean
+  /** Imágenes subidas desde el admin (si no hay, se usa la ilustración de ejemplo) */
+  images?: Array<{ url: string; alt: string }>
   status: 'publicado' | 'borrador'
   created_at: string
 }
@@ -84,6 +86,10 @@ export interface DbOrder {
   timeline: Array<{ status: OrderStatus; at: string }>
   pickup_code?: string
   returns?: Array<{ id: string; folio: string; status: string; created_at: string; item_ids: string[] }>
+  /** Registro de cambios de estado (admin, EP-42) */
+  audit?: Array<{ at: string; from: OrderStatus | null; to: OrderStatus; actor: string; note?: string }>
+  /** Avisos de la pasarela recibidos (admin, EP-42) */
+  webhooks?: Array<{ at: string; event: string; result: string }>
   /** Pago simulado: la "pasarela" confirma (webhook) unos segundos después de pagar */
   payment?: { outcome: 'pagado' | 'rechazado'; confirms_at: number }
 }
@@ -353,6 +359,29 @@ const prototypeProducts: DbProduct[] = [
     has360: false,
     status: 'publicado',
     created_at: iso('2026-03-30'),
+  },
+  // Borrador del prototipo Admin-3: su variante no tiene precio ni stock, así que no se puede publicar (I2).
+  {
+    sku: '400118',
+    name: 'Taladro magnético 1,100 W',
+    brand: 'Brava',
+    description: 'Base magnética para perforar acero estructural hasta 1 1/4 pulg.',
+    category: 'taladros',
+    attrs: { potencia: '1100', mandril: '3/4 pulg Weldon', alimentacion: 'Eléctrico 127 V' },
+    specs: [{ k: 'Potencia', v: '1,100 W' }],
+    rating: { avg: 0, count: 0 },
+    variants: [
+      {
+        sku: '400118-0',
+        label: 'Única',
+        price: 0,
+        stock: { 'toluca-centro': 0, metepec: 0, lerma: 0, zinacantepec: 0 },
+        ship: true,
+      },
+    ],
+    has360: false,
+    status: 'borrador',
+    created_at: iso('2026-10-15'),
   },
 ]
 
@@ -833,3 +862,153 @@ export const addresses: DbAddress[] = [
     is_default: false,
   },
 ]
+
+// ---------- Volumen para el panel de administración ----------
+// Pedidos de los últimos 30 días (relativos a la fecha de arranque) y más clientes,
+// para que Resumen, Pedidos, Reportes y Usuarios tengan datos realistas.
+
+const FIRST = [
+  'Jorge',
+  'Rosa',
+  'Carlos',
+  'Martha',
+  'Luis',
+  'Diana',
+  'Pedro',
+  'Elena',
+  'Raúl',
+  'Sara',
+  'Iván',
+  'Lucía',
+]
+const LAST = [
+  'Méndez',
+  'Pérez',
+  'Vázquez',
+  'García',
+  'Hernández',
+  'Sánchez',
+  'Aguilar',
+  'Ruiz',
+  'Torres',
+  'Flores',
+]
+
+function generateAdminData() {
+  faker.seed(4821)
+  const now = Date.now()
+  const published = products.filter((p) => p.status === 'publicado')
+  const extraUsers: DbUser[] = Array.from({ length: 18 }, (_, i) => {
+    const name = `${FIRST[i % FIRST.length]} ${LAST[(i * 3) % LAST.length]}`
+    return {
+      id: `u-gen-${i}`,
+      name,
+      email: `${name.split(' ')[0].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}.${i}@ejemplo.com`,
+      password: MOCK_PASSWORD,
+      role: 'cliente',
+      branch_id: null,
+      locked: i === 7,
+      failed_attempts: i === 7 ? 5 : 0,
+      last_login: new Date(now - faker.number.int({ min: 1, max: 40 }) * 86_400_000).toISOString(),
+    }
+  })
+
+  const flows: OrderStatus[][] = [
+    ['creado', 'pendiente_pago'],
+    ['creado', 'pendiente_pago', 'pagado'],
+    ['creado', 'pendiente_pago', 'pagado', 'en_preparacion'],
+    ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'listo_para_recoger'],
+    ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'enviado'],
+    ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'enviado', 'entregado'],
+    ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'listo_para_recoger', 'entregado'],
+    ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'enviado', 'incidencia'],
+    ['creado', 'pendiente_pago', 'cancelado'],
+  ]
+  const extraOrders: DbOrder[] = Array.from({ length: 60 }, (_, i) => {
+    const user = extraUsers[i % extraUsers.length]
+    // Los primeros 14 son de hoy; el resto se reparte en 30 días.
+    const ageMs =
+      i < 14
+        ? faker.number.int({ min: 5, max: 600 }) * 60_000
+        : // Los siguientes 21 caen en la última semana (3 por día) para que la gráfica del Resumen tenga datos.
+          (i < 35 ? Math.floor((i - 14) / 3) + 1 : faker.number.int({ min: 7, max: 30 })) * 86_400_000 -
+          faker.number.int({ min: 0, max: 600 }) * 60_000
+    const start = new Date(now - ageMs).toISOString()
+    const recent = i < 14
+    const flow = recent
+      ? faker.helpers.arrayElement(flows.slice(0, 5))
+      : faker.helpers.weightedArrayElement([
+          { weight: 6, value: flows[5] },
+          { weight: 6, value: flows[6] },
+          { weight: 1, value: flows[7] },
+          { weight: 1, value: flows[8] },
+        ])
+    const pickup = faker.datatype.boolean(0.6)
+    const items = faker.helpers.arrayElements(published, { min: 1, max: 3 }).map((p, n) => {
+      const v = p.variants[0]
+      return {
+        id: `i${n + 1}`,
+        sku: v.sku,
+        name: p.name,
+        variant_label: v.label,
+        unit_price: v.price,
+        qty: faker.number.int({ min: 1, max: 3 }),
+      }
+    })
+    const zip = faker.helpers.arrayElement(['50000', '50120', '52140', '52000'])
+    const status = flow[flow.length - 1]
+    const paid = flow.includes('pagado')
+    return {
+      id: String(10380 + i),
+      folio: String(10380 + i),
+      user_id: user.id,
+      guest_token: null,
+      status,
+      payment_status: paid
+        ? 'pagado'
+        : status === 'cancelado'
+          ? 'pendiente'
+          : faker.helpers.arrayElement(['pendiente', 'pendiente', 'rechazado'] as const),
+      created_at: start,
+      contact: { name: user.name, email: user.email, phone: '722 000 0009' },
+      items,
+      shipping: pickup ? 0 : 14900,
+      fulfillment: pickup
+        ? { type: 'pickup', store_id: faker.helpers.arrayElement(['toluca-centro', 'metepec', 'lerma']) }
+        : {
+            type: 'ship',
+            address_label: `${faker.location.street()} ${faker.number.int({ min: 1, max: 400 })}, CP ${zip}`,
+            tracking: flow.includes('enviado') ? `MX${faker.string.numeric(9)}` : undefined,
+          },
+      timeline: flow.map((st, n) => ({
+        status: st,
+        at: new Date(new Date(start).getTime() + n * 25 * 60_000).toISOString(),
+      })),
+      pickup_code: pickup ? faker.string.numeric(4) : undefined,
+      webhooks: paid
+        ? [
+            {
+              at: new Date(new Date(start).getTime() + 60_000).toISOString(),
+              event: 'Pago aprobado',
+              result: 'Procesado',
+            },
+            // Uno con aviso repetido de la pasarela (idempotencia, prototipo Admin-6)
+            ...(i === 2
+              ? [
+                  {
+                    at: new Date(new Date(start).getTime() + 67_000).toISOString(),
+                    event: 'Pago aprobado (repetido)',
+                    result: 'Ignorado: ya procesado',
+                  },
+                ]
+              : []),
+          ]
+        : undefined,
+    }
+  })
+  return { extraUsers, extraOrders }
+}
+
+const generated = generateAdminData()
+users.push(...generated.extraUsers)
+orders.push(...generated.extraOrders)

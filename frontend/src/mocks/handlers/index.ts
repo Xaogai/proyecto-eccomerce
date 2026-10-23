@@ -1,4 +1,5 @@
 import { accountHandlers } from './account'
+import { adminHandlers } from './admin'
 import { authHandlers } from './auth'
 import { cartHandlers } from './cart'
 import { catalogHandlers } from './catalog'
@@ -12,4 +13,5 @@ export const handlers = [
   ...cartHandlers,
   ...checkoutHandlers,
   ...accountHandlers,
+  ...adminHandlers,
 ]

@@ -34,4 +34,21 @@ export const endpoints = {
   wishlist: '/me/wishlist', // EP-28
   wishlistItem: (sku: string) => `/me/wishlist/${encodeURIComponent(sku)}`, // EP-28
   featureFlags: '/feature-flags', // EP-33
+  adminDashboard: '/admin/dashboard', // EP-34
+  adminProducts: '/admin/products', // EP-35, EP-36
+  adminProduct: (id: string) => `/admin/products/${encodeURIComponent(id)}`, // EP-36
+  adminProductPublish: (id: string) => `/admin/products/${encodeURIComponent(id)}/publish`, // EP-37
+  adminProductUnpublish: (id: string) => `/admin/products/${encodeURIComponent(id)}/unpublish`, // EP-37
+  adminProductImages: (id: string) => `/admin/products/${encodeURIComponent(id)}/images`, // EP-39
+  adminCategories: '/admin/categories', // EP-40
+  adminCategory: (id: string) => `/admin/categories/${encodeURIComponent(id)}`, // EP-40
+  adminOrders: '/admin/orders', // EP-41
+  adminOrder: (id: string) => `/admin/orders/${id}`, // EP-42
+  adminOrderStatus: (id: string) => `/admin/orders/${id}/status`, // EP-43
+  adminUsers: '/admin/users', // EP-44
+  adminUser: (id: string) => `/admin/users/${id}`, // EP-44
+  adminUserUnlock: (id: string) => `/admin/users/${id}/unlock`, // EP-45
+  adminReports: '/admin/reports', // EP-46
+  adminReportsCsv: '/admin/reports/export.csv', // EP-46
+  adminSettings: '/admin/settings', // EP-47
 } as const

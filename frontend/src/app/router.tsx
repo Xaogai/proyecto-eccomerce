@@ -121,16 +121,17 @@ const checkoutRoutes: RouteObject[] = [
     : []),
 ]
 
+// Panel de administración (fase 5): todo bajo demanda, el cliente nunca descarga este código.
 const adminRoutes: RouteObject[] = [
-  { index: true, element: todo('Resumen', '48', 5) },
-  { path: 'productos', element: todo('Productos', '49', 5) },
-  { path: 'productos/:id', element: todo('Editar producto', '50', 5) },
-  { path: 'categorias', element: todo('Categorías', '51', 5) },
-  { path: 'pedidos', element: todo('Pedidos', '52', 5) },
-  { path: 'pedidos/:id', element: todo('Detalle de pedido', '53', 5) },
-  { path: 'usuarios', element: todo('Usuarios y roles', '54', 5) },
-  { path: 'reportes', element: todo('Reportes', '55', 5) },
-  { path: 'configuracion', element: todo('Configuración', '56', 5) },
+  { index: true, lazy: page(() => import('@/pages/admin/DashboardPage'), 'DashboardPage') },
+  { path: 'productos', lazy: page(() => import('@/pages/admin/ProductsPage'), 'ProductsPage') },
+  { path: 'productos/:id', lazy: page(() => import('@/pages/admin/ProductEditPage'), 'ProductEditPage') },
+  { path: 'categorias', lazy: page(() => import('@/pages/admin/CategoriesPage'), 'CategoriesPage') },
+  { path: 'pedidos', lazy: page(() => import('@/pages/admin/OrdersPage'), 'OrdersPage') },
+  { path: 'pedidos/:id', lazy: page(() => import('@/pages/admin/OrderDetailPage'), 'OrderDetailPage') },
+  { path: 'usuarios', lazy: page(() => import('@/pages/admin/UsersPage'), 'UsersPage') },
+  { path: 'reportes', lazy: page(() => import('@/pages/admin/ReportsPage'), 'ReportsPage') },
+  { path: 'configuracion', lazy: page(() => import('@/pages/admin/SettingsPage'), 'SettingsPage') },
 ]
 
 const branchRoutes: RouteObject[] = [
