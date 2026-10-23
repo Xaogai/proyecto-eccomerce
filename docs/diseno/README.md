@@ -21,7 +21,7 @@ Enlace al archivo de Figma: _pendiente (próxima implementación)_.
 2. **Accesibilidad (WCAG 2.1 AA, sec. 28):** HTML semántico, `label` en cada campo, errores por campo con `aria-describedby` y `aria-invalid`, `lang="es"`, `alt` en imágenes, foco visible y áreas táctiles de 44 px o más. Filtros activos en una región `aria-live`.
 3. **Responsive (sec. 27.4):** mobile-first; las pantallas `Movil-*` son la versión de 320 a 480 px y las `Escritorio-*` la de 1025 px o más.
 4. **Pago (PCI SAQ A, sec. 18.2):** el sitio nunca muestra campos de tarjeta; el checkout redirige a la pasarela hospedada.
-5. **Datos de ejemplo:** `[MARCA]`, `[pasarela de pago]`, precios, nombres y folios son de prueba. En el código salen de la API (`/api/v1`, sec. 13.1).
+5. **Datos de ejemplo:** `[MARCA]` (la marca es Ferremarket), `[pasarela de pago]`, precios, nombres y folios son de prueba. En el código salen de la API (`/api/v1`, sec. 13.1).
 6. **Componentes:** los nombres de la tabla son una sugerencia; reutilizar entre escritorio y móvil con CSS responsive, no duplicar pantallas.
 
 ## Endpoints que consume el frontend (sec. 13.1)

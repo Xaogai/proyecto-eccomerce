@@ -7,7 +7,12 @@ const STAR = 'M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.5l1.3-6.6L2.5 9
 function Star({ filled, size }: { filled: boolean; size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <path d={STAR} className={cx(styles.star, filled && styles.filled)} strokeWidth="1.4" strokeLinejoin="round" />
+      <path
+        d={STAR}
+        className={cx(styles.star, filled && styles.filled)}
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -42,7 +47,12 @@ interface StarRatingInputProps {
 }
 
 /** Calificación editable como grupo de radios (pantalla 37): flechas cambian el valor. */
-export function StarRatingInput({ value, onChange, legend = 'Tu calificación', error }: StarRatingInputProps) {
+export function StarRatingInput({
+  value,
+  onChange,
+  legend = 'Tu calificación',
+  error,
+}: StarRatingInputProps) {
   const name = useId()
   return (
     <fieldset className={styles.fieldset} aria-describedby={error ? `${name}-err` : undefined}>

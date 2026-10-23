@@ -26,7 +26,16 @@ type ButtonProps = ComponentProps<'button'> & StyleProps & { loading?: boolean }
  * Botón del sistema Taller. Con `loading` queda ocupado (aria-busy) sin cambiar de ancho.
  * Variantes: primary (naranja), secondary (carbón), ghost, outline, outlineDark (sobre fondo oscuro), danger.
  */
-export function Button({ variant, size, fullWidth, loading, className, children, disabled, ...rest }: ButtonProps) {
+export function Button({
+  variant,
+  size,
+  fullWidth,
+  loading,
+  className,
+  children,
+  disabled,
+  ...rest
+}: ButtonProps) {
   return (
     <button
       type="button"

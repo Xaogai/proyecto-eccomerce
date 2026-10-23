@@ -46,6 +46,26 @@
   text-decoration: none;
 }
 
+/* En móvil "Carrito" solo lo lee el lector de pantalla; desde 769 px se ve */
+.cartText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (min-width: 769px) {
+  .cartText {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+  }
+}
+
 .count {
   padding: 0 7px;
   border-radius: 999px;
@@ -77,32 +97,9 @@
   color: var(--color-carbon);
 }
 
-.search {
+.searchSlot {
   flex: 1 1 360px;
-  display: flex;
   min-width: 0;
-}
-
-.searchInput {
-  flex: 1;
-  min-width: 0;
-  height: 46px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: var(--radio-control) 0 0 var(--radio-control);
-  background: var(--color-superficie);
-  color: var(--color-carbon);
-  font-size: 16px;
-}
-
-.searchBtn {
-  height: 46px;
-  padding: 0 20px;
-  border: 0;
-  border-radius: 0 var(--radio-control) var(--radio-control) 0;
-  background: var(--color-naranja);
-  color: var(--color-superficie);
-  font-weight: 600;
 }
 
 .soloEscritorio {

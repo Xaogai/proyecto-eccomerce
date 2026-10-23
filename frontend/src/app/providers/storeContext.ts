@@ -10,6 +10,8 @@ export interface SelectedStore {
 export interface StoreContextValue {
   store: SelectedStore | null
   setStore: (store: SelectedStore) => void
+  /** Abre el diálogo para elegir sucursal (encabezado, inicio, ficha) */
+  openPicker: () => void
 }
 
 export const StoreContext = createContext<StoreContextValue | null>(null)

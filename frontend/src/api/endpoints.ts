@@ -24,5 +24,7 @@ export const endpoints = {
   passwordForgot: '/auth/password/forgot', // EP-24
   passwordReset: '/auth/password/reset', // EP-25
   me: '/me', // EP-26
+  wishlist: '/me/wishlist', // EP-28
+  wishlistItem: (sku: string) => `/me/wishlist/${encodeURIComponent(sku)}`, // EP-28
   featureFlags: '/feature-flags', // EP-33
 } as const

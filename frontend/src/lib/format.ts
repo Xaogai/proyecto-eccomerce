@@ -1,7 +1,15 @@
 // Formatos para es-MX. El dinero llega de la API en centavos (T-03 en docs/api/endpoints-propuestos.md).
 
-const moneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 })
-const monedaEntera = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 })
+const moneda = new Intl.NumberFormat('es-MX', {
+  style: 'currency',
+  currency: 'MXN',
+  minimumFractionDigits: 2,
+})
+const monedaEntera = new Intl.NumberFormat('es-MX', {
+  style: 'currency',
+  currency: 'MXN',
+  maximumFractionDigits: 0,
+})
 
 /** 214900 → "$2,149"; 214950 → "$2,149.50" (el diseño omite los centavos cuando son cero). */
 export function formatMoney(centavos: number): string {

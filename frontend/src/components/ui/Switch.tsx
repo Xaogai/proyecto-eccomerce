@@ -12,7 +12,15 @@ interface SwitchProps {
 }
 
 /** Interruptor (role="switch"). Muestra el estado en texto además del color. */
-export function Switch({ label, description, checked, onChange, disabled, onText = 'Activa', offText = 'Apagada' }: SwitchProps) {
+export function Switch({
+  label,
+  description,
+  checked,
+  onChange,
+  disabled,
+  onText = 'Activa',
+  offText = 'Apagada',
+}: SwitchProps) {
   const id = useId()
   return (
     <div className={styles.row}>

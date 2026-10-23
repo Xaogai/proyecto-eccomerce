@@ -56,14 +56,27 @@ export function DataTable<T>({
           <tr>
             {columns.map((c) => {
               const active = sort?.key === c.key
-              const ariaSort = active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : c.sortable ? 'none' : undefined
+              const ariaSort = active
+                ? sort.dir === 'asc'
+                  ? 'ascending'
+                  : 'descending'
+                : c.sortable
+                  ? 'none'
+                  : undefined
               return (
-                <th key={c.key} scope="col" aria-sort={ariaSort} className={cx(c.align === 'end' && styles.end)}>
+                <th
+                  key={c.key}
+                  scope="col"
+                  aria-sort={ariaSort}
+                  className={cx(c.align === 'end' && styles.end)}
+                >
                   {c.sortable && onSortChange ? (
                     <button
                       type="button"
                       className={styles.sortBtn}
-                      onClick={() => onSortChange({ key: c.key, dir: active && sort.dir === 'asc' ? 'desc' : 'asc' })}
+                      onClick={() =>
+                        onSortChange({ key: c.key, dir: active && sort.dir === 'asc' ? 'desc' : 'asc' })
+                      }
                     >
                       {c.header}
                       <span aria-hidden="true">{active ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ' ↕'}</span>
@@ -99,7 +112,11 @@ export function DataTable<T>({
                 {columns.map((c) => {
                   const Cell = c.rowHeader ? 'th' : 'td'
                   return (
-                    <Cell key={c.key} scope={c.rowHeader ? 'row' : undefined} className={cx(c.align === 'end' && styles.end)}>
+                    <Cell
+                      key={c.key}
+                      scope={c.rowHeader ? 'row' : undefined}
+                      className={cx(c.align === 'end' && styles.end)}
+                    >
                       {c.cell(row)}
                     </Cell>
                   )

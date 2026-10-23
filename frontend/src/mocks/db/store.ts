@@ -16,6 +16,8 @@ function fresh() {
     userCarts: new Map<string, string>(),
     /** refresh tokens vigentes → id de usuario */
     refreshTokens: new Map<string, string>(),
+    /** lista de deseos por usuario (SKU de producto) */
+    wishlists: new Map<string, Set<string>>([['u-cliente', new Set(['200118', '300077'])]]),
   }
 }
 
@@ -41,7 +43,10 @@ export function findProduct(sku: string) {
 
 /** Ruta de la categoría hasta la hoja: [Herramientas, Herramientas eléctricas, Taladros] */
 export function categoryPath(slug: string) {
-  const walk = (list: typeof db.categories, path: Array<{ slug: string; name: string }>): typeof path | null => {
+  const walk = (
+    list: typeof db.categories,
+    path: Array<{ slug: string; name: string }>,
+  ): typeof path | null => {
     for (const c of list) {
       const here = [...path, { slug: c.slug, name: c.name }]
       if (c.slug === slug) return here

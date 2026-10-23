@@ -24,6 +24,8 @@ export const ratingSchema = z.object({ avg: z.number(), count: z.number().int() 
 
 export const productSummarySchema = z.object({
   sku: z.string(),
+  /** Variante que se agrega desde la tarjeta (la única, o la primera con stock) */
+  variant_sku: z.string(),
   name: z.string(),
   brand: z.string(),
   image: imageSchema,
@@ -44,7 +46,11 @@ export const facetSchema = z.object({
 })
 export type Facet = z.infer<typeof facetSchema>
 
-export const productPageSchema = page(productSummarySchema).extend({ facets: z.array(facetSchema) })
+export const productPageSchema = page(productSummarySchema).extend({
+  facets: z.array(facetSchema),
+  /** Corrección sugerida cuando la búsqueda no tiene resultados ("¿Quisiste decir…?") */
+  did_you_mean: z.string().nullable().optional(),
+})
 export type ProductPage = z.infer<typeof productPageSchema>
 
 export const variantSchema = z.object({

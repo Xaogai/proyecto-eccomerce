@@ -18,17 +18,17 @@ export function RouteErrorPage({ standalone }: { standalone?: boolean }) {
 
   const content = (
     <ErrorState
-        headingLevel={1}
-        title="Algo salió mal"
-        onRetry={() => window.location.reload()}
-        actions={
-          <ButtonLink to="/" variant="outline">
-            Ir al inicio
-          </ButtonLink>
-        }
-      >
-        Tuvimos un problema al mostrar esta página. Tu carrito sigue guardado.
-      </ErrorState>
+      headingLevel={1}
+      title="Algo salió mal"
+      onRetry={() => window.location.reload()}
+      actions={
+        <ButtonLink to="/" variant="outline">
+          Ir al inicio
+        </ButtonLink>
+      }
+    >
+      Tuvimos un problema al mostrar esta página. Tu carrito sigue guardado.
+    </ErrorState>
   )
 
   return standalone ? (

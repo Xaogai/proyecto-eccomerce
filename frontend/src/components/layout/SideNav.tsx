@@ -12,7 +12,15 @@ export interface SideNavItem {
 }
 
 /** Navegación lateral de Mi cuenta, Admin y Sucursal (AccountNav, AdminNav). La entrada actual va en carbón. */
-export function SideNav({ label, items, footer }: { label: string; items: SideNavItem[]; footer?: ReactNode }) {
+export function SideNav({
+  label,
+  items,
+  footer,
+}: {
+  label: string
+  items: SideNavItem[]
+  footer?: ReactNode
+}) {
   return (
     <nav aria-label={label} className={styles.nav}>
       <ul role="list" className={styles.list}>

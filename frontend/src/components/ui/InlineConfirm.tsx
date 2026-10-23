@@ -12,7 +12,14 @@ interface InlineConfirmProps {
 }
 
 /** Confirmación en línea, sin modal ("¿Eliminar esta dirección? Sí, eliminar / No"). El foco va a "No". */
-export function InlineConfirm({ question, confirmLabel = 'Sí, eliminar', cancelLabel = 'No', onConfirm, onCancel, loading }: InlineConfirmProps) {
+export function InlineConfirm({
+  question,
+  confirmLabel = 'Sí, eliminar',
+  cancelLabel = 'No',
+  onConfirm,
+  onCancel,
+  loading,
+}: InlineConfirmProps) {
   const cancelRef = useRef<HTMLButtonElement>(null)
   useEffect(() => cancelRef.current?.focus(), [])
 

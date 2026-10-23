@@ -35,7 +35,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
       </nav>
       {parent?.to && (
         <Link to={parent.to} className={styles.back}>
-          <span aria-hidden="true">‹ </span>
+          <span aria-hidden="true">‹&nbsp;</span>
           {parent.label}
         </Link>
       )}

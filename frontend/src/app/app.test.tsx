@@ -8,8 +8,11 @@ describe('app', () => {
   it('pinta encabezado, departamentos del API y pie (G1)', async () => {
     renderRoute('/')
     const nav = await screen.findByRole('navigation', { name: 'Categorías' })
-    expect(await within(nav).findByRole('link', { name: 'Herramientas' })).toHaveAttribute('href', '/categoria/herramientas')
-    expect(screen.getByRole('link', { name: 'Carrito, 0 productos' })).toBeInTheDocument()
+    expect(await within(nav).findByRole('link', { name: 'Herramientas' })).toHaveAttribute(
+      'href',
+      '/categoria/herramientas',
+    )
+    expect(screen.getByRole('link', { name: 'Carrito 0 productos' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Aviso de privacidad' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Saltar al contenido' })).toHaveAttribute('href', '#contenido')
   })
@@ -17,7 +20,9 @@ describe('app', () => {
   it('marca el departamento de la categoría actual', async () => {
     renderRoute('/categoria/taladros')
     const nav = await screen.findByRole('navigation', { name: 'Categorías' })
-    await waitFor(() => expect(within(nav).getByRole('link', { name: 'Herramientas' })).toHaveAttribute('aria-current', 'page'))
+    await waitFor(() =>
+      expect(within(nav).getByRole('link', { name: 'Herramientas' })).toHaveAttribute('aria-current', 'page'),
+    )
   })
 
   it('manda a login con ?next= si no hay sesión', async () => {
@@ -36,7 +41,9 @@ describe('app', () => {
   it('un cliente no entra al admin (403)', async () => {
     tokenStorage.set(issueRefreshToken('u-cliente'))
     renderRoute('/admin')
-    expect(await screen.findByRole('heading', { name: 'No tienes acceso a esta sección' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'No tienes acceso a esta sección' }),
+    ).toBeInTheDocument()
   })
 
   it('el admin ve su panel con navegación de 7 secciones', async () => {

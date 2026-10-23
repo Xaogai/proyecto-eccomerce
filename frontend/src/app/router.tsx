@@ -4,6 +4,12 @@ import { InternalLayout } from '@/layouts/InternalLayout'
 import { Root } from '@/layouts/Root'
 import { ShopLayout } from '@/layouts/ShopLayout'
 import { SimpleLayout } from '@/layouts/SimpleLayout'
+import { CategoryPage } from '@/pages/catalog/CategoryPage'
+import { DepartmentsPage } from '@/pages/catalog/DepartmentsPage'
+import { HomePage } from '@/pages/catalog/HomePage'
+import { ProductPage } from '@/pages/catalog/ProductPage'
+import { SearchPage } from '@/pages/catalog/SearchPage'
+import { HelpPage } from '@/pages/HelpPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
@@ -12,23 +18,28 @@ import { GuestOnly, RequireAuth } from './guards'
 // Mapa de rutas de docs/diseno/plan-frontend.md (sec. 2). Cada PlaceholderPage se cambia
 // por la página real en su fase; las secciones grandes se cargarán con lazy().
 
-const todo = (title: string, screens: string, phase: number) => <PlaceholderPage title={title} screens={screens} phase={phase} />
+const todo = (title: string, screens: string, phase: number) => (
+  <PlaceholderPage title={title} screens={screens} phase={phase} />
+)
 
 /** Envuelve las rutas hijas de un layout: si una página falla, el layout (encabezado, menú) sigue en pie. */
 const withError = (children: RouteObject[]): RouteObject[] => [{ errorElement: <RouteErrorPage />, children }]
 
 const shopRoutes: RouteObject[] = [
-  { index: true, element: todo('Inicio', '15, 21', 1) },
-  { path: 'departamentos', element: todo('Departamentos', '22', 1) },
-  { path: 'categoria/:slug', element: todo('Categoría', '02, 07, 09, 16, 23', 1) },
-  { path: 'buscar', element: todo('Buscar', '08, 16, 23', 1) },
-  { path: 'producto/:sku', element: todo('Producto', '03, 10, 18, 25', 1) },
-  { path: 'producto/:sku/resena', element: <RequireAuth>{todo('Escribir reseña', '37, 47', 3)}</RequireAuth> },
+  { index: true, element: <HomePage /> },
+  { path: 'departamentos', element: <DepartmentsPage /> },
+  { path: 'categoria/:slug', element: <CategoryPage /> },
+  { path: 'buscar', element: <SearchPage /> },
+  { path: 'producto/:sku', element: <ProductPage /> },
+  {
+    path: 'producto/:sku/resena',
+    element: <RequireAuth>{todo('Escribir reseña', '37, 47', 3)}</RequireAuth>,
+  },
   { path: 'comparar', element: todo('Comparar productos', '17, 24', 4) },
   { path: 'calculadora/:tipo?', element: todo('Calculadora de materiales', '19, 26', 4) },
   { path: 'sucursales', element: todo('Sucursales', '20, 27', 4) },
   { path: 'carrito', element: todo('Carrito', '04, 11', 2) },
-  { path: 'ayuda/:tema', element: todo('Ayuda', 'pie de página (G1)', 1) },
+  { path: 'ayuda/:tema', element: <HelpPage /> },
   {
     path: 'cuenta',
     element: (
@@ -47,7 +58,12 @@ const shopRoutes: RouteObject[] = [
     ],
   },
   ...(import.meta.env.DEV
-    ? [{ path: '_ui', lazy: () => import('@/pages/UiCatalogPage').then((m) => ({ Component: m.UiCatalogPage })) }]
+    ? [
+        {
+          path: '_ui',
+          lazy: () => import('@/pages/UiCatalogPage').then((m) => ({ Component: m.UiCatalogPage })),
+        },
+      ]
     : []),
   { path: '*', element: <NotFoundPage /> },
 ]

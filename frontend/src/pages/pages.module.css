@@ -14,3 +14,19 @@
 .errorMain {
   padding-block: 32px;
 }
+
+.prose {
+  max-width: 800px;
+}
+
+.prose h2 {
+  margin-top: 12px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  text-transform: none;
+}
+
+.prose ul {
+  margin: 0;
+  padding-left: 20px;
+}

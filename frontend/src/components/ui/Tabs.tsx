@@ -18,7 +18,10 @@ interface TabsProps<T extends string> {
 export function Tabs<T extends string>({ label, tabs, value, onChange }: TabsProps<T>) {
   const id = useId()
   const refs = useRef<Array<HTMLButtonElement | null>>([])
-  const current = Math.max(0, tabs.findIndex((t) => t.value === value))
+  const current = Math.max(
+    0,
+    tabs.findIndex((t) => t.value === value),
+  )
 
   function onKeyDown(e: KeyboardEvent) {
     const last = tabs.length - 1
@@ -52,7 +55,13 @@ export function Tabs<T extends string>({ label, tabs, value, onChange }: TabsPro
           </button>
         ))}
       </div>
-      <div role="tabpanel" id={`${id}-panel-${current}`} aria-labelledby={`${id}-tab-${current}`} tabIndex={0} className={styles.panel}>
+      <div
+        role="tabpanel"
+        id={`${id}-panel-${current}`}
+        aria-labelledby={`${id}-tab-${current}`}
+        tabIndex={0}
+        className={styles.panel}
+      >
         {tabs[current]?.panel}
       </div>
     </div>

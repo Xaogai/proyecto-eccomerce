@@ -22,8 +22,8 @@ dd {
   margin: 0;
 }
 
-ul[role='list'],
-ol[role='list'] {
+/* :where() deja la especificidad en 0 para que clases como .contenedor puedan agregar padding */
+:where(ul[role='list'], ol[role='list']) {
   list-style: none;
   margin: 0;
   padding: 0;

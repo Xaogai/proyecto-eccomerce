@@ -67,9 +67,17 @@ export interface DbOrder {
   payment_status: PaymentStatus
   created_at: string
   contact: { name: string; email: string; phone: string }
-  items: Array<{ id: string; sku: string; name: string; variant_label: string; unit_price: number; qty: number }>
+  items: Array<{
+    id: string
+    sku: string
+    name: string
+    variant_label: string
+    unit_price: number
+    qty: number
+  }>
   shipping: number
-  fulfillment: { type: 'ship'; address_label: string; tracking?: string } | { type: 'pickup'; store_id: string }
+  fulfillment:
+    { type: 'ship'; address_label: string; tracking?: string } | { type: 'pickup'; store_id: string }
   timeline: Array<{ status: OrderStatus; at: string }>
   pickup_code?: string
 }
@@ -83,15 +91,56 @@ export interface DbCartItem {
 // ---------- Sucursales (prototipos: Toluca Centro, Metepec, Lerma) ----------
 
 export const stores: DbStore[] = [
-  { id: 'toluca-centro', name: 'Toluca Centro', address: 'Av. Independencia 120, Centro, Toluca', zip: '50000', hours: 'Lun a sáb 7:00–21:00 · Dom 8:00–18:00', phone: '722 000 0001', lat: 19.2925, lng: -99.6569 },
-  { id: 'metepec', name: 'Metepec', address: 'Av. Tecnológico 1500, San Salvador Tizatlalli, Metepec', zip: '52140', hours: 'Lun a sáb 7:00–21:00 · Dom 8:00–18:00', phone: '722 000 0002', lat: 19.2565, lng: -99.6047 },
-  { id: 'lerma', name: 'Lerma', address: 'Carretera México-Toluca km 52, Lerma', zip: '52000', hours: 'Lun a sáb 8:00–20:00 · Dom 9:00–17:00', phone: '728 000 0003', lat: 19.2847, lng: -99.5114 },
-  { id: 'zinacantepec', name: 'Zinacantepec', address: 'Av. 16 de Septiembre 300, Zinacantepec', zip: '51350', hours: 'Lun a sáb 8:00–20:00 · Dom 9:00–17:00', phone: '722 000 0004', lat: 19.2836, lng: -99.7339 },
+  {
+    id: 'toluca-centro',
+    name: 'Toluca Centro',
+    address: 'Av. Independencia 120, Centro, Toluca',
+    zip: '50000',
+    hours: 'Lun a sáb 7:00–21:00 · Dom 8:00–18:00',
+    phone: '722 000 0001',
+    lat: 19.2925,
+    lng: -99.6569,
+  },
+  {
+    id: 'metepec',
+    name: 'Metepec',
+    address: 'Av. Tecnológico 1500, San Salvador Tizatlalli, Metepec',
+    zip: '52140',
+    hours: 'Lun a sáb 7:00–21:00 · Dom 8:00–18:00',
+    phone: '722 000 0002',
+    lat: 19.2565,
+    lng: -99.6047,
+  },
+  {
+    id: 'lerma',
+    name: 'Lerma',
+    address: 'Carretera México-Toluca km 52, Lerma',
+    zip: '52000',
+    hours: 'Lun a sáb 8:00–20:00 · Dom 9:00–17:00',
+    phone: '728 000 0003',
+    lat: 19.2847,
+    lng: -99.5114,
+  },
+  {
+    id: 'zinacantepec',
+    name: 'Zinacantepec',
+    address: 'Av. 16 de Septiembre 300, Zinacantepec',
+    zip: '51350',
+    hours: 'Lun a sáb 8:00–20:00 · Dom 9:00–17:00',
+    phone: '722 000 0004',
+    lat: 19.2836,
+    lng: -99.7339,
+  },
 ]
 
 // ---------- Categorías (8 departamentos del prototipo, 3 niveles) ----------
 
-const cat = (name: string, slug: string, children: Category[] = []): Category => ({ id: slug, slug, name, children })
+const cat = (name: string, slug: string, children: Category[] = []): Category => ({
+  id: slug,
+  slug,
+  name,
+  children,
+})
 
 export const categories: Category[] = [
   cat('Herramientas', 'herramientas', [
@@ -101,21 +150,35 @@ export const categories: Category[] = [
       cat('Sierras eléctricas', 'sierras-electricas'),
       cat('Baterías y cargadores', 'baterias-y-cargadores'),
     ]),
-    cat('Herramientas manuales', 'herramientas-manuales', [cat('Martillos', 'martillos'), cat('Desarmadores', 'desarmadores')]),
+    cat('Herramientas manuales', 'herramientas-manuales', [
+      cat('Martillos', 'martillos'),
+      cat('Desarmadores', 'desarmadores'),
+    ]),
   ]),
   cat('Construcción', 'construccion', [
-    cat('Cemento y morteros', 'cemento-y-morteros', [cat('Cemento', 'cemento'), cat('Pegazulejo', 'pegazulejo')]),
+    cat('Cemento y morteros', 'cemento-y-morteros', [
+      cat('Cemento', 'cemento'),
+      cat('Pegazulejo', 'pegazulejo'),
+    ]),
   ]),
   cat('Pisos y azulejos', 'pisos-y-azulejos', [
-    cat('Pisos', 'pisos', [cat('Pisos cerámicos', 'pisos-ceramicos'), cat('Pisos laminados', 'pisos-laminados')]),
+    cat('Pisos', 'pisos', [
+      cat('Pisos cerámicos', 'pisos-ceramicos'),
+      cat('Pisos laminados', 'pisos-laminados'),
+    ]),
   ]),
   cat('Pintura', 'pintura', [
-    cat('Pintura para interiores', 'pintura-interiores', [cat('Vinílica', 'vinilica'), cat('Esmalte', 'esmalte')]),
+    cat('Pintura para interiores', 'pintura-interiores', [
+      cat('Vinílica', 'vinilica'),
+      cat('Esmalte', 'esmalte'),
+    ]),
   ]),
   cat('Plomería', 'plomeria', [cat('Tubería', 'tuberia', [cat('Tubería PVC', 'tuberia-pvc')])]),
   cat('Electricidad', 'electricidad', [cat('Cables', 'cables', [cat('Cable THW', 'cable-thw')])]),
   cat('Jardín', 'jardin', [cat('Riego', 'riego', [cat('Mangueras', 'mangueras')])]),
-  cat('Ferretería', 'ferreteria', [cat('Fijación', 'fijacion', [cat('Taquetes', 'taquetes'), cat('Tornillos', 'tornillos')])]),
+  cat('Ferretería', 'ferreteria', [
+    cat('Fijación', 'fijacion', [cat('Taquetes', 'taquetes'), cat('Tornillos', 'tornillos')]),
+  ]),
 ]
 
 // ---------- Productos ----------
@@ -135,7 +198,8 @@ const prototypeProducts: DbProduct[] = [
     sku: '100245',
     name: 'Taladro percutor inalámbrico 1/2 pulg 20 V',
     brand: 'Volta',
-    description: 'Taladro percutor con motor de 20 V, mandril de 1/2 pulg sin llave y tres modos de trabajo: taladro, percutor y atornillador.',
+    description:
+      'Taladro percutor con motor de 20 V, mandril de 1/2 pulg sin llave y tres modos de trabajo: taladro, percutor y atornillador.',
     category: 'taladros',
     attrs: { alimentacion: 'Inalámbrico 20 V', mandril: '1/2 pulg' },
     specs: [
@@ -149,8 +213,20 @@ const prototypeProducts: DbProduct[] = [
     rating: { avg: 4.6, count: 128 },
     variants: [
       { sku: '100245-0', label: 'Solo herramienta', price: 214900, stock: toluca(12), ship: true },
-      { sku: '100245-1', label: 'Con 1 batería de 2 Ah y cargador', price: 289900, stock: toluca(8), ship: true },
-      { sku: '100245-2', label: 'Con 2 baterías, cargador y estuche', price: 349900, stock: toluca(2), ship: true },
+      {
+        sku: '100245-1',
+        label: 'Con 1 batería de 2 Ah y cargador',
+        price: 289900,
+        stock: toluca(8),
+        ship: true,
+      },
+      {
+        sku: '100245-2',
+        label: 'Con 2 baterías, cargador y estuche',
+        price: 349900,
+        stock: toluca(2),
+        ship: true,
+      },
     ],
     has360: true,
     status: 'publicado',
@@ -202,7 +278,15 @@ const prototypeProducts: DbProduct[] = [
     attrs: { alimentacion: 'Inalámbrico 12 V', mandril: '3/8 pulg' },
     specs: [{ k: 'Alimentación', v: 'Batería de ion de litio 12 V' }],
     rating: { avg: 4.2, count: 33 },
-    variants: [{ sku: '100402-0', label: 'Única', price: 129900, stock: { 'toluca-centro': 0, metepec: 5, lerma: 0, zinacantepec: 0 }, ship: true }],
+    variants: [
+      {
+        sku: '100402-0',
+        label: 'Única',
+        price: 129900,
+        stock: { 'toluca-centro': 0, metepec: 5, lerma: 0, zinacantepec: 0 },
+        ship: true,
+      },
+    ],
     has360: false,
     status: 'publicado',
     created_at: iso('2026-05-02'),
@@ -230,7 +314,15 @@ const prototypeProducts: DbProduct[] = [
     attrs: { alimentacion: 'Eléctrico 127 V', mandril: '1/2 pulg' },
     specs: [{ k: 'Motor', v: '1/2 HP' }],
     rating: { avg: 4.5, count: 12 },
-    variants: [{ sku: '300190-0', label: 'Única', price: 459000, stock: { 'toluca-centro': 0, metepec: 0, lerma: 0, zinacantepec: 0 }, ship: true }],
+    variants: [
+      {
+        sku: '300190-0',
+        label: 'Única',
+        price: 459000,
+        stock: { 'toluca-centro': 0, metepec: 0, lerma: 0, zinacantepec: 0 },
+        ship: true,
+      },
+    ],
     has360: false,
     status: 'publicado',
     created_at: iso('2026-03-30'),
@@ -238,24 +330,98 @@ const prototypeProducts: DbProduct[] = [
 ]
 
 /** Atributos de filtro y nombres base por categoría hoja, para generar productos. */
-const generators: Record<string, { nouns: string[]; attrs: Record<string, string[]>; price: [number, number] }> = {
-  taladros: { nouns: ['Taladro inalámbrico', 'Taladro percutor', 'Taladro eléctrico'], attrs: { alimentacion: ['Inalámbrico 12 V', 'Inalámbrico 20 V', 'Eléctrico 127 V'], mandril: ['1/4 pulg', '3/8 pulg', '1/2 pulg'] }, price: [700, 4500] },
-  rotomartillos: { nouns: ['Rotomartillo SDS Plus', 'Rotomartillo SDS Max'], attrs: { alimentacion: ['Inalámbrico 20 V', 'Eléctrico 127 V'] }, price: [1800, 7500] },
-  'sierras-electricas': { nouns: ['Sierra circular', 'Sierra caladora', 'Sierra ingleteadora'], attrs: { alimentacion: ['Inalámbrico 20 V', 'Eléctrico 127 V'] }, price: [900, 6800] },
-  'baterias-y-cargadores': { nouns: ['Batería 20 V', 'Cargador rápido 20 V', 'Kit de 2 baterías'], attrs: { capacidad: ['2 Ah', '4 Ah', '6 Ah'] }, price: [500, 2600] },
-  martillos: { nouns: ['Martillo de uña', 'Mazo de goma', 'Marro'], attrs: { peso: ['16 oz', '20 oz', '3 lb'] }, price: [120, 650] },
-  desarmadores: { nouns: ['Juego de desarmadores', 'Desarmador de precisión', 'Desarmador de caja'], attrs: { piezas: ['1 pieza', '6 piezas', '12 piezas'] }, price: [60, 520] },
-  cemento: { nouns: ['Cemento gris', 'Cemento blanco', 'Mortero'], attrs: { presentacion: ['25 kg', '50 kg'] }, price: [150, 420] },
-  pegazulejo: { nouns: ['Pegazulejo', 'Adhesivo para porcelanato'], attrs: { presentacion: ['20 kg', '25 kg'] }, price: [120, 380] },
-  'pisos-ceramicos': { nouns: ['Piso cerámico', 'Piso porcelánico'], attrs: { medida: ['33 x 33 cm', '45 x 45 cm', '60 x 60 cm'] }, price: [140, 520] },
-  'pisos-laminados': { nouns: ['Piso laminado', 'Piso vinílico'], attrs: { grosor: ['7 mm', '8 mm', '12 mm'] }, price: [220, 680] },
-  vinilica: { nouns: ['Pintura vinílica', 'Pintura vinil-acrílica'], attrs: { presentacion: ['1 L', '4 L', '19 L'], acabado: ['Mate', 'Satinado'] }, price: [180, 2600] },
-  esmalte: { nouns: ['Esmalte alquidálico', 'Esmalte base agua'], attrs: { presentacion: ['1 L', '4 L'], acabado: ['Brillante', 'Semimate'] }, price: [210, 1400] },
-  'tuberia-pvc': { nouns: ['Tubo PVC hidráulico', 'Codo PVC', 'Tee PVC'], attrs: { diametro: ['1/2 pulg', '3/4 pulg', '1 pulg'] }, price: [15, 260] },
-  'cable-thw': { nouns: ['Cable THW', 'Cable dúplex'], attrs: { calibre: ['12 AWG', '14 AWG', '10 AWG'] }, price: [600, 2100] },
-  mangueras: { nouns: ['Manguera reforzada', 'Manguera extensible'], attrs: { largo: ['15 m', '20 m', '30 m'] }, price: [180, 950] },
-  taquetes: { nouns: ['Taquete de plástico', 'Taquete expansivo', 'Ancla para concreto'], attrs: { medida: ['1/4 pulg', '5/16 pulg', '3/8 pulg'] }, price: [25, 240] },
-  tornillos: { nouns: ['Tornillo para madera', 'Tornillo autorroscante', 'Pija para tablaroca'], attrs: { medida: ['1 pulg', '1 1/2 pulg', '2 pulg'] }, price: [30, 210] },
+const generators: Record<
+  string,
+  { nouns: string[]; attrs: Record<string, string[]>; price: [number, number] }
+> = {
+  taladros: {
+    nouns: ['Taladro inalámbrico', 'Taladro percutor', 'Taladro eléctrico'],
+    attrs: {
+      alimentacion: ['Inalámbrico 12 V', 'Inalámbrico 20 V', 'Eléctrico 127 V'],
+      mandril: ['1/4 pulg', '3/8 pulg', '1/2 pulg'],
+    },
+    price: [700, 4500],
+  },
+  rotomartillos: {
+    nouns: ['Rotomartillo SDS Plus', 'Rotomartillo SDS Max'],
+    attrs: { alimentacion: ['Inalámbrico 20 V', 'Eléctrico 127 V'] },
+    price: [1800, 7500],
+  },
+  'sierras-electricas': {
+    nouns: ['Sierra circular', 'Sierra caladora', 'Sierra ingleteadora'],
+    attrs: { alimentacion: ['Inalámbrico 20 V', 'Eléctrico 127 V'] },
+    price: [900, 6800],
+  },
+  'baterias-y-cargadores': {
+    nouns: ['Batería 20 V', 'Cargador rápido 20 V', 'Kit de 2 baterías'],
+    attrs: { capacidad: ['2 Ah', '4 Ah', '6 Ah'] },
+    price: [500, 2600],
+  },
+  martillos: {
+    nouns: ['Martillo de uña', 'Mazo de goma', 'Marro'],
+    attrs: { peso: ['16 oz', '20 oz', '3 lb'] },
+    price: [120, 650],
+  },
+  desarmadores: {
+    nouns: ['Juego de desarmadores', 'Desarmador de precisión', 'Desarmador de caja'],
+    attrs: { piezas: ['1 pieza', '6 piezas', '12 piezas'] },
+    price: [60, 520],
+  },
+  cemento: {
+    nouns: ['Cemento gris', 'Cemento blanco', 'Mortero'],
+    attrs: { presentacion: ['25 kg', '50 kg'] },
+    price: [150, 420],
+  },
+  pegazulejo: {
+    nouns: ['Pegazulejo', 'Adhesivo para porcelanato'],
+    attrs: { presentacion: ['20 kg', '25 kg'] },
+    price: [120, 380],
+  },
+  'pisos-ceramicos': {
+    nouns: ['Piso cerámico', 'Piso porcelánico'],
+    attrs: { medida: ['33 x 33 cm', '45 x 45 cm', '60 x 60 cm'] },
+    price: [140, 520],
+  },
+  'pisos-laminados': {
+    nouns: ['Piso laminado', 'Piso vinílico'],
+    attrs: { grosor: ['7 mm', '8 mm', '12 mm'] },
+    price: [220, 680],
+  },
+  vinilica: {
+    nouns: ['Pintura vinílica', 'Pintura vinil-acrílica'],
+    attrs: { presentacion: ['1 L', '4 L', '19 L'], acabado: ['Mate', 'Satinado'] },
+    price: [180, 2600],
+  },
+  esmalte: {
+    nouns: ['Esmalte alquidálico', 'Esmalte base agua'],
+    attrs: { presentacion: ['1 L', '4 L'], acabado: ['Brillante', 'Semimate'] },
+    price: [210, 1400],
+  },
+  'tuberia-pvc': {
+    nouns: ['Tubo PVC hidráulico', 'Codo PVC', 'Tee PVC'],
+    attrs: { diametro: ['1/2 pulg', '3/4 pulg', '1 pulg'] },
+    price: [15, 260],
+  },
+  'cable-thw': {
+    nouns: ['Cable THW', 'Cable dúplex'],
+    attrs: { calibre: ['12 AWG', '14 AWG', '10 AWG'] },
+    price: [600, 2100],
+  },
+  mangueras: {
+    nouns: ['Manguera reforzada', 'Manguera extensible'],
+    attrs: { largo: ['15 m', '20 m', '30 m'] },
+    price: [180, 950],
+  },
+  taquetes: {
+    nouns: ['Taquete de plástico', 'Taquete expansivo', 'Ancla para concreto'],
+    attrs: { medida: ['1/4 pulg', '5/16 pulg', '3/8 pulg'] },
+    price: [25, 240],
+  },
+  tornillos: {
+    nouns: ['Tornillo para madera', 'Tornillo autorroscante', 'Pija para tablaroca'],
+    attrs: { medida: ['1 pulg', '1 1/2 pulg', '2 pulg'] },
+    price: [30, 210],
+  },
 }
 
 const BRANDS = ['Volta', 'Brava', 'Ferro', 'Taller Pro', 'Cumbre']
@@ -268,7 +434,9 @@ function generateProducts(): DbProduct[] {
     const count = category === 'taladros' ? 42 : 8
     for (let i = 0; i < count; i++) {
       sku += faker.number.int({ min: 3, max: 40 })
-      const attrs = Object.fromEntries(Object.entries(g.attrs).map(([k, vals]) => [k, faker.helpers.arrayElement(vals)]))
+      const attrs = Object.fromEntries(
+        Object.entries(g.attrs).map(([k, vals]) => [k, faker.helpers.arrayElement(vals)]),
+      )
       const noun = faker.helpers.arrayElement(g.nouns)
       const brand = faker.helpers.arrayElement(BRANDS)
       const variantCount = faker.helpers.weightedArrayElement([
@@ -291,7 +459,13 @@ function generateProducts(): DbProduct[] {
           ship: true,
         }
       })
-      const extra = Object.values(attrs).join(' ')
+      // Sin palabras repetidas: "Taladro inalámbrico" + "Inalámbrico 20 V" → "Taladro inalámbrico 20 V"
+      const used = new Set(noun.toLowerCase().split(' '))
+      const extra = Object.values(attrs)
+        .join(' ')
+        .split(' ')
+        .filter((w) => !used.has(w.toLowerCase()) && (used.add(w.toLowerCase()), true))
+        .join(' ')
       out.push({
         sku: String(sku),
         name: `${noun} ${extra}`.trim(),
@@ -304,7 +478,10 @@ function generateProducts(): DbProduct[] {
           { k: 'Marca', v: brand },
           { k: 'Garantía', v: '[Garantía del fabricante]' },
         ],
-        rating: { avg: faker.number.float({ min: 3.4, max: 5, fractionDigits: 1 }), count: faker.number.int({ min: 0, max: 220 }) },
+        rating: {
+          avg: faker.number.float({ min: 3.4, max: 5, fractionDigits: 1 }),
+          count: faker.number.int({ min: 0, max: 220 }),
+        },
         variants,
         has360: false,
         status: faker.helpers.weightedArrayElement([
@@ -341,12 +518,72 @@ export const products: DbProduct[] = [...prototypeProducts, ...generateProducts(
 export const MOCK_PASSWORD = 'Taller123'
 
 export const users: DbUser[] = [
-  { id: 'u-cliente', name: 'Ana López', email: 'cliente@ejemplo.com', password: MOCK_PASSWORD, role: 'cliente', branch_id: null, locked: false, failed_attempts: 0, last_login: iso('2026-10-16T18:02:00') },
-  { id: 'u-staff', name: 'Sofía Treviño', email: 'staff@ejemplo.com', password: MOCK_PASSWORD, role: 'staff', branch_id: 'toluca-centro', locked: false, failed_attempts: 0, last_login: iso('2026-10-16T19:41:00') },
-  { id: 'u-admin', name: 'Luis Ramírez', email: 'admin@ejemplo.com', password: MOCK_PASSWORD, role: 'admin', branch_id: null, locked: false, failed_attempts: 0, last_login: iso('2026-10-17T09:00:00') },
-  { id: 'u-bloqueada', name: 'Jorge Méndez', email: 'bloqueada@ejemplo.com', password: MOCK_PASSWORD, role: 'cliente', branch_id: null, locked: true, failed_attempts: 5, last_login: iso('2026-10-16T21:37:00') },
-  { id: 'u-staff2', name: 'Mario Olvera', email: 'staff.metepec@ejemplo.com', password: MOCK_PASSWORD, role: 'staff', branch_id: 'metepec', locked: false, failed_attempts: 0, last_login: iso('2026-10-16T17:02:00') },
-  { id: 'u-cliente2', name: 'Rosa Pérez', email: 'rosa@ejemplo.com', password: MOCK_PASSWORD, role: 'cliente', branch_id: null, locked: false, failed_attempts: 0, last_login: iso('2026-10-15T10:20:00') },
+  {
+    id: 'u-cliente',
+    name: 'Ana López',
+    email: 'cliente@ejemplo.com',
+    password: MOCK_PASSWORD,
+    role: 'cliente',
+    branch_id: null,
+    locked: false,
+    failed_attempts: 0,
+    last_login: iso('2026-10-16T18:02:00'),
+  },
+  {
+    id: 'u-staff',
+    name: 'Sofía Treviño',
+    email: 'staff@ejemplo.com',
+    password: MOCK_PASSWORD,
+    role: 'staff',
+    branch_id: 'toluca-centro',
+    locked: false,
+    failed_attempts: 0,
+    last_login: iso('2026-10-16T19:41:00'),
+  },
+  {
+    id: 'u-admin',
+    name: 'Luis Ramírez',
+    email: 'admin@ejemplo.com',
+    password: MOCK_PASSWORD,
+    role: 'admin',
+    branch_id: null,
+    locked: false,
+    failed_attempts: 0,
+    last_login: iso('2026-10-17T09:00:00'),
+  },
+  {
+    id: 'u-bloqueada',
+    name: 'Jorge Méndez',
+    email: 'bloqueada@ejemplo.com',
+    password: MOCK_PASSWORD,
+    role: 'cliente',
+    branch_id: null,
+    locked: true,
+    failed_attempts: 5,
+    last_login: iso('2026-10-16T21:37:00'),
+  },
+  {
+    id: 'u-staff2',
+    name: 'Mario Olvera',
+    email: 'staff.metepec@ejemplo.com',
+    password: MOCK_PASSWORD,
+    role: 'staff',
+    branch_id: 'metepec',
+    locked: false,
+    failed_attempts: 0,
+    last_login: iso('2026-10-16T17:02:00'),
+  },
+  {
+    id: 'u-cliente2',
+    name: 'Rosa Pérez',
+    email: 'rosa@ejemplo.com',
+    password: MOCK_PASSWORD,
+    role: 'cliente',
+    branch_id: null,
+    locked: false,
+    failed_attempts: 0,
+    last_login: iso('2026-10-15T10:20:00'),
+  },
 ]
 
 // ---------- Pedidos de Ana López (prototipo Escritorio-15-Pedidos) ----------
@@ -360,46 +597,163 @@ const contactoAna = { name: 'Ana López', email: 'cliente@ejemplo.com', phone: '
 
 export const orders: DbOrder[] = [
   {
-    id: '10482', folio: '10482', user_id: 'u-cliente', guest_token: null, status: 'listo_para_recoger', payment_status: 'pagado',
-    created_at: iso('2026-10-16T14:30:00'), contact: contactoAna,
+    id: '10482',
+    folio: '10482',
+    user_id: 'u-cliente',
+    guest_token: null,
+    status: 'listo_para_recoger',
+    payment_status: 'pagado',
+    created_at: iso('2026-10-16T14:30:00'),
+    contact: contactoAna,
     items: [
-      { id: 'i1', sku: '100245-1', name: 'Taladro percutor inalámbrico 1/2 pulg 20 V', variant_label: 'Con 1 batería de 2 Ah y cargador', unit_price: 289900, qty: 1 },
-      { id: 'i2', sku: '300077-0', name: 'Taladro eléctrico 3/8 pulg 600 W', variant_label: 'Única', unit_price: 44800, qty: 1 },
+      {
+        id: 'i1',
+        sku: '100245-1',
+        name: 'Taladro percutor inalámbrico 1/2 pulg 20 V',
+        variant_label: 'Con 1 batería de 2 Ah y cargador',
+        unit_price: 289900,
+        qty: 1,
+      },
+      {
+        id: 'i2',
+        sku: '300077-0',
+        name: 'Taladro eléctrico 3/8 pulg 600 W',
+        variant_label: 'Única',
+        unit_price: 44800,
+        qty: 1,
+      },
     ],
-    shipping: 0, fulfillment: { type: 'pickup', store_id: 'toluca-centro' },
-    timeline: timeline(['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'listo_para_recoger'], '2026-10-16T14:30:00'),
+    shipping: 0,
+    fulfillment: { type: 'pickup', store_id: 'toluca-centro' },
+    timeline: timeline(
+      ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'listo_para_recoger'],
+      '2026-10-16T14:30:00',
+    ),
     pickup_code: '4821',
   },
   {
-    id: '10450', folio: '10450', user_id: 'u-cliente', guest_token: null, status: 'enviado', payment_status: 'pagado',
-    created_at: iso('2026-10-12T11:00:00'), contact: contactoAna,
-    items: [{ id: 'i1', sku: '200118-0', name: 'Rotomartillo SDS Plus 800 W', variant_label: 'Única', unit_price: 84900, qty: 1 }],
-    shipping: 14900, fulfillment: { type: 'ship', address_label: 'Hidalgo 210, Toluca', tracking: 'MX123456789' },
-    timeline: timeline(['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'enviado'], '2026-10-12T11:00:00'),
-  },
-  {
-    id: '10311', folio: '10311', user_id: 'u-cliente', guest_token: null, status: 'entregado', payment_status: 'pagado',
-    created_at: iso('2026-10-02T10:00:00'), contact: contactoAna,
+    id: '10450',
+    folio: '10450',
+    user_id: 'u-cliente',
+    guest_token: null,
+    status: 'enviado',
+    payment_status: 'pagado',
+    created_at: iso('2026-10-12T11:00:00'),
+    contact: contactoAna,
     items: [
-      { id: 'i1', sku: '400003-0', name: 'Taquete de plástico 1/4 pulg', variant_label: 'Única', unit_price: 4900, qty: 4 },
-      { id: 'i2', sku: '400010-0', name: 'Martillo de uña 16 oz', variant_label: 'Única', unit_price: 32900, qty: 1 },
-      { id: 'i3', sku: '400020-0', name: 'Juego de desarmadores 6 piezas', variant_label: 'Única', unit_price: 51900, qty: 1 },
+      {
+        id: 'i1',
+        sku: '200118-0',
+        name: 'Rotomartillo SDS Plus 800 W',
+        variant_label: 'Única',
+        unit_price: 84900,
+        qty: 1,
+      },
     ],
-    shipping: 0, fulfillment: { type: 'pickup', store_id: 'metepec' },
-    timeline: timeline(['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'listo_para_recoger', 'entregado'], '2026-10-02T10:00:00'),
+    shipping: 14900,
+    fulfillment: { type: 'ship', address_label: 'Hidalgo 210, Toluca', tracking: 'MX123456789' },
+    timeline: timeline(
+      ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'enviado'],
+      '2026-10-12T11:00:00',
+    ),
   },
   {
-    id: '10107', folio: '10107', user_id: 'u-cliente', guest_token: null, status: 'reembolsado', payment_status: 'pagado',
-    created_at: iso('2026-09-14T16:00:00'), contact: contactoAna,
-    items: [{ id: 'i1', sku: '400030-0', name: 'Manguera reforzada 20 m', variant_label: 'Única', unit_price: 42900, qty: 1 }],
-    shipping: 0, fulfillment: { type: 'pickup', store_id: 'toluca-centro' },
-    timeline: timeline(['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'listo_para_recoger', 'entregado', 'reembolsado'], '2026-09-14T16:00:00'),
+    id: '10311',
+    folio: '10311',
+    user_id: 'u-cliente',
+    guest_token: null,
+    status: 'entregado',
+    payment_status: 'pagado',
+    created_at: iso('2026-10-02T10:00:00'),
+    contact: contactoAna,
+    items: [
+      {
+        id: 'i1',
+        sku: '400003-0',
+        name: 'Taquete de plástico 1/4 pulg',
+        variant_label: 'Única',
+        unit_price: 4900,
+        qty: 4,
+      },
+      {
+        id: 'i2',
+        sku: '400010-0',
+        name: 'Martillo de uña 16 oz',
+        variant_label: 'Única',
+        unit_price: 32900,
+        qty: 1,
+      },
+      {
+        id: 'i3',
+        sku: '400020-0',
+        name: 'Juego de desarmadores 6 piezas',
+        variant_label: 'Única',
+        unit_price: 51900,
+        qty: 1,
+      },
+    ],
+    shipping: 0,
+    fulfillment: { type: 'pickup', store_id: 'metepec' },
+    timeline: timeline(
+      ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'listo_para_recoger', 'entregado'],
+      '2026-10-02T10:00:00',
+    ),
   },
   {
-    id: '10044', folio: '10044', user_id: 'u-cliente', guest_token: null, status: 'cancelado', payment_status: 'pendiente',
-    created_at: iso('2026-09-03T12:00:00'), contact: contactoAna,
-    items: [{ id: 'i1', sku: '400040-0', name: 'Pintura vinílica 1 L Mate', variant_label: 'Única', unit_price: 21900, qty: 1 }],
-    shipping: 0, fulfillment: { type: 'pickup', store_id: 'toluca-centro' },
+    id: '10107',
+    folio: '10107',
+    user_id: 'u-cliente',
+    guest_token: null,
+    status: 'reembolsado',
+    payment_status: 'pagado',
+    created_at: iso('2026-09-14T16:00:00'),
+    contact: contactoAna,
+    items: [
+      {
+        id: 'i1',
+        sku: '400030-0',
+        name: 'Manguera reforzada 20 m',
+        variant_label: 'Única',
+        unit_price: 42900,
+        qty: 1,
+      },
+    ],
+    shipping: 0,
+    fulfillment: { type: 'pickup', store_id: 'toluca-centro' },
+    timeline: timeline(
+      [
+        'creado',
+        'pendiente_pago',
+        'pagado',
+        'en_preparacion',
+        'listo_para_recoger',
+        'entregado',
+        'reembolsado',
+      ],
+      '2026-09-14T16:00:00',
+    ),
+  },
+  {
+    id: '10044',
+    folio: '10044',
+    user_id: 'u-cliente',
+    guest_token: null,
+    status: 'cancelado',
+    payment_status: 'pendiente',
+    created_at: iso('2026-09-03T12:00:00'),
+    contact: contactoAna,
+    items: [
+      {
+        id: 'i1',
+        sku: '400040-0',
+        name: 'Pintura vinílica 1 L Mate',
+        variant_label: 'Única',
+        unit_price: 21900,
+        qty: 1,
+      },
+    ],
+    shipping: 0,
+    fulfillment: { type: 'pickup', store_id: 'toluca-centro' },
     timeline: timeline(['creado', 'pendiente_pago', 'cancelado'], '2026-09-03T12:00:00'),
   },
 ]

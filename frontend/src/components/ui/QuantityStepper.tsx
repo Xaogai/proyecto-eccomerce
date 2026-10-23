@@ -10,7 +10,14 @@ interface QuantityStepperProps {
   disabled?: boolean
 }
 
-export function QuantityStepper({ value, onChange, min = 1, max = 99, itemName, disabled }: QuantityStepperProps) {
+export function QuantityStepper({
+  value,
+  onChange,
+  min = 1,
+  max = 99,
+  itemName,
+  disabled,
+}: QuantityStepperProps) {
   const label = itemName ? `Cantidad de ${itemName}` : 'Cantidad'
   const clamp = (n: number) => Math.min(max, Math.max(min, n))
 

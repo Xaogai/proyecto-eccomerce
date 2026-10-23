@@ -43,7 +43,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {items.map((t) => (
           <div key={t.id} className={cx(styles.toast, styles[t.tone])}>
             <span>{t.message}</span>
-            <button type="button" className={styles.close} onClick={() => dismiss(t.id)} aria-label="Cerrar aviso">
+            <button
+              type="button"
+              className={styles.close}
+              onClick={() => dismiss(t.id)}
+              aria-label="Cerrar aviso"
+            >
               ×
             </button>
           </div>

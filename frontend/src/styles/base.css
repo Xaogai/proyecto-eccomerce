@@ -53,7 +53,8 @@ a {
 }
 
 /* El foco al cambiar de ruta va al h1 (tabIndex -1): no se muestra contorno en ese caso. */
-h1:focus:not(:focus-visible) {
+h1:focus:not(:focus-visible),
+main:focus {
   outline: none;
 }
 

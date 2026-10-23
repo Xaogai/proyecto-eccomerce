@@ -59,7 +59,10 @@ export async function applyScenario(): Promise<Response | undefined> {
   if (s === 'slow') await delay(2000)
   else if (browser) await delay(250)
   if (s === 'error') {
-    return HttpResponse.json({ detail: { code: 'server_error', message: 'Error simulado del servidor.' } }, { status: 500 })
+    return HttpResponse.json(
+      { detail: { code: 'server_error', message: 'Error simulado del servidor.' } },
+      { status: 500 },
+    )
   }
   if (s === 'offline') return HttpResponse.error()
   return undefined

@@ -1,0 +1,104 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1025px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+}
+
+.sidebar {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+@media (min-width: 1441px) {
+  .sidebar {
+    flex-basis: 340px;
+  }
+}
+
+.sidebarTitle {
+  font-size: 24px;
+}
+
+.results {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.range {
+  color: var(--color-texto-2);
+}
+
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort select {
+  min-height: var(--tactil-min);
+  padding: 0 10px;
+  border: 1px solid var(--color-borde-campo);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+}
+
+.mobileBar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* En móvil la etiqueta "Ordenar por" queda dentro del control, como en Movil-1-Listado */
+.mobileBar .sort {
+  position: relative;
+}
+
+.mobileBar .sort span {
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  font-size: 12px;
+  color: var(--color-texto-2);
+  pointer-events: none;
+}
+
+.mobileBar .sort select {
+  width: 100%;
+  min-height: var(--boton-alto);
+  padding: 14px 10px 0;
+  font-weight: 600;
+}
+
+.noMatch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px;
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}

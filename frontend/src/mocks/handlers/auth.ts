@@ -32,12 +32,23 @@ export const authHandlers = [
     const hijack = await applyScenario()
     if (hijack) return hijack
     const { email, password } = (await request.json()) as { email?: string; password?: string }
-    const user = db.users.find((u) => u.email.toLowerCase() === String(email ?? '').trim().toLowerCase())
+    const user = db.users.find(
+      (u) =>
+        u.email.toLowerCase() ===
+        String(email ?? '')
+          .trim()
+          .toLowerCase(),
+    )
 
     if (user?.locked) {
-      return businessError(423, 'account_locked', 'Bloqueamos tu cuenta por seguridad tras varios intentos fallidos.', {
-        retry_after_s: LOCK_SECONDS,
-      })
+      return businessError(
+        423,
+        'account_locked',
+        'Bloqueamos tu cuenta por seguridad tras varios intentos fallidos.',
+        {
+          retry_after_s: LOCK_SECONDS,
+        },
+      )
     }
     if (!user || user.password !== password) {
       if (user) {
@@ -63,15 +74,21 @@ export const authHandlers = [
     }
     const errors: Record<string, string> = {}
     if (!body.name?.trim()) errors.name = 'Escribe tu nombre.'
-    if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) errors.email = 'Escribe un correo válido, por ejemplo nombre@correo.com.'
+    if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email))
+      errors.email = 'Escribe un correo válido, por ejemplo nombre@correo.com.'
     if (!body.password || body.password.length < 8) {
       errors.password = `Tu contraseña tiene ${body.password?.length ?? 0} caracteres. Usa al menos 8.`
     }
-    if (!body.privacy_accepted) errors.privacy_accepted = 'Para crear tu cuenta necesitas aceptar el aviso de privacidad.'
+    if (!body.privacy_accepted)
+      errors.privacy_accepted = 'Para crear tu cuenta necesitas aceptar el aviso de privacidad.'
     if (Object.keys(errors).length) return validationError(errors)
 
     if (db.users.some((u) => u.email.toLowerCase() === body.email!.toLowerCase())) {
-      return businessError(409, 'email_taken', 'Ya existe una cuenta con ese correo. Inicia sesión o recupera tu contraseña.')
+      return businessError(
+        409,
+        'email_taken',
+        'Ya existe una cuenta con ese correo. Inicia sesión o recupera tu contraseña.',
+      )
     }
     const id = `u-${crypto.randomUUID().slice(0, 8)}`
     db.users.push({
@@ -91,7 +108,8 @@ export const authHandlers = [
   http.post(`${API}/auth/refresh`, async ({ request }) => {
     const { refresh_token } = (await request.json().catch(() => ({}))) as { refresh_token?: string }
     const userId = refresh_token ? db.refreshTokens.get(refresh_token) : undefined
-    if (!refresh_token || !userId) return businessError(401, 'invalid_refresh', 'Tu sesión terminó. Inicia sesión de nuevo.')
+    if (!refresh_token || !userId)
+      return businessError(401, 'invalid_refresh', 'Tu sesión terminó. Inicia sesión de nuevo.')
     // Rotación: el token usado deja de servir.
     db.refreshTokens.delete(refresh_token)
     return HttpResponse.json({
@@ -116,7 +134,8 @@ export const authHandlers = [
 
   http.post(`${API}/auth/password/reset`, async ({ request }) => {
     const { token, password } = (await request.json()) as { token?: string; password?: string }
-    if (token === 'vencido') return businessError(410, 'token_expired', 'El enlace ya venció. Pide uno nuevo.')
+    if (token === 'vencido')
+      return businessError(410, 'token_expired', 'El enlace ya venció. Pide uno nuevo.')
     if (!password || password.length < 8) return validationError({ password: 'Usa al menos 8 caracteres.' })
     return new HttpResponse(null, { status: 204 })
   }),

@@ -9,7 +9,10 @@ import { loginResponseSchema, userSchema } from './schemas/auth'
 import { tokenStorage } from './tokenStorage'
 
 async function login() {
-  const res = await send('post', '/auth/login', loginResponseSchema, { email: 'cliente@ejemplo.com', password: 'Taller123' })
+  const res = await send('post', '/auth/login', loginResponseSchema, {
+    email: 'cliente@ejemplo.com',
+    password: 'Taller123',
+  })
   setAccessToken(res.access_token)
   tokenStorage.set(res.refresh_token)
   return res
@@ -45,7 +48,11 @@ describe('cliente de API y JWT', () => {
   })
 
   it('convierte el 422 de FastAPI en errores por campo', async () => {
-    const error = (await send('post', '/auth/register', z.unknown(), { name: '', email: 'x', password: '1234567' }).catch((e) => e)) as ApiError
+    const error = (await send('post', '/auth/register', z.unknown(), {
+      name: '',
+      email: 'x',
+      password: '1234567',
+    }).catch((e) => e)) as ApiError
     expect(error).toBeInstanceOf(ApiError)
     expect(error.status).toBe(422)
     expect(error.fieldErrors.password).toBe('Tu contraseña tiene 7 caracteres. Usa al menos 8.')
@@ -53,7 +60,10 @@ describe('cliente de API y JWT', () => {
   })
 
   it('expone el código de negocio de la cuenta bloqueada (B4)', async () => {
-    const error = (await send('post', '/auth/login', z.unknown(), { email: 'bloqueada@ejemplo.com', password: 'Taller123' }).catch((e) => e)) as ApiError
+    const error = (await send('post', '/auth/login', z.unknown(), {
+      email: 'bloqueada@ejemplo.com',
+      password: 'Taller123',
+    }).catch((e) => e)) as ApiError
     expect(error).toMatchObject({ status: 423, code: 'account_locked' })
     expect(error.data.retry_after_s).toBeGreaterThan(0)
   })

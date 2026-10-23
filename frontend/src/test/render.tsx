@@ -26,7 +26,14 @@ function Providers({ children }: { children: ReactElement }) {
 /** Monta la app completa (o unas rutas) en una URL, con todos los proveedores y MSW. */
 export function renderRoute(url: string, routes: RouteObject[] = appRoutes) {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
-  return { router, ...render(<Providers><RouterProvider router={router} /></Providers>) }
+  return {
+    router,
+    ...render(
+      <Providers>
+        <RouterProvider router={router} />
+      </Providers>,
+    ),
+  }
 }
 
 /** Monta un componente suelto dentro de un router de una sola ruta. */

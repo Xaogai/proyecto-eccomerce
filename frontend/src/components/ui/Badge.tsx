@@ -11,7 +11,15 @@ import {
 } from '@/lib/orderStatus'
 import styles from './Badge.module.css'
 
-export function Badge({ tone = 'neutro', children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
+export function Badge({
+  tone = 'neutro',
+  children,
+  className,
+}: {
+  tone?: Tone
+  children: ReactNode
+  className?: string
+}) {
   return <span className={cx(styles.badge, styles[tone], className)}>{children}</span>
 }
 

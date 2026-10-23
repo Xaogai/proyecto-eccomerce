@@ -1,0 +1,52 @@
+.grid {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+}
+
+.item > * {
+  flex: 1;
+}
+
+/* 27.4: 1 columna en móvil chico, 2 desde 481 px, 3 desde 769 px, 4 desde 1441 px */
+.listado {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 481px) {
+  .listado {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 769px) {
+  .grid {
+    gap: 16px;
+  }
+
+  .listado {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1441px) {
+  .listado {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.inicio {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 769px) {
+  .inicio {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}

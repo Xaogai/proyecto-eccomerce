@@ -9,14 +9,25 @@ export const API = '*/api/v1'
 /** Vida del access token simulado: corta a propósito para probar el refresh (sec. 4.3). */
 export const ACCESS_TTL_S = 60
 
-export function businessError(status: number, code: string, message: string, extra: Record<string, unknown> = {}) {
+export function businessError(
+  status: number,
+  code: string,
+  message: string,
+  extra: Record<string, unknown> = {},
+) {
   return HttpResponse.json({ detail: { code, message, ...extra } }, { status })
 }
 
 /** 422 con el formato de FastAPI: detail[] con loc y msg. */
 export function validationError(fields: Record<string, string>) {
   return HttpResponse.json(
-    { detail: Object.entries(fields).map(([field, msg]) => ({ loc: ['body', ...field.split('.')], msg, type: 'value_error' })) },
+    {
+      detail: Object.entries(fields).map(([field, msg]) => ({
+        loc: ['body', ...field.split('.')],
+        msg,
+        type: 'value_error',
+      })),
+    },
     { status: 422 },
   )
 }
@@ -35,7 +46,14 @@ export function issueRefreshToken(userId: string) {
 
 export function toPublicUser(u: DbUser): User {
   const branch = u.branch_id ? db.stores.find((s) => s.id === u.branch_id) : null
-  return { id: u.id, name: u.name, email: u.email, role: u.role, branch_id: u.branch_id, branch_name: branch?.name ?? null }
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    branch_id: u.branch_id,
+    branch_name: branch?.name ?? null,
+  }
 }
 
 /** Usuario del encabezado Authorization, o null si no hay o venció. */

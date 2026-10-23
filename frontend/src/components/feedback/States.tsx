@@ -3,7 +3,15 @@ import { cx } from '@/lib/cx'
 import styles from './States.module.css'
 
 /** Bloque gris de carga. Se oculta a lectores; el anuncio lo da LoadingStatus. */
-export function Skeleton({ width, height = 14, className }: { width?: string | number; height?: number; className?: string }) {
+export function Skeleton({
+  width,
+  height = 14,
+  className,
+}: {
+  width?: string | number
+  height?: number
+  className?: string
+}) {
   return <span aria-hidden="true" className={cx(styles.skeleton, className)} style={{ width, height }} />
 }
 
@@ -106,8 +114,8 @@ export function QueueState({ position, progress }: { position: number; progress:
         Hay muchas personas comprando ahora
       </h2>
       <p className={styles.text}>
-        Estás en la fila para entrar al checkout. Lugar aproximado: {position}. No cierres esta página; tus productos
-        siguen apartados.
+        Estás en la fila para entrar al checkout. Lugar aproximado: {position}. No cierres esta página; tus
+        productos siguen apartados.
       </p>
       <div
         role="progressbar"

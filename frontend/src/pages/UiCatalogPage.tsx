@@ -58,7 +58,11 @@ export function UiCatalogPage() {
         <FormErrorSummary>Revisa 1 campo antes de continuar.</FormErrorSummary>
         <div className={styles.grid}>
           <TextField label="Correo electrónico" type="email" autoComplete="email" />
-          <TextField label="Contraseña" type="password" error="Tu contraseña tiene 7 caracteres. Usa al menos 8." />
+          <TextField
+            label="Contraseña"
+            type="password"
+            error="Tu contraseña tiene 7 caracteres. Usa al menos 8."
+          />
           <TextField label="Teléfono" optional hint="10 dígitos" />
           <Select label="Ordenar por" defaultValue="rel">
             <option value="rel">Más relevantes</option>
@@ -77,7 +81,12 @@ export function UiCatalogPage() {
             { value: 'envio', label: 'Envío o recolección' },
           ]}
         />
-        <Switch label="Vista 360° de producto" description="En prueba en Android de gama baja" checked={on} onChange={setOn} />
+        <Switch
+          label="Vista 360° de producto"
+          description="En prueba en Android de gama baja"
+          checked={on}
+          onChange={setOn}
+        />
         <QuantityStepper value={qty} onChange={setQty} max={12} itemName="Taladro percutor" />
         <StarRatingInput value={stars} onChange={setStars} />
       </Section>
@@ -156,7 +165,13 @@ export function UiCatalogPage() {
             { key: 'id', header: 'Pedido', cell: (r) => r.id, rowHeader: true },
             { key: 'cliente', header: 'Cliente', cell: (r) => r.cliente },
             { key: 'estado', header: 'Estado', cell: (r) => <StatusBadge status={r.estado} /> },
-            { key: 'total', header: 'Total', cell: (r) => <Price amount={r.total} size="linea" />, align: 'end', sortable: true },
+            {
+              key: 'total',
+              header: 'Total',
+              cell: (r) => <Price amount={r.total} size="linea" />,
+              align: 'end',
+              sortable: true,
+            },
           ]}
           rows={[
             { id: '10483', cliente: 'Jorge M.', estado: 'pendiente_pago' as const, total: 189000 },
@@ -180,15 +195,27 @@ export function UiCatalogPage() {
           </Button>
         </div>
         {confirm && (
-          <InlineConfirm question="¿Eliminar la dirección Casa?" onConfirm={() => setConfirm(false)} onCancel={() => setConfirm(false)} />
+          <InlineConfirm
+            question="¿Eliminar la dirección Casa?"
+            onConfirm={() => setConfirm(false)}
+            onCancel={() => setConfirm(false)}
+          />
         )}
-        <Dialog open={dialog} onClose={() => setDialog(false)} title="Filtros" variant="sheet" footer={<Button onClick={() => setDialog(false)}>Ver resultados</Button>}>
+        <Dialog
+          open={dialog}
+          onClose={() => setDialog(false)}
+          title="Filtros"
+          variant="sheet"
+          footer={<Button onClick={() => setDialog(false)}>Ver resultados</Button>}
+        >
           <p>Contenido del panel.</p>
         </Dialog>
       </Section>
 
       <Section title="Estados de página">
-        <EmptyState title='No encontramos "taladro inalambico rojo 36v"'>Revisa la ortografía o usa menos palabras.</EmptyState>
+        <EmptyState title='No encontramos "taladro inalambico rojo 36v"'>
+          Revisa la ortografía o usa menos palabras.
+        </EmptyState>
         <ErrorState title="No pudimos cargar los productos" onRetry={() => toast('Reintentando')} />
         <div className={styles.cards}>
           <ProductCardSkeleton />

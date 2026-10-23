@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { SITE_NAME } from '@/hooks/usePageTitle'
 import styles from './Header.module.css'
 
-/** "[MARCA]." con el punto naranja. Enlaza al inicio. */
+/** "Ferremarket." con el punto naranja. Enlaza al inicio. */
 export function Logo({ to = '/', suffix }: { to?: string; suffix?: string }) {
   return (
     <Link to={to} className={styles.logo}>

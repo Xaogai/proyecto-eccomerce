@@ -5,6 +5,7 @@ import { setAccessToken } from '@/api/client'
 import { resetDb } from '@/mocks/db/store'
 import { setScenario } from '@/mocks/scenarios'
 import { server } from '@/mocks/server'
+import { setViewport } from './viewport'
 
 // <dialog> no está completo en jsdom.
 HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
@@ -14,17 +15,7 @@ HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
   this.removeAttribute('open')
 }
 
-window.matchMedia ??= (query: string) =>
-  ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    addListener: () => {},
-    removeListener: () => {},
-    dispatchEvent: () => false,
-  }) as MediaQueryList
+setViewport('movil')
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
@@ -35,5 +26,6 @@ afterEach(() => {
   setAccessToken(null)
   window.localStorage.clear()
   window.sessionStorage.clear()
+  setViewport('movil')
 })
 afterAll(() => server.close())

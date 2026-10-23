@@ -7,16 +7,19 @@ import { useLocation } from 'react-router-dom'
  */
 export function useRouteFocus() {
   const { pathname } = useLocation()
-  const first = useRef(true)
+  // Ruta anterior (no un flag de "primera vez": en desarrollo StrictMode ejecuta el efecto dos veces).
+  const previous = useRef(pathname)
 
   useEffect(() => {
-    if (first.current) {
-      first.current = false
-      return
-    }
+    if (previous.current === pathname) return
+    previous.current = pathname
     // Espera un cuadro a que la página nueva pinte su h1.
     const id = requestAnimationFrame(() => {
-      const target = document.querySelector<HTMLElement>('main h1') ?? document.querySelector<HTMLElement>('main')
+      // Si la página ya puso el foco en un campo (p. ej. el buscador con autoFocus), se respeta.
+      const focused = document.activeElement
+      if (focused && focused !== document.body && document.querySelector('main')?.contains(focused)) return
+      const target =
+        document.querySelector<HTMLElement>('main h1') ?? document.querySelector<HTMLElement>('main')
       if (!target) return
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1')
       target.focus()

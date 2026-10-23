@@ -4,7 +4,15 @@ import styles from './Field.module.css'
 
 function AlertIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="10" />
       <path d="M12 7v6M12 17h.01" strokeLinecap="round" />
     </svg>
@@ -65,15 +73,33 @@ export function FormField({ label, hint, error, optional, className, children }:
           {hint}
         </span>
       )}
-      {children({ id, 'aria-describedby': describedBy, 'aria-invalid': error ? true : undefined, className: styles.control })}
+      {children({
+        id,
+        'aria-describedby': describedBy,
+        'aria-invalid': error ? true : undefined,
+        className: styles.control,
+      })}
       {error && <FieldError id={errorId}>{error}</FieldError>}
     </div>
   )
 }
 
-type FieldBase = { label: ReactNode; hint?: ReactNode; error?: string; optional?: boolean; fieldClassName?: string }
+type FieldBase = {
+  label: ReactNode
+  hint?: ReactNode
+  error?: string
+  optional?: boolean
+  fieldClassName?: string
+}
 
-export function TextField({ label, hint, error, optional, fieldClassName, ...input }: FieldBase & ComponentProps<'input'>) {
+export function TextField({
+  label,
+  hint,
+  error,
+  optional,
+  fieldClassName,
+  ...input
+}: FieldBase & ComponentProps<'input'>) {
   return (
     <FormField label={label} hint={hint} error={error} optional={optional} className={fieldClassName}>
       {(control) => <input {...input} {...control} className={cx(control.className, input.className)} />}
@@ -81,7 +107,14 @@ export function TextField({ label, hint, error, optional, fieldClassName, ...inp
   )
 }
 
-export function Textarea({ label, hint, error, optional, fieldClassName, ...rest }: FieldBase & ComponentProps<'textarea'>) {
+export function Textarea({
+  label,
+  hint,
+  error,
+  optional,
+  fieldClassName,
+  ...rest
+}: FieldBase & ComponentProps<'textarea'>) {
   return (
     <FormField label={label} hint={hint} error={error} optional={optional} className={fieldClassName}>
       {(control) => <textarea {...rest} {...control} className={cx(control.className, rest.className)} />}
@@ -89,7 +122,15 @@ export function Textarea({ label, hint, error, optional, fieldClassName, ...rest
   )
 }
 
-export function Select({ label, hint, error, optional, fieldClassName, children, ...rest }: FieldBase & ComponentProps<'select'>) {
+export function Select({
+  label,
+  hint,
+  error,
+  optional,
+  fieldClassName,
+  children,
+  ...rest
+}: FieldBase & ComponentProps<'select'>) {
   return (
     <FormField label={label} hint={hint} error={error} optional={optional} className={fieldClassName}>
       {(control) => (
@@ -127,7 +168,15 @@ interface RadioGroupProps<T extends string> {
   className?: string
 }
 
-export function RadioGroup<T extends string>({ legend, name, value, options, onChange, error, className }: RadioGroupProps<T>) {
+export function RadioGroup<T extends string>({
+  legend,
+  name,
+  value,
+  options,
+  onChange,
+  error,
+  className,
+}: RadioGroupProps<T>) {
   const id = useId()
   const errorId = error ? `${id}-error` : undefined
   return (
