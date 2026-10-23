@@ -109,8 +109,7 @@ export function Filters({ state, facets, active, onChange, storeName, collapsibl
                   />
                   <span className={styles.optionLabel}>{o.label}</span>
                   <span className={styles.count}>
-                    {o.count}
-                    <span className="sr-only"> productos</span>
+                    {o.count} <span className="sr-only">productos</span>
                   </span>
                 </label>
               ))}

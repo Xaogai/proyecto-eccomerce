@@ -80,6 +80,25 @@ export interface DbOrder {
     { type: 'ship'; address_label: string; tracking?: string } | { type: 'pickup'; store_id: string }
   timeline: Array<{ status: OrderStatus; at: string }>
   pickup_code?: string
+  /** Pago simulado: la "pasarela" confirma (webhook) unos segundos después de pagar */
+  payment?: { outcome: 'pagado' | 'rechazado'; confirms_at: number }
+}
+
+export interface DbAddress {
+  id: string
+  user_id: string
+  alias: string
+  name: string
+  street: string
+  ext: string
+  int?: string
+  colony: string
+  zip: string
+  city: string
+  state: string
+  phone: string
+  references?: string
+  is_default: boolean
 }
 
 export interface DbCartItem {
@@ -760,3 +779,38 @@ export const orders: DbOrder[] = [
 
 /** Feature flags del prototipo Admin-9-Configuracion. */
 export const featureFlags = { v360: false, calc: true, cmp: true, rev: true, queue: true }
+
+// ---------- Direcciones de Ana López (prototipo Escritorio-17-Direcciones) ----------
+
+export const addresses: DbAddress[] = [
+  {
+    id: 'a-casa',
+    user_id: 'u-cliente',
+    alias: 'Casa',
+    name: 'Ana López',
+    street: 'Hidalgo',
+    ext: '210',
+    colony: 'Centro',
+    zip: '50000',
+    city: 'Toluca',
+    state: 'Estado de México',
+    phone: '722 123 4567',
+    references: 'Portón negro',
+    is_default: true,
+  },
+  {
+    id: 'a-oficina',
+    user_id: 'u-cliente',
+    alias: 'Oficina',
+    name: 'Ana López',
+    street: 'Av. Tecnológico',
+    ext: '1500',
+    int: 'Piso 3',
+    colony: 'San Salvador Tizatlalli',
+    zip: '52140',
+    city: 'Metepec',
+    state: 'Estado de México',
+    phone: '722 123 4567',
+    is_default: false,
+  },
+]

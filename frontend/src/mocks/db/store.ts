@@ -9,6 +9,9 @@ function fresh() {
     products: structuredClone(seed.products),
     users: structuredClone(seed.users),
     orders: structuredClone(seed.orders),
+    addresses: structuredClone(seed.addresses),
+    /** intentos de checkout en el escenario "fila de espera" */
+    queueAttempts: 0,
     featureFlags: { ...seed.featureFlags },
     /** carritos por id (invitado o usuario) */
     carts: new Map<string, seed.DbCartItem[]>(),
@@ -25,6 +28,28 @@ export let db = fresh()
 
 export function resetDb() {
   db = fresh()
+}
+
+// ---------- Persistencia en el navegador ----------
+// Así una recarga de página no pierde el carrito, la sesión ni los pedidos simulados.
+
+type Db = ReturnType<typeof fresh>
+
+export function exportDb(): string {
+  return JSON.stringify(db, (_key, value) =>
+    value instanceof Map ? { __map: [...value] } : value instanceof Set ? { __set: [...value] } : value,
+  )
+}
+
+export function importDb(json: string) {
+  const restored = JSON.parse(json, (_key, value) =>
+    value && typeof value === 'object' && '__map' in value
+      ? new Map(value.__map)
+      : value && typeof value === 'object' && '__set' in value
+        ? new Set(value.__set)
+        : value,
+  ) as Db
+  db = { ...fresh(), ...restored }
 }
 
 // ---------- Consultas comunes ----------

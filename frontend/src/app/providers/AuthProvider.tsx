@@ -1,9 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { get, onSessionExpired, refreshAccessToken, send, setAccessToken } from '@/api/client'
+import { CART_ID_KEY, get, onSessionExpired, refreshAccessToken, send, setAccessToken } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
 import { type LoginResponse, loginResponseSchema, type Role, type User, userSchema } from '@/api/schemas/auth'
 import { tokenStorage } from '@/api/tokenStorage'
+import { readJson, writeJson } from '@/lib/storage'
 import { z } from 'zod'
 import { AuthContext, type AuthContextValue, type RegisterInput } from './authContext'
 
@@ -40,9 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => onSessionExpired(endSession), [endSession])
 
   const startSession = useCallback(
-    (res: LoginResponse) => {
+    async (res: LoginResponse) => {
       setAccessToken(res.access_token)
       tokenStorage.set(res.refresh_token)
+      // EP-14: lo que el invitado puso en su carrito pasa al carrito de la cuenta.
+      const guestCart = readJson<string | null>(CART_ID_KEY, null)
+      if (guestCart) {
+        try {
+          await send('post', endpoints.cartMerge, z.unknown(), { guest_cart_id: guestCart })
+        } catch {
+          // si falla, el carrito de la cuenta sigue intacto
+        }
+        writeJson(CART_ID_KEY, null)
+      }
       setState({ status: 'autenticado', user: res.user })
       // El carrito y los datos de cuenta cambian al entrar.
       void queryClient.invalidateQueries({ queryKey: ['cart'] })

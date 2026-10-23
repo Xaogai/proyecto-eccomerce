@@ -14,6 +14,8 @@ export const storeSchema = z.object({
   lng: z.number(),
   distance_km: z.number().optional(),
   stock: z.object({ qty: z.number().int(), status: stockStatusSchema }).optional(),
+  /** Con ?skus=: la sucursal tiene todo el pedido (checkout, recoger en tienda) */
+  all_available: z.boolean().optional(),
 })
 export type Store = z.infer<typeof storeSchema>
 

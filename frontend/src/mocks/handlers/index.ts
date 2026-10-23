@@ -2,6 +2,7 @@ import { accountHandlers } from './account'
 import { authHandlers } from './auth'
 import { cartHandlers } from './cart'
 import { catalogHandlers } from './catalog'
+import { checkoutHandlers } from './checkout'
 import { storeHandlers } from './stores'
 
 export const handlers = [
@@ -9,5 +10,6 @@ export const handlers = [
   ...catalogHandlers,
   ...storeHandlers,
   ...cartHandlers,
+  ...checkoutHandlers,
   ...accountHandlers,
 ]

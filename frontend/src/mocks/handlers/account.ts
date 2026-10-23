@@ -21,6 +21,17 @@ const serialize = (userId: string) =>
   })
 
 export const accountHandlers = [
+  // EP-27 (solo lectura en esta fase; el CRUD llega en la fase 3)
+  http.get(`${API}/me/addresses`, async ({ request }) => {
+    const hijack = await applyScenario()
+    if (hijack) return hijack
+    const auth = requireUser(request)
+    if ('response' in auth) return auth.response
+    return HttpResponse.json(
+      db.addresses.filter((a) => a.user_id === auth.user.id).map(({ user_id: _owner, ...a }) => a),
+    )
+  }),
+
   http.get(`${API}/me/wishlist`, async ({ request }) => {
     const hijack = await applyScenario()
     if (hijack) return hijack

@@ -17,7 +17,26 @@
   max-width: 960px;
 }
 
+.storeInfo {
+  display: none;
+  color: var(--color-texto-oscuro);
+}
+
+@media (min-width: 769px) {
+  .storeInfo {
+    display: inline;
+  }
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tactil-min);
+  color: var(--color-superficie);
+}
+
 .secure {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;

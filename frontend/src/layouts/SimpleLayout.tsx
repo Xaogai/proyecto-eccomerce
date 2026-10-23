@@ -1,4 +1,5 @@
-import { Outlet } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useSelectedStore } from '@/app/providers/storeContext'
 import { Footer } from '@/components/layout/Footer'
 import { LockIcon } from '@/components/layout/icons'
 import { Logo } from '@/components/layout/Logo'
@@ -15,6 +16,8 @@ import styles from './layouts.module.css'
  */
 export function SimpleLayout({ variant }: { variant: 'checkout' | 'auth' }) {
   useRouteFocus()
+  const { store } = useSelectedStore()
+  const { pathname } = useLocation()
   return (
     <>
       <SkipLink />
@@ -22,10 +25,22 @@ export function SimpleLayout({ variant }: { variant: 'checkout' | 'auth' }) {
         <div className={`contenedor ${headerStyles.bar}`}>
           <Logo />
           {variant === 'checkout' && (
-            <span className={styles.secure}>
-              <LockIcon />
-              Compra segura
-            </span>
+            <>
+              <span className={styles.secure}>
+                <LockIcon />
+                Compra segura
+              </span>
+              {store && pathname === '/checkout' && (
+                <span className={styles.storeInfo}>
+                  {store.name} · CP {store.zip}
+                </span>
+              )}
+              {pathname === '/checkout' && (
+                <Link to="/carrito" className={styles.backLink}>
+                  Volver al carrito
+                </Link>
+              )}
+            </>
           )}
         </div>
       </header>

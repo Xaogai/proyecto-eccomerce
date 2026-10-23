@@ -20,8 +20,7 @@ export function Price({ amount, size = 'tarjeta', before, from, className }: Pri
       <span className={cx(styles.price, styles[size])}>{formatMoney(amount)}</span>
       {before !== undefined && before > amount && (
         <s className={styles.before}>
-          <span className="sr-only">Antes </span>
-          {formatMoney(before)}
+          <span className="sr-only">Antes</span> {formatMoney(before)}
         </s>
       )}
     </span>

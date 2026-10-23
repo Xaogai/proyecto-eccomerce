@@ -9,6 +9,9 @@ import { DepartmentsPage } from '@/pages/catalog/DepartmentsPage'
 import { HomePage } from '@/pages/catalog/HomePage'
 import { ProductPage } from '@/pages/catalog/ProductPage'
 import { SearchPage } from '@/pages/catalog/SearchPage'
+import { CartPage } from '@/pages/checkout/CartPage'
+import { CheckoutPage } from '@/pages/checkout/CheckoutPage'
+import { ConfirmationPage } from '@/pages/checkout/ConfirmationPage'
 import { HelpPage } from '@/pages/HelpPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
@@ -17,6 +20,9 @@ import { GuestOnly, RequireAuth } from './guards'
 
 // Mapa de rutas de docs/diseno/plan-frontend.md (sec. 2). Cada PlaceholderPage se cambia
 // por la página real en su fase; las secciones grandes se cargarán con lazy().
+
+const MOCKS =
+  import.meta.env.MODE === 'mock' || import.meta.env.MODE === 'test' || import.meta.env.VITE_MOCKS === 'true'
 
 const todo = (title: string, screens: string, phase: number) => (
   <PlaceholderPage title={title} screens={screens} phase={phase} />
@@ -38,7 +44,7 @@ const shopRoutes: RouteObject[] = [
   { path: 'comparar', element: todo('Comparar productos', '17, 24', 4) },
   { path: 'calculadora/:tipo?', element: todo('Calculadora de materiales', '19, 26', 4) },
   { path: 'sucursales', element: todo('Sucursales', '20, 27', 4) },
-  { path: 'carrito', element: todo('Carrito', '04, 11', 2) },
+  { path: 'carrito', element: <CartPage /> },
   { path: 'ayuda/:tema', element: <HelpPage /> },
   {
     path: 'cuenta',
@@ -75,8 +81,18 @@ const authRoutes: RouteObject[] = [
 ]
 
 const checkoutRoutes: RouteObject[] = [
-  { path: 'checkout', element: todo('Checkout', '05, 12', 2) },
-  { path: 'pedido/:id/confirmacion', element: todo('Confirmación de pedido', '06, 13', 2) },
+  { path: 'checkout', element: <CheckoutPage /> },
+  { path: 'pedido/:id/confirmacion', element: <ConfirmationPage /> },
+  // Pasarela simulada: solo con datos de prueba (lazy: no entra al build de producción).
+  ...(MOCKS
+    ? [
+        {
+          path: '_pasarela/:id',
+          lazy: () =>
+            import('@/mocks/PaymentSimulatorPage').then((m) => ({ Component: m.PaymentSimulatorPage })),
+        },
+      ]
+    : []),
 ]
 
 const adminRoutes: RouteObject[] = [

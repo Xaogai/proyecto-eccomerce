@@ -33,6 +33,20 @@ export function MockPanel() {
               ))}
             </select>
           </label>
+          <button
+            type="button"
+            className={styles.toggle}
+            onClick={() => {
+              try {
+                sessionStorage.removeItem('taller.mock-db')
+              } catch {
+                // sin almacenamiento
+              }
+              window.location.reload()
+            }}
+          >
+            Reiniciar datos de prueba
+          </button>
           <p className={styles.users}>
             Usuarios (contraseña <code>{MOCK_PASSWORD}</code>):
             <br />

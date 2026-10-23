@@ -15,6 +15,8 @@ export const cartItemSchema = z.object({
   qty: z.number().int().min(1),
   max_qty: z.number().int(),
   stock_status: stockStatusSchema,
+  /** Stock en la sucursal pedida con ?store_id= (null si no se pidió) */
+  store_stock: z.object({ qty: z.number().int(), status: stockStatusSchema }).nullable().optional(),
 })
 export type CartItem = z.infer<typeof cartItemSchema>
 

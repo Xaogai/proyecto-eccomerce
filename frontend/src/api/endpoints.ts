@@ -16,6 +16,7 @@ export const endpoints = {
   order: (id: string) => `/orders/${id}`, // EP-16
   orderPaymentRetry: (id: string) => `/orders/${id}/payment/retry`, // EP-17
   orders: '/orders', // EP-18
+  paymentWebhook: '/webhooks/payment', // Doc 13.1 (lo llama la pasarela; aquí solo la pasarela simulada)
   orderReturns: (id: string) => `/orders/${id}/returns`, // EP-19
   register: '/auth/register', // EP-20
   login: '/auth/login', // EP-21
@@ -24,6 +25,7 @@ export const endpoints = {
   passwordForgot: '/auth/password/forgot', // EP-24
   passwordReset: '/auth/password/reset', // EP-25
   me: '/me', // EP-26
+  addresses: '/me/addresses', // EP-27
   wishlist: '/me/wishlist', // EP-28
   wishlistItem: (sku: string) => `/me/wishlist/${encodeURIComponent(sku)}`, // EP-28
   featureFlags: '/feature-flags', // EP-33

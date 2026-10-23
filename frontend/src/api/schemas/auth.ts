@@ -38,3 +38,21 @@ export const featureFlagsSchema = z.object({
 })
 export type FeatureFlags = z.infer<typeof featureFlagsSchema>
 export type FeatureFlag = keyof FeatureFlags
+
+// EP-27
+export const addressSchema = z.object({
+  id: z.string(),
+  alias: z.string(),
+  name: z.string(),
+  street: z.string(),
+  ext: z.string(),
+  int: z.string().optional(),
+  colony: z.string(),
+  zip: z.string(),
+  city: z.string(),
+  state: z.string(),
+  phone: z.string(),
+  references: z.string().optional(),
+  is_default: z.boolean(),
+})
+export type Address = z.infer<typeof addressSchema>

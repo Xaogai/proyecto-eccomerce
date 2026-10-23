@@ -23,7 +23,12 @@ export function Stepper({ steps, current, label = 'Pasos' }: StepperProps) {
           </span>
           <span>
             {s}
-            {i < current && <span className="sr-only"> (completado)</span>}
+            {i < current && (
+              <>
+                {' '}
+                <span className="sr-only">(completado)</span>
+              </>
+            )}
           </span>
         </li>
       ))}
