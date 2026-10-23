@@ -3,12 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { get, send } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
-import { productSummarySchema } from '@/api/schemas/catalog'
+import { wishlistItemSchema } from '@/api/schemas/catalog'
 import { useAuth } from '@/app/providers/authContext'
 import { useToast } from '@/components/feedback/toastContext'
 
 export const wishlistKeys = { list: ['wishlist'] as const }
-const listSchema = z.array(productSummarySchema)
+const listSchema = z.array(wishlistItemSchema)
 
 /** EP-28. Solo con sesión. */
 export function useWishlist() {

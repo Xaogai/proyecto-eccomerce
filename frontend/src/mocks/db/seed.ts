@@ -56,6 +56,8 @@ export interface DbUser {
   locked: boolean
   failed_attempts: number
   last_login: string | null
+  phone?: string
+  consents?: { marketing: boolean; personalization: boolean }
 }
 
 export interface DbOrder {
@@ -80,6 +82,7 @@ export interface DbOrder {
     { type: 'ship'; address_label: string; tracking?: string } | { type: 'pickup'; store_id: string }
   timeline: Array<{ status: OrderStatus; at: string }>
   pickup_code?: string
+  returns?: Array<{ id: string; folio: string; status: string; created_at: string; item_ids: string[] }>
   /** Pago simulado: la "pasarela" confirma (webhook) unos segundos después de pagar */
   payment?: { outcome: 'pagado' | 'rechazado'; confirms_at: number }
 }
@@ -541,6 +544,8 @@ export const users: DbUser[] = [
     id: 'u-cliente',
     name: 'Ana López',
     email: 'cliente@ejemplo.com',
+    phone: '722 123 4567',
+    consents: { marketing: false, personalization: false },
     password: MOCK_PASSWORD,
     role: 'cliente',
     branch_id: null,
@@ -751,6 +756,15 @@ export const orders: DbOrder[] = [
       ],
       '2026-09-14T16:00:00',
     ),
+    returns: [
+      {
+        id: 'r-0350',
+        folio: 'DEV-0350',
+        status: 'Aprobada · reembolsado',
+        created_at: iso('2026-09-20T10:00:00'),
+        item_ids: ['i1'],
+      },
+    ],
   },
   {
     id: '10044',

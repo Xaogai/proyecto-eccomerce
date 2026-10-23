@@ -1,10 +1,18 @@
 // EP-15 a EP-17, más el webhook de la pasarela (Doc 13.1) que en el mock llama la "pasarela simulada".
 import { http, HttpResponse } from 'msw'
-import { nextFolio, PAYMENT_CONFIRM_MS, serializeOrder, shippingQuote } from '../db/orders'
+import {
+  isInProgress,
+  nextFolio,
+  orderSummary,
+  PAYMENT_CONFIRM_MS,
+  returnDeadline,
+  serializeOrder,
+  shippingQuote,
+} from '../db/orders'
 import { db, findVariant } from '../db/store'
 import { applyScenario, getScenario } from '../scenarios'
 import { resolveCartId, totalAvailable } from './cart'
-import { API, businessError, currentUser, validationError } from './utils'
+import { API, businessError, currentUser, requireUser, validationError } from './utils'
 
 interface CheckoutBody {
   contact?: { name?: string; email?: string; phone?: string }
@@ -176,6 +184,86 @@ export const checkoutHandlers = [
     order.payment = undefined
     order.payment_status = 'pendiente'
     return HttpResponse.json({ payment_url: paymentUrl(order.id, order.guest_token) })
+  }),
+
+  // EP-18: pedidos del usuario, del más reciente al más antiguo.
+  http.get(`${API}/orders`, async ({ request }) => {
+    const hijack = await applyScenario()
+    if (hijack) return hijack
+    const auth = requireUser(request)
+    if ('response' in auth) return auth.response
+    const url = new URL(request.url)
+    const group = url.searchParams.get('status_group')
+    const page = Math.max(1, Number(url.searchParams.get('page') ?? 1))
+    const pageSize = Math.min(50, Math.max(1, Number(url.searchParams.get('page_size') ?? 10)))
+    const mine = db.orders
+      .filter((o) => o.user_id === auth.user.id)
+      .filter((o) => !group || (group === 'curso' ? isInProgress(o) : !isInProgress(o)))
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    return HttpResponse.json({
+      items: mine.slice((page - 1) * pageSize, page * pageSize).map(orderSummary),
+      page,
+      page_size: pageSize,
+      total: mine.length,
+    })
+  }),
+
+  // EP-19: devolución (multipart: datos en "data" y foto opcional en "photo").
+  http.post(`${API}/orders/:id/returns`, async ({ request, params }) => {
+    const hijack = await applyScenario()
+    if (hijack) return hijack
+    const auth = requireUser(request)
+    if ('response' in auth) return auth.response
+    const order = db.orders.find((o) => o.id === params.id && o.user_id === auth.user.id)
+    if (!order) return businessError(404, 'not_found', 'No encontramos este pedido.')
+    if (!returnDeadline(order))
+      return businessError(409, 'return_window_closed', 'El plazo para devolver este pedido ya terminó.')
+
+    const form = await request.formData()
+    const data = JSON.parse(String(form.get('data') ?? '{}')) as {
+      items?: Array<{ item_id: string; qty: number }>
+      reason?: string
+      comment?: string
+      method?: 'tienda' | 'recoleccion'
+    }
+    const photo = form.get('photo')
+    const errors: Record<string, string> = {}
+    if (!data.items?.length) errors.items = 'Elige al menos un producto.'
+    if (!data.reason) errors.reason = 'Elige el motivo.'
+    if (['danado', 'faltan_piezas'].includes(data.reason ?? '') && !(photo instanceof File)) {
+      errors.photo = 'Agrega una foto del problema.'
+    }
+    if (!data.method) errors.method = 'Elige cómo lo entregas.'
+    if (Object.keys(errors).length) return validationError(errors)
+
+    const refund = (data.items ?? []).reduce((n, r) => {
+      const item = order.items.find((i) => i.id === r.item_id)
+      return n + (item ? item.unit_price * Math.min(r.qty, item.qty) : 0)
+    }, 0)
+    const folio = `DEV-0${388 + (order.returns?.length ?? 0) + db.orders.reduce((n, o) => n + (o.returns?.length ?? 0), 0)}`
+    const created = {
+      id: crypto.randomUUID(),
+      folio,
+      status: 'En revisión',
+      created_at: new Date().toISOString(),
+      item_ids: data.items!.map((i) => i.item_id),
+    }
+    order.returns = [...(order.returns ?? []), created]
+    const how = order.fulfillment
+    const store = how.type === 'pickup' ? db.stores.find((s) => s.id === how.store_id) : null
+    return HttpResponse.json(
+      {
+        id: created.id,
+        folio,
+        status: 'en_revision',
+        refund,
+        instructions:
+          data.method === 'tienda'
+            ? `Lleva el producto con su empaque a ${store?.name ?? 'cualquier sucursal'}. Al recibirlo, reembolsamos a tu mismo medio de pago en 5 a 10 días hábiles.`
+            : 'Te contactaremos para agendar la recolección. Al recibirlo, reembolsamos a tu mismo medio de pago en 5 a 10 días hábiles.',
+      },
+      { status: 201 },
+    )
   }),
 
   // Lo llama la pasarela (aquí, la página /_pasarela del mock). Confirma unos segundos después.

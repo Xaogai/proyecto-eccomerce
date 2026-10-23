@@ -14,6 +14,8 @@ export const fulfillmentSchema = z.discriminatedUnion('type', [
 export const orderItemSchema = z.object({
   id: z.string(),
   sku: z.string(),
+  /** SKU del producto (para enlazar a la ficha y a "Escribir reseña") */
+  product_sku: z.string(),
   name: z.string(),
   variant_label: z.string(),
   image: imageSchema,
@@ -33,6 +35,11 @@ export const orderSchema = z.object({
   fulfillment: fulfillmentSchema,
   timeline: z.array(z.object({ status: orderStatusSchema, at: isoDate })),
   pickup_code: z.string().optional(),
+  /** "Tarjeta terminación 4821" (lo informa la pasarela; nunca el número completo) */
+  payment_label: z.string().optional(),
+  /** Fecha límite para devolver (30 días después de entregado); null si aún no se puede o ya pasó */
+  return_deadline: isoDate.nullable(),
+  returns: z.array(z.object({ folio: z.string(), status: z.string(), created_at: isoDate })),
 })
 export type Order = z.infer<typeof orderSchema>
 
@@ -55,3 +62,13 @@ export const checkoutResultSchema = z.object({
   guest_token: z.string().optional(),
 })
 export type CheckoutResult = z.infer<typeof checkoutResultSchema>
+
+// EP-19
+export const returnResultSchema = z.object({
+  id: z.string(),
+  folio: z.string(),
+  status: z.string(),
+  instructions: z.string(),
+  refund: money,
+})
+export type ReturnResult = z.infer<typeof returnResultSchema>

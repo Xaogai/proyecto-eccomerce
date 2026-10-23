@@ -56,3 +56,12 @@ export const addressSchema = z.object({
   is_default: z.boolean(),
 })
 export type Address = z.infer<typeof addressSchema>
+
+// EP-29 a EP-32 y EP-53
+export const profileSchema = z.object({ name: z.string(), email: z.string(), phone: z.string() })
+export type Profile = z.infer<typeof profileSchema>
+
+export const consentsSchema = z.object({ marketing: z.boolean(), personalization: z.boolean() })
+export type Consents = z.infer<typeof consentsSchema>
+
+export const arcoResultSchema = z.object({ folio: z.string(), due_date: z.string() })

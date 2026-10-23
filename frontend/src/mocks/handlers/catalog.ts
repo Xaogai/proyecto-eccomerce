@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { listProducts, parseQuery, reviewsFor, suggest, toDetail } from '../db/catalog'
 import { db, findProduct } from '../db/store'
 import { applyScenario, getScenario } from '../scenarios'
-import { API, businessError } from './utils'
+import { API, businessError, requireUser, validationError } from './utils'
 
 export const catalogHandlers = [
   http.get(`${API}/categories`, async () => {
@@ -56,6 +56,39 @@ export const catalogHandlers = [
       total: all.length,
       summary: { avg: product.rating.avg, count: all.length, by_star: byStar },
     })
+  }),
+
+  // EP-06: la reseña queda en moderación (no aparece de inmediato).
+  http.post(`${API}/products/:sku/reviews`, async ({ params, request }) => {
+    const hijack = await applyScenario()
+    if (hijack) return hijack
+    const auth = requireUser(request)
+    if ('response' in auth) return auth.response
+    const product = findProduct(String(params.sku))
+    if (!product) return businessError(404, 'not_found', 'No encontramos este producto.')
+    const body = (await request.json()) as {
+      rating?: number
+      title?: string
+      body?: string
+      recommend?: boolean
+    }
+    const errors: Record<string, string> = {}
+    if (!body.rating || body.rating < 1 || body.rating > 5) errors.rating = 'Elige de 1 a 5 estrellas.'
+    if (!body.title?.trim()) errors.title = 'Escribe un título.'
+    if (!body.body || body.body.trim().length < 20) {
+      errors.body = `Tu opinión tiene ${body.body?.trim().length ?? 0} caracteres. Escribe al menos 20.`
+    }
+    if (Object.keys(errors).length) return validationError(errors)
+    const id = crypto.randomUUID()
+    db.pendingReviews.push({
+      id,
+      sku: product.sku,
+      user_id: auth.user.id,
+      rating: body.rating!,
+      title: body.title!.trim(),
+      body: body.body!.trim(),
+    })
+    return HttpResponse.json({ id, status: 'en_moderacion' }, { status: 201 })
   }),
 
   http.get(`${API}/search/suggest`, async ({ request }) => {

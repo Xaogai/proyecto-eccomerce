@@ -8,6 +8,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Frontend, fase 3 (cuenta del cliente):
+  - Iniciar sesión con aviso de intentos restantes, cuenta bloqueada, "Mantener mi sesión" y regreso a la página de origen; cada rol entra a su panel.
+  - Crear cuenta con aviso de privacidad obligatorio y restablecer contraseña.
+  - Mi cuenta: resumen, pedidos con filtro, seguimiento con línea de tiempo y código de entrega, direcciones (agregar, editar, principal, eliminar), lista de deseos con baja de precio.
+  - Datos y privacidad (ARCO): corregir datos, consentimientos, copia de datos, cambiar contraseña y eliminar cuenta.
+  - Devolución con motivo y foto, y reseñas con moderación.
+  - Mi cuenta y acceso se cargan bajo demanda para dividir el paquete.
+  - Pruebas: 21 de componentes y 8 end-to-end con revisión de accesibilidad.
 - Frontend, fase 2 (carrito, checkout y confirmación):
   - Carrito para invitado o con sesión: cambiar cantidad, quitar, stock por sucursal y opción de envío cuando algo está agotado en la sucursal.
   - Checkout en 3 pasos con validación accesible: tus datos, entrega (recoger en una sucursal con todo el pedido o envío con costo por CP y direcciones guardadas) y pago en la pasarela hospedada, sin campos de tarjeta.

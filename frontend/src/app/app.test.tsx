@@ -34,7 +34,7 @@ describe('app', () => {
   it('recupera la sesión con el refresh token guardado', async () => {
     tokenStorage.set(issueRefreshToken('u-cliente'))
     renderRoute('/cuenta')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mi cuenta' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Ana' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Mi cuenta' })).toBeInTheDocument()
   })
 

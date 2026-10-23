@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import type { Role } from '@/api/schemas/auth'
 import { PageSkeleton } from '@/components/feedback/States'
+import { homeFor, safeNext } from '@/features/account/session'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { useAuth } from './providers/authContext'
 
@@ -22,8 +23,10 @@ export function RequireAuth({ children, roles }: { children: ReactNode; roles?: 
 
 /** Login y registro: si ya hay sesión, a Mi cuenta. */
 export function GuestOnly({ children }: { children: ReactNode }) {
-  const { status } = useAuth()
+  const { status, user } = useAuth()
+  const [params] = useSearchParams()
   if (status === 'cargando') return <PageSkeleton />
-  if (status === 'autenticado') return <Navigate to="/cuenta" replace />
+  if (status === 'autenticado' && user)
+    return <Navigate to={safeNext(params.get('next')) ?? homeFor(user)} replace />
   return children
 }

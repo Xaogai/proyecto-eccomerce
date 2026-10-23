@@ -46,6 +46,10 @@ export const facetSchema = z.object({
 })
 export type Facet = z.infer<typeof facetSchema>
 
+/** EP-28: con el precio que tenía al guardarlo ("Antes $3,199") */
+export const wishlistItemSchema = productSummarySchema.extend({ saved_price: money.optional() })
+export type WishlistItem = z.infer<typeof wishlistItemSchema>
+
 export const productPageSchema = page(productSummarySchema).extend({
   facets: z.array(facetSchema),
   /** Corrección sugerida cuando la búsqueda no tiene resultados ("¿Quisiste decir…?") */

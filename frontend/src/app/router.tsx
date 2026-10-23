@@ -1,4 +1,5 @@
-import { type RouteObject, createBrowserRouter } from 'react-router-dom'
+import type { ComponentType } from 'react'
+import { Outlet, type RouteObject, createBrowserRouter } from 'react-router-dom'
 import { AccountLayout } from '@/layouts/AccountLayout'
 import { InternalLayout } from '@/layouts/InternalLayout'
 import { Root } from '@/layouts/Root'
@@ -19,10 +20,15 @@ import { RouteErrorPage } from '@/pages/RouteErrorPage'
 import { GuestOnly, RequireAuth } from './guards'
 
 // Mapa de rutas de docs/diseno/plan-frontend.md (sec. 2). Cada PlaceholderPage se cambia
-// por la página real en su fase; las secciones grandes se cargarán con lazy().
+// por la página real en su fase. Mi cuenta y acceso se cargan bajo demanda (lazy).
 
 const MOCKS =
   import.meta.env.MODE === 'mock' || import.meta.env.MODE === 'test' || import.meta.env.VITE_MOCKS === 'true'
+
+/** Ruta cargada bajo demanda: su código se descarga al entrar (divide el paquete por sección). */
+const page =
+  <M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M) =>
+  async () => ({ Component: (await load())[name] as ComponentType })
 
 const todo = (title: string, screens: string, phase: number) => (
   <PlaceholderPage title={title} screens={screens} phase={phase} />
@@ -39,7 +45,12 @@ const shopRoutes: RouteObject[] = [
   { path: 'producto/:sku', element: <ProductPage /> },
   {
     path: 'producto/:sku/resena',
-    element: <RequireAuth>{todo('Escribir reseña', '37, 47', 3)}</RequireAuth>,
+    element: (
+      <RequireAuth>
+        <Outlet />
+      </RequireAuth>
+    ),
+    children: [{ index: true, lazy: page(() => import('@/pages/account/ReviewPage'), 'ReviewPage') }],
   },
   { path: 'comparar', element: todo('Comparar productos', '17, 24', 4) },
   { path: 'calculadora/:tipo?', element: todo('Calculadora de materiales', '19, 26', 4) },
@@ -54,13 +65,16 @@ const shopRoutes: RouteObject[] = [
       </RequireAuth>
     ),
     children: [
-      { index: true, element: todo('Mi cuenta', '30, 40', 3) },
-      { path: 'pedidos', element: todo('Mis pedidos', '31, 41', 3) },
-      { path: 'pedidos/:id', element: todo('Seguimiento de pedido', '32, 42', 3) },
-      { path: 'pedidos/:id/devolucion', element: todo('Solicitar devolución', '36, 46', 3) },
-      { path: 'direcciones', element: todo('Direcciones', '33, 43', 3) },
-      { path: 'deseos', element: todo('Lista de deseos', '34, 44', 3) },
-      { path: 'datos', element: todo('Datos y privacidad', '35, 45', 3) },
+      { index: true, lazy: page(() => import('@/pages/account/AccountHomePage'), 'AccountHomePage') },
+      { path: 'pedidos', lazy: page(() => import('@/pages/account/OrdersPage'), 'OrdersPage') },
+      { path: 'pedidos/:id', lazy: page(() => import('@/pages/account/OrderDetailPage'), 'OrderDetailPage') },
+      {
+        path: 'pedidos/:id/devolucion',
+        lazy: page(() => import('@/pages/account/ReturnPage'), 'ReturnPage'),
+      },
+      { path: 'direcciones', lazy: page(() => import('@/pages/account/AddressesPage'), 'AddressesPage') },
+      { path: 'deseos', lazy: page(() => import('@/pages/account/WishlistPage'), 'WishlistPage') },
+      { path: 'datos', lazy: page(() => import('@/pages/account/PrivacyPage'), 'PrivacyPage') },
     ],
   },
   ...(import.meta.env.DEV
@@ -75,9 +89,21 @@ const shopRoutes: RouteObject[] = [
 ]
 
 const authRoutes: RouteObject[] = [
-  { path: 'cuenta/login', element: <GuestOnly>{todo('Iniciar sesión', '28, 39', 3)}</GuestOnly> },
-  { path: 'cuenta/registro', element: <GuestOnly>{todo('Crear cuenta', '14, 29', 3)}</GuestOnly> },
-  { path: 'cuenta/restablecer/:token?', element: todo('Restablecer contraseña', 'sin diseño (B6)', 3) },
+  {
+    element: (
+      <GuestOnly>
+        <Outlet />
+      </GuestOnly>
+    ),
+    children: [
+      { path: 'cuenta/login', lazy: page(() => import('@/pages/account/LoginPage'), 'LoginPage') },
+      { path: 'cuenta/registro', lazy: page(() => import('@/pages/account/RegisterPage'), 'RegisterPage') },
+    ],
+  },
+  {
+    path: 'cuenta/restablecer/:token?',
+    lazy: page(() => import('@/pages/account/ResetPasswordPage'), 'ResetPasswordPage'),
+  },
 ]
 
 const checkoutRoutes: RouteObject[] = [

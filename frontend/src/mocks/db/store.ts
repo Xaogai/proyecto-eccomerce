@@ -10,6 +10,18 @@ function fresh() {
     users: structuredClone(seed.users),
     orders: structuredClone(seed.orders),
     addresses: structuredClone(seed.addresses),
+    /** reseñas enviadas, en moderación */
+    pendingReviews: [] as Array<{
+      id: string
+      sku: string
+      user_id: string
+      rating: number
+      title: string
+      body: string
+    }>,
+    /** precio al guardar en la lista de deseos ("Antes $3,199") */
+    wishlistPrices: new Map<string, number>([['u-cliente:200118', 319900]]),
+    arcoCount: 2290,
     /** intentos de checkout en el escenario "fila de espera" */
     queueAttempts: 0,
     featureFlags: { ...seed.featureFlags },

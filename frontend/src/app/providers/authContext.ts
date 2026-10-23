@@ -12,9 +12,12 @@ export interface RegisterInput {
 export interface AuthContextValue {
   status: 'cargando' | 'anonimo' | 'autenticado'
   user: User | null
-  login: (email: string, password: string) => Promise<User>
+  /** remember: "Mantener mi sesión en este dispositivo" */
+  login: (email: string, password: string, remember?: boolean) => Promise<User>
   register: (input: RegisterInput) => Promise<User>
   logout: () => Promise<void>
+  /** Refleja cambios del perfil (nombre) sin volver a pedir /me */
+  updateUser: (patch: Partial<User>) => void
   hasRole: (...roles: Role[]) => boolean
 }
 

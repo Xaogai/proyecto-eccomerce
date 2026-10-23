@@ -26,6 +26,11 @@ export const endpoints = {
   passwordReset: '/auth/password/reset', // EP-25
   me: '/me', // EP-26
   addresses: '/me/addresses', // EP-27
+  address: (id: string) => `/me/addresses/${id}`, // EP-27
+  profile: '/me/profile', // EP-29
+  consents: '/me/consents', // EP-30
+  arco: '/me/arco', // EP-31
+  password: '/me/password', // EP-53
   wishlist: '/me/wishlist', // EP-28
   wishlistItem: (sku: string) => `/me/wishlist/${encodeURIComponent(sku)}`, // EP-28
   featureFlags: '/feature-flags', // EP-33

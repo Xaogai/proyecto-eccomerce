@@ -41,9 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => onSessionExpired(endSession), [endSession])
 
   const startSession = useCallback(
-    async (res: LoginResponse) => {
+    async (res: LoginResponse, remember = false) => {
       setAccessToken(res.access_token)
-      tokenStorage.set(res.refresh_token)
+      tokenStorage.set(res.refresh_token, remember)
       // EP-14: lo que el invitado puso en su carrito pasa al carrito de la cuenta.
       const guestCart = readJson<string | null>(CART_ID_KEY, null)
       if (guestCart) {
@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
-      login: async (email, password) =>
-        startSession(await send('post', endpoints.login, loginResponseSchema, { email, password })),
+      login: async (email, password, remember) =>
+        startSession(await send('post', endpoints.login, loginResponseSchema, { email, password }), remember),
       register: async (input: RegisterInput) =>
         startSession(await send('post', endpoints.register, loginResponseSchema, input)),
       logout: async () => {
@@ -77,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         endSession()
       },
+      updateUser: (patch) => setState((s) => (s.user ? { ...s, user: { ...s.user, ...patch } } : s)),
       hasRole: (...roles: Role[]) => state.user !== null && roles.includes(state.user.role),
     }),
     [state, startSession, endSession],

@@ -99,7 +99,8 @@ El webhook de la pasarela llega directo a `payments`; el frontend no lo llama.
 | EP-29 | `GET · PATCH /me/profile` | C | `{ name, phone, birthdate? }` | `Profile` | 35, 45 | Propuesto |
 | EP-30 | `GET · PATCH /me/consents` | C | `{ marketing: bool, personalization: bool }` | `Consents` | 35, 45 | Propuesto |
 | EP-31 | `POST /me/arco` | C | `{ type: "acceso"|"rectificacion"|"cancelacion"|"oposicion", detail }` | `201 { folio, due_date }` | 35, 45 | Propuesto |
-| EP-32 | `DELETE /me` | C | `{ password }` | `202 { effective_date }` | 35, 45 | Propuesto |
+| EP-32 | `DELETE /me` | C | `{ password }` | `202 { effective_date }`. `409 active_orders { orders: [{ id, folio, status }] }` si hay pedidos en curso | 35, 45 | Propuesto |
+| EP-53 | `POST /me/password` | C | `{ current, password (8+) }` | `204`. `422` si la actual no coincide | 35, 45 | Propuesto |
 
 ## 7. Configuración pública
 
@@ -156,6 +157,7 @@ El webhook de la pasarela llega directo a `payments`; el frontend no lo llama.
 | Fecha | ID | Cambio | Motivo | Ajuste en el frontend |
 |---|---|---|---|---|
 | 2026-10-17 | todos | Versión inicial de la propuesta | Cubrir las 58 pantallas con mocks | — |
+| 2026-10-22 | EP-06, EP-16, EP-18, EP-19, EP-21, EP-28, EP-32, EP-53 | EP-16: `product_sku` por producto, `payment_label` ("tarjeta terminación 4821"), `return_deadline` y `returns[]`. EP-18: `page_size`. EP-19 en `multipart/form-data` (JSON en `data` y foto en `photo`, obligatoria si el motivo es dañado o incompleto). EP-21: `attempts_left` en el 401. EP-28: `saved_price` por producto. EP-32: `409 active_orders`. EP-53 nuevo: cambiar contraseña. EP-06 valida mínimo 20 caracteres | Salieron al construir la cuenta del cliente (fase 3) | Ya reflejado en esquemas y mocks |
 | 2026-10-22 | EP-08, EP-10, EP-12, EP-13, EP-15 | EP-08: parámetro `skus=sku:cant,…` y campo `all_available` (sucursales con todo el pedido). EP-10/12/13: parámetro `store_id` y campo `store_stock { qty, status }` por producto. EP-15: `address_id` como alternativa a `address`, `409 out_of_stock { item_ids }`, `409 cart_empty` y `429 queue { position, progress, retry_after_s }` (fila de espera, 24.3) | Salieron al construir carrito y checkout (fase 2) | Ya reflejado en esquemas y mocks |
 | 2026-10-22 | EP-02 | Parámetros `pickup_today`, `price_min`, `price_max` y `attr.brand`; campos `variant_sku` en `ProductSummary` (variante que agrega la tarjeta) y `did_you_mean` | Salieron al construir el listado, los filtros y la búsqueda (fase 1) | Ya reflejado en esquemas y mocks |
 | 2026-10-17 | EP-03, EP-08, EP-10, EP-16, EP-26 | Campos agregados: `category_path` (migas de pan), `zip` de la sucursal, `product_sku` en el carrito (enlace a la ficha), `contact` y forma de `fulfillment` en el pedido (`tracking` pasa dentro de `fulfillment`), `branch_name` en el usuario (encabezado de sucursal) | Salieron al escribir los esquemas zod de la fase 0 | Ya reflejado en `frontend/src/api/schemas/` y en los mocks |
