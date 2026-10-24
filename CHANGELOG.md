@@ -8,6 +8,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Frontend, QA (fase 7, la parte que no depende del backend):
+  - Pruebas end-to-end también en Firefox, Safari y iPhone (WebKit), además de Chrome y Android: 185 pruebas en 5 navegadores.
+  - Presupuesto del paquete público (200 KB gzip) revisado en cada `npm run build`; también con `npm run size`.
+  - Imágenes de producto con carga diferida, espacio reservado y `srcset` cuando la API lo mande.
+  - Guion para probar la compra con NVDA y VoiceOver (`docs/qa/guion-lector-pantalla.md`) y material para la evaluación heurística, la prueba con usuarios y el SUS (`docs/qa/prueba-usabilidad.md`).
 - Frontend, fase 6 (sucursal), para staff de su sucursal (el admin puede elegir cualquiera):
   - Inventario: búsqueda por producto, SKU o pasillo, filtros de pocas piezas y agotados, y ajuste con motivo obligatorio que nunca deja menos piezas de las apartadas.
   - Pedidos para recoger: por preparar, listos y entregados hoy, con aviso de atrasados en texto y actualización cada 30 segundos; los pedidos solo avanzan (pagado, en preparación, listo).
@@ -68,4 +73,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Cambiado
 
+- Checkout y confirmación se cargan bajo demanda: el paquete público baja de 213 KB a 193 KB gzip.
+- Los esqueletos de carga ocupan el mismo lugar que el contenido final y el pie de página ya no aparece arriba mientras carga: el CLS en móvil baja de 0.16–0.23 a menos de 0.05.
 - Tokens de diseño estandarizados: cada color de los prototipos tiene nombre por uso, se ajustó el contraste de los estados deshabilitado y borde oscuro, y se fijó un tono por estado de pedido.
+
+### Corregido
+
+- En Safari de iPhone, las páginas con tablas y Editar producto se podían desplazar a lo ancho.
+- Categorías (admin) mostraba la dirección web como `/c/…`; la ruta real es `/categoria/…`.
+- La prueba "apagar el comparador lo quita de la tienda" abría una página inexistente y pasaba sin probar nada.
+- Orden de encabezados en el listado móvil (las tarjetas usaban h3 sin un h2 antes).
+- Al cambiar de página, si la página nueva aún mostraba su esqueleto de carga, el foco caía en el contenido y no en el título; ahora espera a que aparezca el título.
+

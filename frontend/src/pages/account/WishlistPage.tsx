@@ -8,6 +8,7 @@ import { useAddToCart } from '@/features/cart/api'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { formatMoney, plural } from '@/lib/format'
 import styles from './account.module.css'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 /** Lista de deseos (pantallas 34 y 44). */
 export function WishlistPage() {
@@ -39,7 +40,7 @@ export function WishlistPage() {
             return (
               <li key={p.sku}>
                 <article className={styles.wishCard}>
-                  <img src={p.image.url} alt={p.image.alt} width={96} height={72} />
+                  <ProductImage image={p.image} width={96} height={72} />
                   <div className={styles.wishInfo}>
                     <h2 className={styles.rowTitle}>
                       <Link to={`/producto/${p.sku}`}>{p.name}</Link>

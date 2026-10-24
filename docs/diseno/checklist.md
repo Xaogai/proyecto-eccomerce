@@ -1,6 +1,6 @@
 # Checklist del Documento de Calidad
 
-59 puntos: 51 cumplen, 2 parciales, 6 pendientes (pruebas con el sitio construido o con usuarios).
+59 puntos: 53 cumplen, 2 parciales, 4 pendientes (pruebas con lector de pantalla, en equipos reales o con usuarios).
 
 ## A · Catálogo y búsqueda
 
@@ -15,7 +15,7 @@
 | A7 | Ordenar resultados | 3.2 | Listado (escritorio y móvil) | Cumple |
 | A8 | Comparador de productos como tabla accesible | 27.4, 28.3 | Comparador (escritorio y móvil): tabla con encabezados y "solo diferencias" | Cumple |
 | A9 | Imágenes con zoom o vista 360° | 27.5 | Vista 360° (escritorio y móvil) con giro por teclado | Cumple |
-| A10 | Calculadora de materiales con etiquetas y errores accesibles | 27.5, 28.3 | Calculadora: pintura completa e interactiva. Piso y taquetes solo como pestañas | Parcial |
+| A10 | Calculadora de materiales con etiquetas y errores accesibles | 27.5, 28.3 | Calculadora: pintura, piso y azulejo, y taquetes y tornillos, con errores accesibles (fase 4) | Cumple |
 | A11 | Localizador de tiendas con lista de texto además del mapa | 27.5, 28.3 | Sucursales (escritorio y móvil): lista completa, mapa complementario | Cumple |
 | A12 | Reseñas de producto | 3.2 | Ficha: sección de reseñas. Escribir reseña (escritorio y móvil) | Cumple |
 | A13 | Página de inicio con departamentos y productos disponibles | 3.6 | Inicio (escritorio y móvil) | Cumple |
@@ -30,7 +30,7 @@
 | B3 | Comprar como invitado, sin crear cuenta | 3.3, anexo 1.8 | Checkout, Login y Registro | Cumple |
 | B4 | Mensaje claro de cuenta bloqueada por intentos fallidos | 18.1 | Iniciar sesión: estados normal, error y bloqueada (Tweaks) | Cumple |
 | B5 | Mi cuenta: pedidos, direcciones, lista de deseos y derechos ARCO | 3.3, 4.5 | Mi cuenta, Pedidos, Direcciones, Lista de deseos y Datos (escritorio y móvil) | Cumple |
-| B6 | Restablecer contraseña | 18.1 | Enlace en Iniciar sesión. Falta la pantalla del correo y nueva contraseña | Parcial |
+| B6 | Restablecer contraseña | 18.1 | Enlace en Iniciar sesión y pantalla Restablecer contraseña: correo y nueva contraseña (fase 3) | Cumple |
 
 ## C · Carrito
 
@@ -52,7 +52,7 @@
 | D4 | Confirmación con folio y estado pendiente mientras se confirma el pago | anexo 1.5 | Confirmación: estados pendiente y pagado | Cumple |
 | D5 | Pago rechazado con opción de reintentar | anexo 1.8 | Confirmación: estado rechazado | Cumple |
 | D6 | Estados del pedido visibles para el cliente | anexo 1.3 | Seguimiento de pedido (escritorio y móvil) con línea de tiempo y código de entrega | Cumple |
-| D7 | Checkout completo solo con teclado y lector de pantalla | 28.3 | Controles nativos con etiqueta. Falta la prueba con NVDA y VoiceOver | Pendiente |
+| D7 | Checkout completo solo con teclado y lector de pantalla | 28.3 | Controles nativos con etiqueta; axe sin errores en todas las pantallas y compra completa con teclado en e2e. Falta la prueba con NVDA y VoiceOver: guion en `docs/qa/guion-lector-pantalla.md` | Pendiente |
 | D8 | Correo de confirmación del pedido | 3.2 (módulo 9) | Correo de confirmación | Cumple |
 | D9 | Solicitar devolución | anexo 1.3, 1.4 | Devolución (escritorio y móvil) | Cumple |
 
@@ -64,8 +64,8 @@
 | E2 | 2 columnas de 481 a 768 px y 3 de 769 a 1024 px | 27.4 | Grilla fluida de las pantallas de escritorio | Cumple |
 | E3 | Filtros laterales y comparador de 1025 a 1440 px | 27.4 | Listado y Comparador de escritorio | Cumple |
 | E4 | Más productos por fila desde 1441 px | 27.4 | Grilla fluida | Cumple |
-| E5 | Chrome, Edge, Safari y Firefox; iOS 15+ y Android 10+ | 27.2, 27.3 | Se valida en QA con el sitio construido | Pendiente |
-| E6 | Rendimiento de imágenes y 360° en Android de gama baja | 27.5 | Se valida en QA; la vista 360° tiene feature flag | Pendiente |
+| E5 | Chrome, Edge, Safari y Firefox; iOS 15+ y Android 10+ | 27.2, 27.3 | 185 pruebas end-to-end con revisión de accesibilidad en Chrome, Android (Pixel 7), Firefox, Safari e iPhone 13 (WebKit); Edge usa el motor de Chrome. Falta confirmar en equipos reales con iOS 15 y Android 10 | Parcial |
+| E6 | Rendimiento de imágenes y 360° en Android de gama baja | 27.5 | Imágenes con carga diferida y espacio reservado; paquete público de 193 KB gzip, controlado en cada build (presupuesto 200 KB); Lighthouse móvil: CLS de 0.001 a 0.044 y accesibilidad 100. La vista 360° tiene feature flag. Falta probar en un Android de gama baja real y medir LCP contra el backend | Parcial |
 
 ## F · Accesibilidad WCAG 2.1 AA
 
@@ -90,9 +90,9 @@
 
 | # | Requisito | Fuente | Dónde se resuelve | Estado |
 |---|---|---|---|---|
-| H1 | Evaluación con las 10 heurísticas de Nielsen antes de la UI definitiva | 26.1 | Hacer sobre este prototipo | Pendiente |
-| H2 | Prueba con 5 a 8 usuarios: compra sin guía en menos de 5 minutos | RQ-USA-001, 26.1 | Hacer sobre este prototipo | Pendiente |
-| H3 | Puntaje SUS de 68 o más | 26.3 | Medir en la prueba con usuarios | Pendiente |
+| H1 | Evaluación con las 10 heurísticas de Nielsen antes de la UI definitiva | 26.1 | Plantilla en `docs/qa/prueba-usabilidad.md` | Pendiente |
+| H2 | Prueba con 5 a 8 usuarios: compra sin guía en menos de 5 minutos | RQ-USA-001, 26.1 | Tareas y registro en `docs/qa/prueba-usabilidad.md` | Pendiente |
+| H3 | Puntaje SUS de 68 o más | 26.3 | Cuestionario y cálculo en `docs/qa/prueba-usabilidad.md` | Pendiente |
 
 ## I · Paneles internos
 

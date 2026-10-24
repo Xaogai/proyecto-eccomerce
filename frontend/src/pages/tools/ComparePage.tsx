@@ -16,6 +16,7 @@ import { compareStore, useCompareList } from '@/features/compare/store'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { cx } from '@/lib/cx'
 import styles from '@/features/compare/compare.module.css'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 /**
  * Comparador (pantallas 17 y 24; A8, 28.3): tabla con encabezados de columna (productos)
@@ -113,7 +114,7 @@ export function ComparePage() {
               {products.map((p) => (
                 <th key={p.sku} scope="col">
                   <div className={styles.productCell}>
-                    <img src={p.image.url} alt="" width={160} height={100} />
+                    <ProductImage image={p.image} alt="" width={160} height={100} />
                     <Link to={`/producto/${p.sku}`} className={styles.productName}>
                       {p.name}
                     </Link>

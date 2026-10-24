@@ -517,6 +517,7 @@ li:first-child > .alert {
 }
 
 .tableScroll {
+  position: relative;
   overflow-x: auto;
 }
 

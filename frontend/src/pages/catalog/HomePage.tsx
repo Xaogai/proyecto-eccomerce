@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useFeatureFlag } from '@/app/featureFlags'
+import { useFeatureFlag, useFeatureFlagsLoading } from '@/app/featureFlags'
 import { useSelectedStore } from '@/app/providers/storeContext'
 import { ErrorState } from '@/components/feedback/States'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -14,6 +14,7 @@ export function HomePage() {
   const { store, openPicker } = useSelectedStore()
   const calcOn = useFeatureFlag('calc')
   const cmpOn = useFeatureFlag('cmp')
+  const flagsLoading = useFeatureFlagsLoading()
   const categories = useCategories()
   const featured = useProducts({
     page: 1,
@@ -50,7 +51,13 @@ export function HomePage() {
           </div>
         </div>
 
-        {(calcOn || cmpOn) && (
+        {flagsLoading && (
+          <div className={styles.tools} aria-hidden="true">
+            <span className={`${styles.tool} ${styles.toolSkeleton}`} />
+            <span className={`${styles.tool} ${styles.toolSkeleton}`} />
+          </div>
+        )}
+        {!flagsLoading && (calcOn || cmpOn) && (
           <div className={styles.tools}>
             {calcOn && (
               <Link to="/calculadora" className={`${styles.tool} ${styles.toolAccent}`}>
@@ -83,6 +90,12 @@ export function HomePage() {
         </div>
         {categories.isError ? (
           <ErrorState title="No pudimos cargar los departamentos" onRetry={() => categories.refetch()} />
+        ) : categories.isPending ? (
+          <div className={styles.departments} aria-hidden="true">
+            {Array.from({ length: 8 }, (_, i) => (
+              <span key={i} className={`${styles.department} ${styles.departmentSkeleton}`} />
+            ))}
+          </div>
         ) : (
           <ul role="list" className={styles.departments}>
             {(categories.data ?? []).map((c) => (

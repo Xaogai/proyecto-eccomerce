@@ -9,6 +9,7 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { cx } from '@/lib/cx'
 import { formatDate, formatMoney, plural } from '@/lib/format'
 import styles from './checkout.module.css'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 /** Carrito (pantallas 04 y 11; HU-04). No hace falta cuenta para comprar. */
 export function CartPage() {
@@ -69,13 +70,7 @@ export function CartPage() {
                     className={cx(styles.item, out && styles.itemOut)}
                     aria-busy={update.isPending || undefined}
                   >
-                    <img
-                      src={item.image.url}
-                      alt={item.image.alt}
-                      width={96}
-                      height={72}
-                      className={styles.itemImg}
-                    />
+                    <ProductImage image={item.image} width={96} height={72} className={styles.itemImg} />
                     <div className={styles.itemInfo}>
                       <h2 className={styles.itemName}>
                         <Link to={`/producto/${item.product_sku}`}>{item.name}</Link>

@@ -5,6 +5,8 @@
 }
 
 .cardSkeleton {
+  /* Mismo alto aproximado que una tarjeta real: así la página no brinca al llegar los productos (CLS). */
+  min-height: 400px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -16,7 +18,7 @@
 
 .cardImage {
   display: block;
-  height: 150px;
+  height: 176px;
   background: var(--color-separador);
 }
 

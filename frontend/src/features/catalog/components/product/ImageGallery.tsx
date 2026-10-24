@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Image } from '@/api/schemas/common'
 import { Dialog } from '@/components/ui/Dialog'
 import styles from './product.module.css'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 /**
  * Imagen principal, miniaturas (botones con aria-pressed) y "Ampliar imagen" en un diálogo.
@@ -24,7 +25,13 @@ export function ImageGallery({
   return (
     <section aria-label="Imágenes del producto" className={styles.gallery}>
       <div className={styles.mainImage}>
-        <img src={image.url} alt={image.alt} width={560} height={420} />
+        <ProductImage
+          image={image}
+          width={560}
+          height={420}
+          sizes="(min-width: 769px) 560px, 100vw"
+          priority
+        />
         <button type="button" className={styles.zoomBtn} onClick={() => setZoom(true)} aria-haspopup="dialog">
           <svg
             width="18"
@@ -58,7 +65,7 @@ export function ImageGallery({
               aria-label={`Imagen ${i + 1} de ${images.length}, ${img.alt.replace(`${name}, `, '')}`}
               onClick={() => setCurrent(i)}
             >
-              <img src={img.url} alt="" width={72} height={54} />
+              <ProductImage image={img} alt="" width={72} height={54} />
             </button>
           ))}
         </div>

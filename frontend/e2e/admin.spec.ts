@@ -121,13 +121,19 @@ test('usuarios: desbloquear una cuenta y no poder cambiar el propio rol', async 
 
 test('configuración: apagar el comparador lo quita de la tienda', async ({ page }) => {
   await loginAdmin(page)
+  // Antes de apagarlo, la casilla "Comparar" sí aparece en el listado.
+  await page.goto('/categoria/taladros')
+  await expect(page.getByRole('heading', { level: 1, name: 'Taladros' })).toBeVisible()
+  await expect(page.getByRole('checkbox', { name: /^Comparar/ }).first()).toBeVisible()
+
   await page.goto('/admin/configuracion')
   const toggle = page.getByRole('switch', { name: 'Comparador de productos' })
   await expect(toggle).toHaveAttribute('aria-checked', 'true')
   await toggle.click()
   await expect(toggle).toHaveAttribute('aria-checked', 'false')
-  await page.goto('/c/taladros')
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.goto('/categoria/taladros')
+  await expect(page.getByRole('heading', { level: 1, name: 'Taladros' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Taladro/ }).first()).toBeVisible()
   await expect(page.getByRole('checkbox', { name: /^Comparar/ })).toHaveCount(0)
 })
 

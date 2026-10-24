@@ -73,6 +73,17 @@
   text-decoration: none;
 }
 
+/* Mismo lugar que ocupará el bloque mientras se sabe si la función está activa */
+.toolSkeleton {
+  min-height: 120px;
+  background: var(--color-separador);
+}
+
+.departmentSkeleton {
+  min-height: 90px;
+  background: var(--color-separador);
+}
+
 .toolAccent {
   border: 2px solid var(--color-naranja);
 }

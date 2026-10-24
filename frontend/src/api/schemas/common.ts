@@ -16,7 +16,12 @@ export const page = <T extends z.ZodType>(item: T) =>
 
 export type Page<T> = { items: T[]; page: number; page_size: number; total: number }
 
-export const imageSchema = z.object({ url: z.string(), alt: z.string() })
+export const imageSchema = z.object({
+  url: z.string(),
+  alt: z.string(),
+  /** "…-320.webp 320w, …-640.webp 640w" (opcional; ver bitácora del contrato) */
+  srcset: z.string().optional(),
+})
 export type Image = z.infer<typeof imageSchema>
 
 export const toneSchema = z.enum(['ok', 'aviso', 'error', 'info', 'neutro'])

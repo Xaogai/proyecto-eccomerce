@@ -199,7 +199,7 @@ function CategoryDetail({ found, onSelect }: { found: Found; onSelect: (id: stri
       <TextField label="Nombre" value={name} error={nameError} onChange={(e) => setName(e.target.value)} />
       <dl className={styles.dl}>
         <dt className={styles.muted}>Dirección web</dt>
-        <dd>/c/{node.slug}</dd>
+        <dd>/categoria/{node.slug}</dd>
         <dt className={styles.muted}>Productos</dt>
         <dd>{plural(node.product_count, 'producto')}</dd>
       </dl>

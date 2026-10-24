@@ -9,6 +9,7 @@ import { formatDate, formatDateTime, formatMoney } from '@/lib/format'
 import { type OrderStatus, orderStatusInfo } from '@/lib/orderStatus'
 import { NotFoundPage } from '../NotFoundPage'
 import styles from './account.module.css'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 const PICKUP: OrderStatus[] = [
   'creado',
@@ -114,7 +115,7 @@ export function OrderDetailPage() {
             <ul role="list">
               {data.items.map((item) => (
                 <li key={item.id} className={styles.itemRow}>
-                  <img src={item.image.url} alt="" width={56} height={42} />
+                  <ProductImage image={item.image} alt="" width={56} height={42} />
                   <div>
                     <Link to={`/producto/${item.product_sku}`}>{item.name}</Link>
                     <div className={styles.muted}>

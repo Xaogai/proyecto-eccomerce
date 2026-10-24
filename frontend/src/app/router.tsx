@@ -11,8 +11,6 @@ import { HomePage } from '@/pages/catalog/HomePage'
 import { ProductPage } from '@/pages/catalog/ProductPage'
 import { SearchPage } from '@/pages/catalog/SearchPage'
 import { CartPage } from '@/pages/checkout/CartPage'
-import { CheckoutPage } from '@/pages/checkout/CheckoutPage'
-import { ConfirmationPage } from '@/pages/checkout/ConfirmationPage'
 import { HelpPage } from '@/pages/HelpPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
@@ -102,8 +100,12 @@ const authRoutes: RouteObject[] = [
 ]
 
 const checkoutRoutes: RouteObject[] = [
-  { path: 'checkout', element: <CheckoutPage /> },
-  { path: 'pedido/:id/confirmacion', element: <ConfirmationPage /> },
+  // Bajo demanda: los formularios (react-hook-form) no entran al paquete que baja cualquier visitante.
+  { path: 'checkout', lazy: page(() => import('@/pages/checkout/CheckoutPage'), 'CheckoutPage') },
+  {
+    path: 'pedido/:id/confirmacion',
+    lazy: page(() => import('@/pages/checkout/ConfirmationPage'), 'ConfirmationPage'),
+  },
   // Pasarela simulada: solo con datos de prueba (lazy: no entra al build de producción).
   ...(MOCKS
     ? [

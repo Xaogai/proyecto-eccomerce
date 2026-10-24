@@ -21,6 +21,7 @@ import {
 import { flattenCategories } from '@/features/admin/categories'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import styles from './admin.module.css'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 /** "1,299.50" o "1299,5" → centavos; vacío → 0. */
 const toCents = (v: string) =>
@@ -434,7 +435,7 @@ function ImagesSection({ product }: { product: AdminProduct }) {
         {product.images.map((img, i) => (
           <li key={`${img.url}-${i}`}>
             <figure>
-              <img src={img.url} alt="" />
+              <ProductImage image={img} alt="" width={140} height={105} />
               <figcaption>{img.alt}</figcaption>
             </figure>
           </li>

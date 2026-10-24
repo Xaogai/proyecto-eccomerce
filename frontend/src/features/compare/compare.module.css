@@ -61,6 +61,8 @@
 }
 
 .scroll {
+  /* Contiene a los textos sr-only (position: absolute): si no, Safari los saca del recorte y la página se desborda a lo ancho. */
+  position: relative;
   overflow-x: auto;
   border-radius: var(--radio);
   background: var(--color-superficie);

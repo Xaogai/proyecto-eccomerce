@@ -160,7 +160,11 @@ export function ProductListing({ category, renderEmpty, onTotal }: ProductListin
             </Button>
           </div>
         ) : (
-          <ProductGrid products={data?.items} loading={query.isFetching || query.isPending} />
+          <>
+            {/* En móvil los filtros (con su h2) están ocultos: así los títulos de las tarjetas no saltan de h1 a h3. */}
+            <h2 className="sr-only">Productos</h2>
+            <ProductGrid products={data?.items} loading={query.isFetching || query.isPending} />
+          </>
         )}
 
         <CompareBar />

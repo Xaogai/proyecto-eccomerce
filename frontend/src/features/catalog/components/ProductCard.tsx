@@ -7,6 +7,7 @@ import { useAddToCart } from '@/features/cart/api'
 import { CompareToggle } from '@/features/compare/CompareToggle'
 import { plural } from '@/lib/format'
 import styles from './ProductCard.module.css'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 interface ProductCardProps {
   product: ProductSummary
@@ -56,12 +57,11 @@ export function ProductCard({ product, variant = 'completa' }: ProductCardProps)
   return (
     <article className={styles.card}>
       <div className={styles.media}>
-        <img
-          src={product.image.url}
-          alt={product.image.alt}
-          loading="lazy"
+        <ProductImage
+          image={product.image}
           width={240}
           height={180}
+          sizes="(min-width: 769px) 240px, 50vw"
           className={styles.img}
         />
         {variant === 'completa' && <span className={styles.brand}>{product.brand}</span>}

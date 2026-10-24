@@ -3,6 +3,7 @@ import type { Image } from '@/api/schemas/common'
 import { Dialog } from '@/components/ui/Dialog'
 import { Tabs } from '@/components/ui/Tabs'
 import styles from './view360.module.css'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 const STEP = 15
 
@@ -33,7 +34,7 @@ export function View360({ open, onClose, name, frames, images }: View360Props) {
             panel: (
               <div className={styles.photos}>
                 {images.map((img, i) => (
-                  <img key={`${img.url}-${i}`} src={img.url} alt={img.alt} />
+                  <ProductImage key={`${img.url}-${i}`} image={img} width={560} height={420} />
                 ))}
               </div>
             ),

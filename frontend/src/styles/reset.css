@@ -37,6 +37,11 @@ video {
   max-width: 100%;
 }
 
+/* Con width/height en el HTML el navegador reserva el espacio; al encogerse conserva la proporción. */
+img {
+  height: auto;
+}
+
 input,
 button,
 textarea,

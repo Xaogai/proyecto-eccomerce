@@ -13,12 +13,15 @@ npm install          # instala dependencias
 npm run dev:mock     # desarrollo con datos simulados (no necesita backend)
 npm run dev          # desarrollo contra el backend real
 npm test             # pruebas unitarias y de componentes (Vitest)
-npm run e2e          # pruebas end-to-end (Playwright) contra un build con datos simulados
+npm run e2e          # pruebas end-to-end (Playwright) contra un build con datos simulados, en Chrome, Android, Firefox, Safari e iPhone
 npm run build:mock   # build con datos simulados en dist-mock/ (lo usa npm run e2e)
 npm run preview:mock # sirve dist-mock/ en http://localhost:4173
 npm run lint         # revisión estática (oxlint)
-npm run build        # build de producción en dist/
+npm run build        # build de producción en dist/; falla si el paquete público pasa de 200 KB gzip
+npm run size         # solo revisa el presupuesto del paquete público del último build
 ```
+
+La primera vez, instala los navegadores de las pruebas end-to-end con `npx playwright install chromium firefox webkit`.
 
 ## Datos simulados
 

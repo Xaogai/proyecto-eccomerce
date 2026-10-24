@@ -1,4 +1,6 @@
 .main {
+  /* El pie nunca aparece arriba mientras carga la página: si no, brinca al llegar el contenido (CLS). */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 18px;
