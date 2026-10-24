@@ -11,7 +11,7 @@ export function Logo({ to = '/', suffix }: { to?: string; suffix?: string }) {
         .
       </span>
       {suffix && <span className={styles.logoSuffix}> {suffix}</span>}
-      <span className="sr-only">{suffix ? `, ${suffix}` : ', ir al inicio'}</span>
+      {!suffix && <span className="sr-only">, ir al inicio</span>}
     </Link>
   )
 }

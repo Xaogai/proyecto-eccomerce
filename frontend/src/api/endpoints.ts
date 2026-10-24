@@ -51,4 +51,10 @@ export const endpoints = {
   adminReports: '/admin/reports', // EP-46
   adminReportsCsv: '/admin/reports/export.csv', // EP-46
   adminSettings: '/admin/settings', // EP-47
+  branchInventory: '/branch/inventory', // EP-48
+  branchAdjust: (sku: string) => `/branch/inventory/${encodeURIComponent(sku)}/adjust`, // EP-49
+  branchPickups: '/branch/pickups', // EP-50
+  branchPickupStatus: (id: string) => `/branch/pickups/${id}/status`, // EP-51
+  branchVerify: '/branch/pickups/verify', // EP-52
+  branchHandover: (id: string) => `/branch/pickups/${id}/handover`, // EP-52
 } as const

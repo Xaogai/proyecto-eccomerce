@@ -8,6 +8,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Frontend, fase 6 (sucursal), para staff de su sucursal (el admin puede elegir cualquiera):
+  - Inventario: búsqueda por producto, SKU o pasillo, filtros de pocas piezas y agotados, y ajuste con motivo obligatorio que nunca deja menos piezas de las apartadas.
+  - Pedidos para recoger: por preparar, listos y entregados hoy, con aviso de atrasados en texto y actualización cada 30 segundos; los pedidos solo avanzan (pagado, en preparación, listo).
+  - Entregar pedido, pensada para el celular: código del cliente, revisión de identificación y productos, y confirmación.
+  - Pruebas: 6 de componentes y 5 end-to-end con revisión de accesibilidad en escritorio y móvil.
+- Las pruebas end-to-end corren contra un build con datos simulados (`npm run build:mock`), más rápido y estable que el servidor de desarrollo.
 - Frontend, fase 5 (administración), solo para el rol admin y cargada bajo demanda:
   - Resumen: indicadores del día con enlace a su lista, alertas por prioridad y gráfica de ventas de 7 días con resumen para lectores de pantalla y vista de tabla.
   - Productos: búsqueda, categoría y estado en la URL, con conteos por estado.

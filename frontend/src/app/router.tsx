@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { Outlet, type RouteObject, createBrowserRouter } from 'react-router-dom'
+import { Navigate, Outlet, type RouteObject, createBrowserRouter } from 'react-router-dom'
 import { AccountLayout } from '@/layouts/AccountLayout'
 import { InternalLayout } from '@/layouts/InternalLayout'
 import { Root } from '@/layouts/Root'
@@ -15,12 +15,11 @@ import { CheckoutPage } from '@/pages/checkout/CheckoutPage'
 import { ConfirmationPage } from '@/pages/checkout/ConfirmationPage'
 import { HelpPage } from '@/pages/HelpPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
-import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
 import { GuestOnly, RequireAuth } from './guards'
 
-// Mapa de rutas de docs/diseno/plan-frontend.md (sec. 2). Cada PlaceholderPage se cambia
-// por la página real en su fase. Mi cuenta y acceso se cargan bajo demanda (lazy).
+// Mapa de rutas de docs/diseno/plan-frontend.md (sec. 2). Mi cuenta, acceso, herramientas,
+// admin y sucursal se cargan bajo demanda (lazy).
 
 const MOCKS =
   import.meta.env.MODE === 'mock' || import.meta.env.MODE === 'test' || import.meta.env.VITE_MOCKS === 'true'
@@ -29,10 +28,6 @@ const MOCKS =
 const page =
   <M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M) =>
   async () => ({ Component: (await load())[name] as ComponentType })
-
-const todo = (title: string, screens: string, phase: number) => (
-  <PlaceholderPage title={title} screens={screens} phase={phase} />
-)
 
 /** Envuelve las rutas hijas de un layout: si una página falla, el layout (encabezado, menú) sigue en pie. */
 const withError = (children: RouteObject[]): RouteObject[] => [{ errorElement: <RouteErrorPage />, children }]
@@ -134,10 +129,12 @@ const adminRoutes: RouteObject[] = [
   { path: 'configuracion', lazy: page(() => import('@/pages/admin/SettingsPage'), 'SettingsPage') },
 ]
 
+// Sucursal (fase 6): bajo demanda, como el admin.
 const branchRoutes: RouteObject[] = [
-  { path: 'inventario', element: todo('Inventario', '57', 6) },
-  { path: 'recoleccion', element: todo('Pedidos para recolección', '58', 6) },
-  { path: 'entrega/:id?', element: todo('Entregar pedido', '59', 6) },
+  { index: true, element: <Navigate to="recoleccion" replace /> },
+  { path: 'inventario', lazy: page(() => import('@/pages/branch/InventoryPage'), 'InventoryPage') },
+  { path: 'recoleccion', lazy: page(() => import('@/pages/branch/PickupsPage'), 'PickupsPage') },
+  { path: 'entrega/:id?', lazy: page(() => import('@/pages/branch/HandoverPage'), 'HandoverPage') },
 ]
 
 export const routes: RouteObject[] = [

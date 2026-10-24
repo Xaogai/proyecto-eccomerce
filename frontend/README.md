@@ -13,7 +13,9 @@ npm install          # instala dependencias
 npm run dev:mock     # desarrollo con datos simulados (no necesita backend)
 npm run dev          # desarrollo contra el backend real
 npm test             # pruebas unitarias y de componentes (Vitest)
-npm run e2e          # pruebas end-to-end (Playwright)
+npm run e2e          # pruebas end-to-end (Playwright) contra un build con datos simulados
+npm run build:mock   # build con datos simulados en dist-mock/ (lo usa npm run e2e)
+npm run preview:mock # sirve dist-mock/ en http://localhost:4173
 npm run lint         # revisión estática (oxlint)
 npm run build        # build de producción en dist/
 ```
@@ -30,8 +32,11 @@ Usuarios de prueba (contraseña `Taller123`):
 |---|---|
 | cliente@ejemplo.com | Cliente |
 | staff@ejemplo.com | Staff de sucursal (Toluca Centro) |
+| staff.metepec@ejemplo.com | Staff de sucursal (Metepec) |
 | admin@ejemplo.com | Administrador |
 | bloqueada@ejemplo.com | Cliente con cuenta bloqueada |
+
+Para probar la entrega en sucursal: el pedido 10482 de Ana está listo para recoger en Toluca Centro con el código `4821`.
 
 En desarrollo, `/_ui` muestra todos los componentes base.
 

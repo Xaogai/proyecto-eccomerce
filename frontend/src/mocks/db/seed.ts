@@ -1006,6 +1006,31 @@ function generateAdminData() {
         : undefined,
     }
   })
+  // Tablero de Toluca Centro como el prototipo Sucursal-2: 2 pagados (uno con más de 1 hora) y 2 en preparación.
+  const board: Array<[minutes: number, flow: OrderStatus[]]> = [
+    [70, flows[1]],
+    [25, flows[1]],
+    [50, flows[2]],
+    [15, flows[2]],
+  ]
+  board.forEach(([minutes, flow], i) => {
+    const o = extraOrders[i]
+    const start = new Date(now - minutes * 60_000)
+    o.created_at = start.toISOString()
+    o.status = flow[flow.length - 1]
+    o.payment_status = 'pagado'
+    o.shipping = 0
+    o.fulfillment = { type: 'pickup', store_id: 'toluca-centro' }
+    o.pickup_code = String(3101 + i * 111)
+    // Pagado al minuto; en preparación unos minutos después.
+    o.timeline = flow.map((st, n) => ({
+      status: st,
+      at: new Date(start.getTime() + Math.min(n, 2) * 60_000 + (n > 2 ? 5 * 60_000 : 0)).toISOString(),
+    }))
+    o.webhooks = [
+      { at: new Date(start.getTime() + 60_000).toISOString(), event: 'Pago aprobado', result: 'Procesado' },
+    ]
+  })
   return { extraUsers, extraOrders }
 }
 

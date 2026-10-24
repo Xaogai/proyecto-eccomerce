@@ -16,14 +16,14 @@ export function useUrlFilters() {
   const set = useCallback(
     (key: string, value: string | null) =>
       setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        if (value) next.set(key, value)
-        else next.delete(key)
-        next.delete('page')
-        return next
-      },
-      { replace: true, flushSync: true },
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (value) next.set(key, value)
+          else next.delete(key)
+          next.delete('page')
+          return next
+        },
+        { replace: true, flushSync: true },
       ),
     [setParams],
   )
