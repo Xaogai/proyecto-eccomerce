@@ -5,6 +5,10 @@ import { type SelectedStore, StoreContext } from './storeContext'
 
 const KEY = 'taller.sucursal'
 
+/**
+ * Sucursal elegida por la persona (se guarda en el navegador) y el diálogo para cambiarla.
+ * Se lee con el hook de `storeContext`.
+ */
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [store, setStoreState] = useState<SelectedStore | null>(() =>
     readJson<SelectedStore | null>(KEY, null),

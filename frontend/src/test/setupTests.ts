@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 import { setAccessToken } from '@/api/client'
 import { resetDb } from '@/mocks/db/store'
@@ -16,6 +16,9 @@ HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
 }
 
 setViewport('movil')
+
+// Con la cobertura activa (npm run coverage, CI) todo corre más lento: 1 s de findBy no alcanza.
+configure({ asyncUtilTimeout: 3000 })
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {

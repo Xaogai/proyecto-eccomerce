@@ -10,6 +10,11 @@ import { AuthContext, type AuthContextValue, type RegisterInput } from './authCo
 
 type State = { status: AuthContextValue['status']; user: User | null }
 
+/**
+ * Sesión de la persona: iniciar y cerrar sesión, registro y renovación silenciosa del JWT al cargar
+ * (sec. 18.1). Si el refresh falla en cualquier petición, cierra la sesión y borra los datos privados
+ * de la caché. Se lee con el hook de `authContext`.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const [state, setState] = useState<State>(() =>

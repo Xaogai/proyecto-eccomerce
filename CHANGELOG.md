@@ -8,6 +8,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Auditoría contra el Documento de Calidad:
+  - CI del frontend en GitHub Actions (sec. 15.1): linter, formato, pruebas con cobertura, build con presupuesto, `npm audit` y end-to-end en 5 navegadores.
+  - Cobertura con `npm run coverage` y mínimo de 80% en sesión y JWT, carrito, checkout y utilidades (sec. 10.2).
+  - Pruebas de cierre de sesión con invalidación del refresh token, de sesión vencida, de la validación del checkout, de los errores de la API y de los filtros en la URL (19 pruebas).
+  - Documentación de los providers de sesión y sucursal, del cliente de React Query y de `useDebounce` (sec. 14.3).
 - Frontend, QA (fase 7, la parte que no depende del backend):
   - Pruebas end-to-end también en Firefox, Safari y iPhone (WebKit), además de Chrome y Android: 185 pruebas en 5 navegadores.
   - Presupuesto del paquete público (200 KB gzip) revisado en cada `npm run build`; también con `npm run size`.
@@ -79,6 +84,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Corregido
 
+- Vite actualizado a 8.3.5 por 2 vulnerabilidades altas (solo en desarrollo).
+- Las pruebas con espera ya no fallan cuando la cobertura las hace más lentas.
 - En Safari de iPhone, las páginas con tablas y Editar producto se podían desplazar a lo ancho.
 - Categorías (admin) mostraba la dirección web como `/c/…`; la ruta real es `/categoria/…`.
 - La prueba "apagar el comparador lo quita de la tienda" abría una página inexistente y pasaba sin probar nada.
