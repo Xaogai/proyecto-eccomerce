@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ferremarket — E-commerce de Ferretería y Mejoras del Hogar</title>
+  <style>
+    :root {
+      --brand-orange: #f96302;
+      --brand-orange-dark: #d95300;
+      --bg-dark: #111827;
+      --bg-card: #ffffff;
+      --bg-page: #f3f4f6;
+      --text-main: #111827;
+      --text-muted: #4b5563;
+      --border-color: #d1d5db;
+      --success: #15803d;
+      --danger: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+    }
+    .topbar {
+      background-color: var(--bg-dark);
+      color: #ffffff;
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 4px solid var(--brand-orange);
+    }
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .brand-badge {
+      background: var(--brand-orange);
+      color: #ffffff;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .nav-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .nav-btn {
+      background: transparent;
+      color: #e5e7eb;
+      border: 1px solid #374151;
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+    .nav-btn.active, .nav-btn:hover {
+      background: var(--brand-orange);
+      color: #ffffff;
+      border-color: var(--brand-orange);
+    }
+    .quick-roles {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .role-pill {
+      background: #1f2937;
+      color: #f9fafb;
+      border: 1px solid #4b5563;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .role-pill:hover {
+      border-color: var(--brand-orange);
+      background: #374151;
+    }
+    .container {
+      max-width: 1320px;
+      margin: 1.25rem auto;
+      padding: 0 1.25rem;
+    }
+    .status-banner {
+      background: #fff7ed;
+      border-left: 4px solid var(--brand-orange);
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.92rem;
+    }
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 290px 1fr 360px;
+      gap: 1.25rem;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .grid-layout { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.15rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1rem;
+    }
+    .card h2, .card h3 { margin-top: 0; }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 0.75rem;
+    }
+    .form-group label { font-size: 0.84rem; font-weight: 600; }
+    .form-group input, .form-group select {
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .btn-primary {
+      background-color: var(--brand-orange);
+      color: #ffffff;
+      border: none;
+      padding: 0.55rem 1rem;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-primary:hover { background-color: var(--brand-orange-dark); }
+    .btn-secondary {
+      background-color: #1f2937;
+      color: #ffffff;
+      border: none;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.84rem;
+    }
+    .product-card {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #ffffff;
+    }
+    .variant-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .badge-success { background: #dcfce7; color: var(--success); }
+    .cat-link {
+      background: none;
+      border: none;
+      color: #111827;
+      cursor: pointer;
+      padding: 0.15rem 0.3rem;
+      text-align: left;
+      font-size: 0.88rem;
+      border-radius: 4px;
+    }
+    .cat-link:hover {
+      background: #ffedd5;
+      color: var(--brand-orange-dark);
+      font-weight: 700;
+    }
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    th, td { border-bottom: 1px solid var(--border-color); padding: 0.5rem; text-align: left; }
+    pre {
+      background: #111827;
+      color: #a7f3d0;
+      padding: 0.85rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-title">
+      <span class="brand-badge">FERREMARKET</span>
+      <span>Ferretería y Mejoras del Hogar</span>
+    </div>
+    <nav class="nav-tabs" aria-label="Navegación principal">
+      <button type="button" class="nav-btn active" id="btn-tab-catalogo" onclick="switchTab('catalogo')">
+        Catálogo, Carrito y Checkout
+      </button>
+      <button type="button" class="nav-btn" id="btn-tab-cuenta" onclick="switchTab('cuenta')">
+        Mi Cuenta y ARCO <span id="role-indicator">(Invitado)</span>
+      </button>
+      <button type="button" class="nav-btn" id="btn-tab-admin" onclick="switchTab('admin')">
+        Panel Admin y Auditoría
+      </button>
+    </nav>
+    <div class="quick-roles" aria-label="Acceso rápido cuentas sintéticas">
+      <button type="button" class="role-pill" onclick="quickLogin('ana.torres.sintetica@ferremarket.local')">
+        👤 Demo Cliente
+      </button>
+      <button type="button" class="role-pill" onclick="quickLogin('staff.toluca.sintetico@ferremarket.local')">
+        🏪 Demo Staff
+      </button>
+      <button type="button" class="role-pill" onclick="quickLogin('admin.sintetico@ferremarket.local', true)">
+        🔑 Demo Admin
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="status-banner" role="status" aria-live="polite">
+      <span><strong>Estado:</strong> <span id="status-text">Inicializando plataforma...</span></span>
+      <div>
+        <a href="/docs" target="_blank" style="color: #d95300; font-weight: 700; margin-right: 1rem;">Swagger UI (/docs) ↗</a>
+        <a href="/health" target="_blank" style="color: #1f2937; font-weight: 600;">Health Check (/health) ↗</a>
+      </div>
+    </div>
+
+    <!-- VISTA 1: CATÁLOGO, CARRITO Y CHECKOUT -->
+    <div id="tab-catalogo" class="grid-layout">
+      <aside class="card" aria-label="Filtros de catálogo">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="margin:0;">Categorías (HU-01)</h3>
+          <button type="button" class="cat-link" style="color:#d95300;font-weight:700;" onclick="filterByCategory('', 'Todas')">Ver todas</button>
+        </div>
+        <div id="categories-tree" style="margin-top:0.5rem;">Cargando categorías...</div>
+        <hr />
+        <h3>Búsqueda y Filtros (HU-09)</h3>
+        <div class="form-group">
+          <label for="search-q">Buscar producto</label>
+          <input id="search-q" type="text" placeholder="Ej. Taladro" />
+        </div>
+        <div class="form-group">
+          <label for="filter-marca">Marca</label>
+          <input id="filter-marca" type="text" placeholder="Ej. Milwaukee" />
+        </div>
+        <div class="form-group">
+          <label for="filter-color">Atributo Color</label>
+          <select id="filter-color">
+            <option value="">Todos</option>
+            <option value="rojo">Rojo</option>
+            <option value="amarillo">Amarillo</option>
+            <option value="azul">Azul</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button type="button" class="btn-primary" style="flex:1;" onclick="applyFilters()">Aplicar Filtros</button>
+          <button type="button" class="btn-secondary" onclick="resetFilters()">Limpiar</button>
+        </div>
+      </aside>
+
+      <section aria-label="Listado de productos">
+        <div class="card">
+          <h2>Catálogo de Productos y Variantes por SKU (HU-02)</h2>
+          <div id="products-container">Cargando productos...</div>
+        </div>
+      </section>
+
+      <aside class="card" aria-label="Carrito y Checkout">
+        <h3>Carrito de Compras (HU-04 / 2FN)</h3>
+        <div id="cart-container">
+          <p style="color:#4b5563;font-size:0.9rem;">Tu carrito está vacío. Agrega una variante para calcular precios en tiempo real.</p>
+        </div>
+        <hr />
+        <h3>Envío o Recolección (HU-07)</h3>
+        <div class="form-group">
+          <label for="zip-input">Código Postal (5 dígitos)</label>
+          <div style="display:flex;gap:0.4rem;">
+            <input id="zip-input" type="text" value="50000" />
+            <button type="button" class="btn-secondary" onclick="quoteShipping()">Cotizar</button>
+          </div>
+        </div>
+        <div id="shipping-quote-result" style="font-size:0.84rem;color:#15803d;font-weight:600;margin-bottom:0.6rem;"></div>
+        <div class="form-group">
+          <label for="branch-select">Sucursal (Inventario / Recolección)</label>
+          <select id="branch-select"></select>
+        </div>
+        <div class="form-group">
+          <label for="shipping-type">Modalidad de Entrega</label>
+          <select id="shipping-type">
+            <option value="domicilio">Envío a Domicilio</option>
+            <option value="recoleccion_tienda">Recolección en Tienda ($0.00)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="gateway-select">Pasarela de Pago Sandbox (Factory Sec. 14.2)</label>
+          <select id="gateway-select">
+            <option value="stripe">Stripe Sandbox (Tokenizado PCI-DSS)</option>
+            <option value="mercado_pago">Mercado Pago Sandbox (Tokenizado PCI-DSS)</option>
+          </select>
+        </div>
+        <button type="button" class="btn-primary" style="width:100%;" onclick="runCheckout()">
+          Pagar y Generar Pedido (HU-06)
+        </button>
+        <div id="order-box" class="hidden" style="margin-top:1rem;padding:0.75rem;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-size:0.85rem;"></div>
+      </aside>
+    </div>
+
+    <!-- VISTA 2: MI CUENTA Y DERECHOS ARCO -->
+    <div id="tab-cuenta" class="hidden">
+      <div class="card">
+        <h2>Autenticación JWT, Cuentas Sintéticas por Rol y Derechos ARCO (LFPDPPP)</h2>
+        <p style="font-size:0.9rem;color:#4b5563;">
+          Selecciona una de las cuentas sintéticas preconfiguradas (Regla de Gobierno de Ambientes Sec. 20 / AE-26):
+        </p>
+        <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <button type="button" class="btn-primary" onclick="quickLogin('ana.torres.sintetica@ferremarket.local')">
+            Iniciar como Cliente (Ana Torres)
+          </button>
+          <button type="button" class="btn-secondary" onclick="quickLogin('staff.toluca.sintetico@ferremarket.local')">
+            Iniciar como Staff de Sucursal
+          </button>
+          <button type="button" class="btn-secondary" onclick="quickLogin('admin.sintetico@ferremarket.local')">
+            Iniciar como Administrador
+          </button>
+        </div>
+        <div id="user-profile-box" class="card hidden" style="background:#f9fafb;">
+          <h3>Sesión Activa</h3>
+          <p id="user-profile-details"></p>
+          <h4>Bandeja de Notificaciones por Correo Electrónico (HU-10)</h4>
+          <table>
+            <thead>
+              <tr><th>Fecha</th><th>Tipo</th><th>Asunto</th><th>Resumen / Folio</th><th>Modo</th></tr>
+            </thead>
+            <tbody id="user-notifications-body">
+              <tr><td colspan="5">Inicia sesión para consultar tus notificaciones transaccionales.</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:0.85rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button type="button" class="btn-secondary" onclick="triggerPasswordResetFlow()">
+              Probar Recuperación de Contraseña de Un Solo Uso (HU-03)
+            </button>
+            <button type="button" class="btn-primary" onclick="loadArcoData()">
+              Ejercer Derecho de Acceso ARCO (Exportar mis datos personales - LFPDPPP)
+            </button>
+          </div>
+          <pre id="arco-output" class="hidden"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISTA 3: PANEL ADMIN Y AUDITORÍA -->
+    <div id="tab-admin" class="hidden">
+      <div class="card">
+        <h2>Panel de Administración y Verificación de Auditoría (PA-ECOM-001)</h2>
+        <p style="font-size:0.9rem;color:#4b5563;">
+          Verifica en vivo los criterios <code>RQ-DAT-001</code>, <code>2FN en item_carrito</code>, <code>PCI-DSS en pagos</code> y la bitácora de auditoría.
+        </p>
+        <button type="button" class="btn-primary" onclick="loadAdminAudit()">
+          Ejecutar Verificación de Calidad de Datos y Cargar Bitácora (Rol Admin)
+        </button>
+        <div id="dq-container" class="hidden" style="margin-top:1rem;">
+          <h3>Reporte de Calidad de Datos y Esquema (AE-14, AE-23, AE-25)</h3>
+          <pre id="dq-output"></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Alta de Producto y Variante en Catálogo (HU-08, Sec. 19 Completitud)</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;">
+          <div class="form-group">
+            <label for="new-prod-name">Nombre del Producto</label>
+            <input id="new-prod-name" value="Esmeriladora Angular 4-1/2 Pulg" />
+          </div>
+          <div class="form-group">
+            <label for="new-prod-brand">Marca</label>
+            <input id="new-prod-brand" value="DeWalt" />
+          </div>
+          <div class="form-group">
+            <label for="new-prod-sku">SKU de Variante</label>
+            <input id="new-prod-sku" value="ESM-DEW-20V" />
+          </div>
+          <div class="form-group">
+            <label for="new-prod-price">Precio Inicial (MXN)</label>
+            <input id="new-prod-price" value="1899.00" />
+          </div>
+        </div>
+        <button type="button" class="btn-primary" onclick="createNewProduct()">
+          Publicar Producto en Catálogo
+        </button>
+      </div>
+
+      <div id="audit-logs-card" class="card hidden">
+        <h3>Bitácora de Auditoría de Operaciones Sensibles (Sec. 29.6 / AE-39)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha UTC</th>
+              <th>Evento</th>
+              <th>Recurso</th>
+              <th>Detalles</th>
+            </tr>
+          </thead>
+          <tbody id="audit-logs-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentToken = '';
+    let currentCart = null;
+    let currentOrder = null;
+    let cachedCategories = [];
+    let selectedCategoryId = '';
+
+    function setStatus(msg) {
+      document.getElementById('status-text').textContent = msg;
+    }
+
+    function switchTab(tab) {
+      ['catalogo', 'cuenta', 'admin'].forEach((t) => {
+        document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('btn-tab-' + t).classList.toggle('active', t === tab);
+      });
+    }
+
+    function renderCategoryTree(nodes) {
+      if (!nodes || !nodes.length) return '';
+      return '<ul style="padding-left:1rem;margin:0.25rem 0;">' + nodes.map(n =>
+        `<li>
+          <button type="button" class="cat-link" onclick="filterByCategory('${n.id}', '${n.nombre.replace(/'/g, "\\'")}')">
+            ${n.nombre}
+          </button>
+          ${renderCategoryTree(n.subcategorias || [])}
+        </li>`
+      ).join('') + '</ul>';
+    }
+
+    async function filterByCategory(catId, catName) {
+      selectedCategoryId = catId;
+      await applyFilters(catName);
+    }
+
+    async function resetFilters() {
+      selectedCategoryId = '';
+      document.getElementById('search-q').value = '';
+      document.getElementById('filter-marca').value = '';
+      document.getElementById('filter-color').value = '';
+      await applyFilters();
+    }
+
+    function renderProducts(items) {
+      const container = document.getElementById('products-container');
+      if (!items.length) {
+        container.innerHTML = '<p>No se encontraron productos con esos filtros.</p>';
+        return;
+      }
+      container.innerHTML = items.map(p => `
+        <div class="product-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;">${p.nombre}</h3>
+            <span class="badge">${p.marca || 'Genérico'}</span>
+          </div>
+          <p style="color:#4b5563;font-size:0.9rem;">${p.descripcion || ''}</p>
+          ${p.variantes.map(v => `
+            <div class="variant-row">
+              <div>
+                <strong>SKU: ${v.sku}</strong>
+                <div style="font-size:0.82rem;color:#4b5563;">Atributos: ${JSON.stringify(v.atributos)}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-weight:800;font-size:1.05rem;">$${v.precio} MXN</div>
+                <span class="badge badge-success">Stock disponible: ${v.stock_disponible}</span>
+              </div>
+              <button type="button" class="btn-primary" onclick="addToCart('${v.sku}')">+ Agregar al carrito</button>
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+
+    function renderCart(cart) {
+      currentCart = cart;
+      const box = document.getElementById('cart-container');
+      if (!cart || !cart.items || !cart.items.length) {
+        box.innerHTML = '<p style="color:#4b5563;font-size:0.9rem;">Tu carrito está vacío.</p>';
+        return;
+      }
+      box.innerHTML = cart.items.map(item => `
+        <div style="border-bottom:1px solid #e5e7eb;padding-bottom:0.45rem;margin-bottom:0.45rem;display:flex;justify-content:space-between;">
+          <div>
+            <strong>${item.nombre_producto}</strong>
+            <div style="font-size:0.8rem;">${item.variante_sku} × ${item.cantidad} ($${item.precio_unitario_vigente} c/u)</div>
+          </div>
+          <div style="text-align:right;">
+            <strong>$${item.subtotal}</strong>
+            <div>
+              <button type="button" onclick="removeFromCart('${item.variante_sku}')" style="background:none;border:none;color:#b91c1c;cursor:pointer;font-size:0.78rem;">Quitar</button>
+            </div>
+          </div>
+        </div>
+      `).join('') + `<p style="font-size:1.1rem;font-weight:800;">Total Carrito: $${cart.total} MXN</p>`;
+    }
+
+    async function loadInitialData() {
+      const [catRes, prodRes, branchRes] = await Promise.all([
+        fetch('/api/v1/categories'),
+        fetch('/api/v1/products'),
+        fetch('/api/v1/branches')
+      ]);
+      if (catRes.ok) {
+        cachedCategories = await catRes.json();
+        document.getElementById('categories-tree').innerHTML = renderCategoryTree(cachedCategories);
+      }
+      if (prodRes.ok) {
+        const data = await prodRes.json();
+        renderProducts(data.items || []);
+      }
+      if (branchRes.ok) {
+        const branches = await branchRes.json();
+        document.getElementById('branch-select').innerHTML = branches.map(b =>
+          `<option value="${b.id}">${b.nombre}</option>`
+        ).join('');
+      }
+      setStatus('API Gateway y 7 Microservicios activos (16 tablas en 2FN inicializadas con datos sintéticos).');
+    }
+
+    async function applyFilters(catLabel) {
+      const params = new URLSearchParams();
+      const q = document.getElementById('search-q').value;
+      const marca = document.getElementById('filter-marca').value;
+      const color = document.getElementById('filter-color').value;
+      if (selectedCategoryId) params.set('categoria_id', selectedCategoryId);
+      if (q) params.set('q', q);
+      if (marca) params.set('marca', marca);
+      if (color) {
+        params.set('atributo_clave', 'color');
+        params.set('atributo_valor', color);
+      }
+      const res = await fetch('/api/v1/products?' + params.toString());
+      if (res.ok) {
+        const data = await res.json();
+        renderProducts(data.items || []);
+        setStatus(`Filtro aplicado${catLabel ? ' (' + catLabel + ')' : ''}: ${data.total} producto(s) encontrado(s).`);
+      }
+    }
+
+    async function addToCart(sku) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (currentToken) headers['Authorization'] = 'Bearer ' + currentToken;
+      const res = await fetch('/api/v1/cart/items', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          carrito_id: currentCart ? currentCart.id : null,
+          variante_sku: sku,
+          cantidad: 1
+        })
+      });
+      if (res.ok) {
+        renderCart(await res.json());
+        setStatus(`SKU ${sku} agregado al carrito (precio vigente consultado en tiempo real — 2FN).`);
+      }
+    }
+
+    async function removeFromCart(sku) {
+      if (!currentCart) return;
+      const res = await fetch(`/api/v1/cart/items/${sku}?cart_id=${currentCart.id}`, { method: 'DELETE' });
+      if (res.ok) renderCart(await res.json());
+    }
+
+    async function quoteShipping() {
+      const zip = document.getElementById('zip-input').value;
+      const res = await fetch('/api/v1/shipping/quote?zip=' + encodeURIComponent(zip));
+      const box = document.getElementById('shipping-quote-result');
+      if (res.ok) {
+        const data = await res.json();
+        box.textContent = `Domicilio: $${data.costo_domicilio} MXN (${data.dias_estimados_entrega} días) | Recolección: $0.00 MXN`;
+        setStatus(`Cotización CP ${zip} calculada exitosamente.`);
+      } else {
+        const err = await res.json();
+        box.textContent = err.detail;
+      }
+    }
+
+    async function quickLogin(email, openAdminTab = false) {
+      const res = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: 'Sintetico2026!' })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setStatus('Error de login: ' + err.detail);
+        return;
+      }
+      const tokens = await res.json();
+      currentToken = tokens.access_token;
+      const meRes = await fetch('/api/v1/users/me', {
+        headers: { 'Authorization': 'Bearer ' + currentToken }
+      });
+      if (meRes.ok) {
+        const user = await meRes.json();
+        document.getElementById('role-indicator').textContent = `(${user.tipo_usuario})`;
+        document.getElementById('user-profile-box').classList.remove('hidden');
+        document.getElementById('user-profile-details').innerHTML =
+          `<strong>Nombre:</strong> ${user.nombre} | <strong>Email:</strong> ${user.email} | <strong>Rol RBAC:</strong> <span class="badge badge-success">${user.tipo_usuario}</span>`;
+        await loadUserNotifications();
+        setStatus(`Sesión iniciada como ${user.nombre} (${user.tipo_usuario}).`);
+        if (openAdminTab && user.tipo_usuario === 'admin') {
+          switchTab('admin');
+          await loadAdminAudit();
+        }
+      }
+    }
+
+    async function runCheckout() {
+      if (!currentCart || !currentCart.items || !currentCart.items.length) {
+        setStatus('Agrega al menos un producto al carrito antes de pagar.');
+        return;
+      }
+      if (!currentToken) {
+        await quickLogin('ana.torres.sintetica@ferremarket.local');
+      }
+      const branchId = document.getElementById('branch-select').value;
+      const tipoEnvio = document.getElementById('shipping-type').value;
+      const provider = document.getElementById('gateway-select').value;
+      const zip = document.getElementById('zip-input').value;
+
+      const res = await fetch('/api/v1/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + currentToken
+        },
+        body: JSON.stringify({
+          carrito_id: currentCart.id,
+          sucursal_id: branchId,
+          tipo_envio: tipoEnvio,
+          codigo_postal: zip,
+          payment_provider: provider,
+          payment_method: 'tarjeta',
+          payment_token: 'tok_visa_sandbox'
+        })
+      });
+      if (res.ok) {
+        currentOrder = await res.json();
+        renderCart(null);
+        await loadInitialData();
+        const ob = document.getElementById('order-box');
+        ob.classList.remove('hidden');
+        ob.innerHTML = `
+          <div><strong>Folio:</strong> ${currentOrder.folio}</div>
+          <div><strong>Estado:</strong> <span id="order-status-lbl">${currentOrder.estado}</span></div>
+          <div><strong>Total Congelado:</strong> $${currentOrder.total} MXN</div>
+          <button type="button" class="btn-secondary" style="margin-top:0.5rem;width:100%;" onclick="simulateWebhook()">
+            Simular Webhook Asíncrono de Pasarela (AE-29)
+          </button>
+        `;
+        setStatus(`Pedido ${currentOrder.folio} creado con reserva de inventario.`);
+      } else {
+        const err = await res.json();
+        setStatus('Error en checkout: ' + err.detail);
+      }
+    }
+
+    async function simulateWebhook() {
+      if (!currentOrder) return;
+      const payloadStr = JSON.stringify({
+        event_id: 'evt_' + currentOrder.folio,
+        referencia_pasarela: currentOrder.referencia_pasarela,
+        status: 'aprobado'
+      });
+      const headers = { 'Content-Type': 'application/json' };
+      if (currentToken) {
+        const signRes = await fetch('/api/v1/payments/webhook-sign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+          body: payloadStr
+        });
+        if (signRes.ok) {
+          const sigData = await signRes.json();
+          headers['X-Webhook-Signature'] = sigData.signature;
+        }
+      }
+      const res = await fetch('/api/v1/webhooks/payment', {
+        method: 'POST',
+        headers,
+        body: payloadStr
+      });
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('order-status-lbl').textContent = data.order_status;
+        await loadUserNotifications();
+        setStatus(`Webhook HMAC-SHA256 confirmado: Pedido ${data.folio} -> ${data.order_status} y correo enviado (HU-10).`);
+      }
+    }
+
+    async function loadUserNotifications() {
+      if (!currentToken) return;
+      const res = await fetch('/api/v1/users/me/notifications', {
+        headers: { 'Authorization': 'Bearer ' + currentToken }
+      });
+      if (res.ok) {
+        const list = await res.json();
+        const tbody = document.getElementById('user-notifications-body');
+        if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="5">Sin notificaciones registradas aún.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = list.map(n => `
+          <tr>
+            <td>${n.timestamp}</td>
+            <td><span class="badge">${n.template_type}</span></td>
+            <td><strong>${n.subject}</strong></td>
+            <td>${n.body}</td>
+            <td>${n.delivery_mode}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function triggerPasswordResetFlow() {
+      const reqRes = await fetch('/api/v1/auth/password-reset/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'ana.torres.sintetica@ferremarket.local' })
+      });
+      if (reqRes.ok) {
+        const data = await reqRes.json();
+        await loadUserNotifications();
+        setStatus(`Token de recuperación enviado al correo (HU-03 / HU-10): ${data.message}`);
+      }
+    }
+
+    async function loadArcoData() {
+      if (!currentToken) return;
+      const res = await fetch('/api/v1/users/me/arco', {
+        headers: { 'Authorization': 'Bearer ' + currentToken }
+      });
+      if (res.ok) {
+        const out = document.getElementById('arco-output');
+        out.classList.remove('hidden');
+        out.textContent = JSON.stringify(await res.json(), null, 2);
+      }
+    }
+
+    async function loadAdminAudit() {
+      if (!currentToken) {
+        await quickLogin('admin.sintetico@ferremarket.local');
+      }
+      const [dqRes, logsRes] = await Promise.all([
+        fetch('/api/v1/admin/data-quality-report', { headers: { 'Authorization': 'Bearer ' + currentToken } }),
+        fetch('/api/v1/admin/audit-logs', { headers: { 'Authorization': 'Bearer ' + currentToken } })
+      ]);
+      if (dqRes.ok && logsRes.ok) {
+        document.getElementById('dq-container').classList.remove('hidden');
+        document.getElementById('dq-output').textContent = JSON.stringify(await dqRes.json(), null, 2);
+        const logs = await logsRes.json();
+        document.getElementById('audit-logs-card').classList.remove('hidden');
+        document.getElementById('audit-logs-body').innerHTML = logs.map(l => `
+          <tr>
+            <td>${l.timestamp}</td>
+            <td><span class="badge">${l.event_type}</span></td>
+            <td>${l.resource}</td>
+            <td><code>${JSON.stringify(l.details)}</code></td>
+          </tr>
+        `).join('');
+        setStatus('Reporte RQ-DAT-001 y Bitácora de Auditoría cargados.');
+      } else {
+        await quickLogin('admin.sintetico@ferremarket.local');
+        await loadAdminAudit();
+      }
+    }
+
+    async function createNewProduct() {
+      if (!currentToken) {
+        await quickLogin('admin.sintetico@ferremarket.local');
+      }
+      const leafId = cachedCategories?.[0]?.subcategorias?.[0]?.subcategorias?.[0]?.id || cachedCategories?.[0]?.id;
+      const res = await fetch('/api/v1/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + currentToken
+        },
+        body: JSON.stringify({
+          categoria_id: leafId,
+          nombre: document.getElementById('new-prod-name').value,
+          descripcion: 'Alta desde panel administrativo (HU-08)',
+          marca: document.getElementById('new-prod-brand').value,
+          variantes: [{
+            sku: document.getElementById('new-prod-sku').value,
+            atributos: { color: 'amarillo', voltaje: '20V' },
+            precio: document.getElementById('new-prod-price').value,
+            stock_inicial: 20
+          }]
+        })
+      });
+      if (res.ok) {
+        await loadInitialData();
+        switchTab('catalogo');
+        setStatus('Nuevo producto publicado en el catálogo exitosamente.');
+      } else {
+        const err = await res.json();
+        setStatus('Error al publicar producto: ' + JSON.stringify(err.detail));
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadInitialData);
+  </script>
+</body>
+</html>

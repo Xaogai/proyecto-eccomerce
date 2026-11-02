@@ -1,0 +1,25 @@
+[project]
+name = "ferremarket-ecommerce"
+version = "1.0.0"
+description = "Plataforma E-commerce Ferremarket tipo Home Depot - Arquitectura de Microservicios en FastAPI"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["backend"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "C90"]
+ignore = ["E501"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = true
