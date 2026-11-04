@@ -1,5 +1,6 @@
 """Endpoints REST del microservicio de Pagos (`payments`)."""
 
+from decimal import Decimal
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
@@ -13,7 +14,7 @@ from backend.services.payments.app.payment_repository import PaymentRepository
 from backend.services.payments.app.schemas import PaymentCreateRequest, PaymentResponse
 from backend.shared.database import get_db
 from backend.shared.models import Pedido, Usuario
-from backend.shared.security import get_current_user, record_audit_event
+from backend.shared.security import get_current_user, record_audit_event, require_roles
 
 router = APIRouter(prefix="/api/v1", tags=["Pagos"])
 
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/api/v1", tags=["Pagos"])
 @router.post("/payments/webhook-sign")
 async def sign_sandbox_webhook_payload(
     request: Request,
-    _current_user: Usuario = Depends(get_current_user),
+    _admin: Usuario = Depends(require_roles("admin")),
 ) -> dict[str, str]:
     """
     Genera la firma HMAC-SHA256 (`X-Webhook-Signature`) para el simulador Sandbox de pasarela (Sec. 14.2, AE-29).
@@ -50,8 +51,10 @@ def process_tokenized_payment(
             detail="Circuit breaker abierto: el proveedor de pagos se encuentra temporalmente degradado",
         )
     pedido = repo.db.query(Pedido).filter(Pedido.id == payload.pedido_id).first()
-    if not pedido:
+    if not pedido or (current_user.tipo_usuario != "admin" and pedido.cliente_id != current_user.id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
+    if payload.monto > pedido.total + sum((e.costo for e in pedido.envios), Decimal("0.00")):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El monto no corresponde al pedido")
 
     try:
         gateway = PaymentGatewayFactory.create(payload.provider)

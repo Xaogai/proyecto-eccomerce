@@ -13,6 +13,8 @@ from backend.shared.security import record_audit_event
 def _deliver_smtp_if_configured(recipient_email: str, subject: str, body: str) -> str:
     """Envía el mensaje por SMTP si `settings.smtp_host` está configurado; retorna el modo de entrega."""
     if not settings.smtp_host.strip():
+        # Sin SMTP (desarrollo y pruebas) el correo se imprime en la consola del backend.
+        print(f"[correo de prueba] Para: {recipient_email} | {subject}\n{body}", flush=True)
         return "sandbox_outbox"
     msg = EmailMessage()
     msg["Subject"] = subject

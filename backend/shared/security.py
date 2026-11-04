@@ -242,17 +242,22 @@ def check_account_lockout(email: str) -> None:
         record_audit_event("account_locked", None, f"user:{email}", {"attempts": attempts})
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Cuenta bloqueada temporalmente por múltiples intentos fallidos de inicio de sesión",
+            detail={
+                "code": "account_locked",
+                "message": "Bloqueamos tu cuenta por seguridad tras varios intentos fallidos.",
+                "reintentar_en_s": settings.lockout_minutes * 60,
+            },
         )
 
 
-def register_failed_login(email: str) -> None:
-    """Registra un intento fallido de inicio de sesión para mitigación de fuerza bruta."""
+def register_failed_login(email: str) -> int:
+    """Registra un intento fallido de inicio de sesión y regresa cuántos van en la ventana de bloqueo."""
     with operational_session() as session:
         session.add(IntentoLoginFallido(email=email))
         session.flush()
         count = _recent_failed_attempts(session, email)
     record_audit_event("login_failed", None, f"user:{email}", {"count": count})
+    return count
 
 
 def clear_failed_logins(email: str) -> None:

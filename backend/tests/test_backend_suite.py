@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
 
 from backend.shared.database import Base
+from backend.shared.security import get_audit_logs
 from backend.shared.migrations import downgrade_database, upgrade_database
 
 from backend.services.inventory.app.inventory_repository import (
@@ -694,7 +695,10 @@ def test_phase_2_notifications_password_reset_and_signed_webhooks(client: InProc
         json={"email": "ana.torres.sintetica@ferremarket.local"},
     )
     assert req_resp.status_code == 200
-    reset_token = req_resp.json()["sandbox_reset_token"]
+    assert "sandbox_reset_token" not in req_resp.json(), "el token solo viaja por correo"
+    correo = get_audit_logs("email_notification_sent")[-1]["details"]
+    assert correo["template_type"] == "password_reset"
+    reset_token = correo["body"].rsplit("/cuenta/restablecer/", 1)[1].strip()
     assert reset_token
 
     confirm_resp = client.post(
@@ -748,8 +752,15 @@ def test_phase_2_notifications_password_reset_and_signed_webhooks(client: InProc
         "referencia_pasarela": order["referencia_pasarela"],
         "status": "aprobado",
     }
-    sign_resp = client.post("/api/v1/payments/webhook-sign", headers=ana_headers, json=wh_payload)
+    # Firmar webhooks es solo del admin: un cliente no puede marcar su pedido como pagado.
+    assert client.post("/api/v1/payments/webhook-sign", headers=ana_headers, json=wh_payload).status_code == 403
+    admin_login = client.post(
+        "/api/v1/auth/login", json={"email": "admin.sintetico@ferremarket.local", "password": "Sintetico2026!"}
+    )
+    admin_headers = {"Authorization": f"Bearer {admin_login.json()['access_token']}"}
+    sign_resp = client.post("/api/v1/payments/webhook-sign", headers=admin_headers, json=wh_payload)
     assert sign_resp.status_code == 200
+    assert client.post("/api/v1/webhooks/payment", json=wh_payload).status_code == 401, "sin firma se rechaza"
     wh_resp = client.post(
         "/api/v1/webhooks/payment",
         headers={"X-Webhook-Signature": sign_resp.json()["signature"]},

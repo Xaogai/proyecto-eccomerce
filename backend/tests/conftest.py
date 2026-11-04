@@ -7,7 +7,7 @@ import json
 from typing import Any, Callable, get_args
 import uuid
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.params import Body, Depends as DependsParam, Header as HeaderParam, Path as PathParam, Query as QueryParam
 from fastapi.routing import APIRoute
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -171,6 +171,9 @@ class InProcessASGIClient:
             return _DummyRequest(raw_body=raw_body, headers=headers)
         if isinstance(annotation, type) and issubclass(annotation, BaseModel):
             return annotation.model_validate(body_dict or {})
+        models = [a for a in get_args(annotation) if isinstance(a, type) and issubclass(a, BaseModel)]
+        if models:  # cuerpo opcional: `Modelo | None = None`
+            return models[0].model_validate(body_dict) if body_dict else default
         if name in path_params:
             return self._convert_primitive(path_params[name], annotation)
         if isinstance(default, HeaderParam):
@@ -277,6 +280,9 @@ class InProcessASGIClient:
                 raw_body=raw_bytes,
                 cleanup_generators=cleanup_gens,
             )
+            if isinstance(result, Response):  # HTML, redirecciones y archivos van tal cual
+                body_text = bytes(result.body).decode("utf-8", errors="replace")
+                return ClientResponse(status_code=result.status_code, _data=body_text, text=body_text)
             status_code = route.status_code or 200
             serialized = self._serialize(result)
             return ClientResponse(status_code=status_code, _data=serialized, text=json.dumps(serialized))

@@ -9,6 +9,7 @@ from backend.services.checkout.app.order_repository import OrderRepository
 from backend.services.checkout.app.schemas import (
     CheckoutRequest,
     OrderResponse,
+    PaymentRetryResponse,
     PaymentWebhookRequest,
 )
 from backend.services.inventory.app.inventory_repository import InsufficientStockError
@@ -37,7 +38,10 @@ def process_checkout(
     try:
         return repo.create_checkout_order(cliente_id=current_user.id, payload=payload)
     except InsufficientStockError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"code": "out_of_stock", "message": "Algunos productos ya no tienen stock suficiente."},
+        ) from exc
     except TimeoutError as exc:
         raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(exc)) from exc
     except ValueError as exc:
@@ -54,13 +58,13 @@ async def payment_webhook(
     """
     Recibe la confirmación asíncrona de la pasarela de pago con idempotencia (Sec. 13.1, Anexo 1.5, AE-29).
     """
-    if x_webhook_signature is not None:
-        raw_body = await request.body()
-        if not verify_webhook_signature(raw_body, x_webhook_signature):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Firma criptográfica del webhook inválida",
-            )
+    # La firma es obligatoria: sin ella cualquiera podía marcar un pedido como pagado.
+    raw_body = await request.body()
+    if not x_webhook_signature or not verify_webhook_signature(raw_body, x_webhook_signature):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Firma criptográfica del webhook inválida",
+        )
     try:
         return repo.handle_payment_webhook(
             event_id=payload.event_id,
@@ -105,6 +109,30 @@ def get_order_detail(
             detail="No tiene autorización para consultar pedidos de otro usuario",
         )
     return repo._serialize_order(pedido)
+
+
+@router.post("/orders/{order_id}/pago/reintentar", response_model=PaymentRetryResponse)
+def retry_order_payment(
+    order_id: uuid.UUID,
+    current_user: Usuario = Depends(get_current_user),
+    repo: OrderRepository = Depends(get_order_repository),
+) -> PaymentRetryResponse:
+    """Nueva intención de pago para un pedido propio con pago rechazado (vuelve a apartar el stock)."""
+    pedido = repo.get_order_by_id(order_id)
+    if not pedido or pedido.cliente_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
+    try:
+        result = repo.retry_payment(pedido)
+    except InsufficientStockError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"code": "out_of_stock", "message": "Algunos productos ya no tienen stock suficiente."},
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail={"code": "not_retryable", "message": str(exc)}
+        ) from exc
+    return PaymentRetryResponse(checkout_url=result.checkout_url, referencia_pasarela=result.reference_id)
 
 
 @router.post("/orders/{order_id}/cancel", response_model=OrderResponse)

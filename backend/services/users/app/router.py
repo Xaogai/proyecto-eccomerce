@@ -13,6 +13,8 @@ from backend.services.users.app.schemas import (
     PasswordResetConfirmRequest,
     PasswordResetRequest,
     RoleChangeRequest,
+    LogoutRequest,
+    PasswordChangeRequest,
     TokenRefreshRequest,
     TokenResponse,
     UserLoginRequest,
@@ -75,11 +77,28 @@ def get_privacy_notice() -> dict[str, Any]:
     }
 
 
+def user_response(user: Usuario) -> UserResponse:
+    """Perfil público con la sucursal del staff (sin password_hash)."""
+    staff = user.staff_sucursal
+    return UserResponse(
+        id=user.id,
+        nombre=user.nombre,
+        email=user.email,
+        fecha_registro=user.fecha_registro,
+        tipo_usuario=user.tipo_usuario,
+        telefono=user.telefono,
+        acepta_marketing=user.acepta_marketing,
+        acepta_personalizacion=user.acepta_personalizacion,
+        sucursal_id=staff.sucursal_id if staff else None,
+        sucursal_nombre=staff.sucursal.nombre if staff and staff.sucursal else None,
+    )
+
+
 @router.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(
     payload: UserRegisterRequest,
     repo: UserRepository = Depends(get_user_repository),
-) -> Usuario:
+) -> UserResponse:
     """
     Registra un nuevo usuario en la plataforma con contraseña cifrada (HU-03, RQ-SEG-001).
 
@@ -99,17 +118,22 @@ def register_user(
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="El correo electrónico ya se encuentra registrado",
+            detail={
+                "code": "email_taken",
+                "message": "Ya existe una cuenta con ese correo. Inicia sesión o recupera tu contraseña.",
+            },
         )
     pwd_hash = hash_password(payload.password)
     user = repo.create_user(
         nombre=payload.nombre,
         email=payload.email,
         password_hash=pwd_hash,
-        tipo_usuario=payload.tipo_usuario,
-        rol_admin=payload.rol_admin,
-        sucursal_id=payload.sucursal_id,
+        # El registro público solo crea clientes: admin y staff los asigna un administrador.
+        tipo_usuario="cliente",
     )
+    user.telefono = payload.telefono
+    user.acepta_marketing = payload.acepta_marketing
+    repo.db.commit()
     record_audit_event("user_registered", str(user.id), f"user:{user.id}", {"role": user.tipo_usuario})
     send_email_notification(
         recipient_email=user.email,
@@ -118,7 +142,7 @@ def register_user(
         body=f"Hola {user.nombre}, tu cuenta ({user.email}) ha sido creada exitosamente en Ferremarket.",
         template_type="account_welcome",
     )
-    return user
+    return user_response(user)
 
 
 @router.post("/auth/login", response_model=TokenResponse)
@@ -140,10 +164,14 @@ def login_user(
     check_account_lockout(normalized_email)
     user = repo.get_by_email(normalized_email)
     if not user or not verify_password(payload.password, user.password_hash):
-        register_failed_login(normalized_email)
+        attempts = register_failed_login(normalized_email)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciales inválidas",
+            detail={
+                "code": "invalid_credentials",
+                "message": "El correo o la contraseña no son correctos.",
+                "intentos_restantes": max(0, settings.max_login_attempts - attempts),
+            },
         )
     clear_failed_logins(normalized_email)
     access_token = create_access_token(str(user.id), user.email, user.tipo_usuario)
@@ -189,6 +217,7 @@ def refresh_access_token(
 
 @router.post("/auth/logout")
 def logout_user(
+    payload: LogoutRequest | None = None,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> dict[str, str]:
     """
@@ -203,6 +232,11 @@ def logout_user(
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No autenticado")
     revoke_token(credentials.credentials)
+    if payload is not None and payload.refresh_token:
+        try:
+            revoke_token(payload.refresh_token)
+        except HTTPException:
+            pass  # un refresh token ya inválido no impide cerrar sesión
     return {"detail": "Sesión cerrada y token revocado exitosamente"}
 
 
@@ -224,15 +258,18 @@ def request_password_reset(
         subject="Recuperación de contraseña — Ferremarket",
         body=(
             f"Hola {user.nombre}, solicitaste restablecer tu contraseña. "
-            f"Usa este token de recuperación vigente por 15 minutos: {reset_token}"
+            f"Abre este enlace en los próximos 15 minutos: {reset_link(reset_token)}"
         ),
         template_type="password_reset",
         metadata={"expires_in_minutes": 15},
     )
-    return {
-        "detail": "Correo de recuperación enviado exitosamente",
-        "sandbox_reset_token": reset_token,
-    }
+    # El token solo viaja por correo: antes se regresaba aquí y cualquiera podía tomar una cuenta ajena.
+    return {"detail": "Si el correo está registrado, recibirá las instrucciones de recuperación."}
+
+
+def reset_link(token: str) -> str:
+    """Enlace de la página Restablecer contraseña del frontend."""
+    return f"{settings.frontend_url.rstrip('/')}/cuenta/restablecer/{token}"
 
 
 @router.post("/auth/password-reset/confirm")
@@ -264,9 +301,26 @@ def get_my_notifications(
 
 
 @router.get("/users/me", response_model=UserResponse)
-def get_my_profile(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+def get_my_profile(current_user: Usuario = Depends(get_current_user)) -> UserResponse:
     """Obtiene el perfil del usuario autenticado."""
-    return current_user
+    return user_response(current_user)
+
+
+@router.post("/users/me/password")
+def change_my_password(
+    payload: PasswordChangeRequest,
+    current_user: Usuario = Depends(get_current_user),
+    repo: UserRepository = Depends(get_user_repository),
+) -> dict[str, str]:
+    """Cambia la contraseña verificando la actual (Mi cuenta, datos y privacidad)."""
+    if not verify_password(payload.password_actual, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "wrong_password", "message": "Tu contraseña actual no es correcta."},
+        )
+    repo.update_password(current_user, hash_password(payload.password_nueva))
+    record_audit_event("password_changed", str(current_user.id), f"user:{current_user.id}")
+    return {"detail": "Contraseña actualizada"}
 
 
 @router.get("/users/me/arco")

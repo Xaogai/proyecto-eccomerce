@@ -15,6 +15,8 @@ class UserRegisterRequest(BaseModel):
     rol_admin: str | None = Field(default=None)
     sucursal_id: uuid.UUID | None = Field(default=None)
     acepta_aviso_privacidad: bool = Field(default=True)
+    telefono: str | None = Field(default=None, max_length=20)
+    acepta_marketing: bool = Field(default=False)
 
     @field_validator("email")
     @classmethod
@@ -45,6 +47,19 @@ class TokenRefreshRequest(BaseModel):
     """Solicitud de renovación de access token mediante refresh token."""
 
     refresh_token: str
+
+
+class LogoutRequest(BaseModel):
+    """Refresh token que también se invalida al cerrar sesión."""
+
+    refresh_token: str | None = None
+
+
+class PasswordChangeRequest(BaseModel):
+    """Cambio de contraseña desde Mi cuenta (pide la actual)."""
+
+    password_actual: str
+    password_nueva: str = Field(..., min_length=8, max_length=128)
 
 
 class PasswordResetRequest(BaseModel):
@@ -116,3 +131,8 @@ class UserResponse(BaseModel):
     email: str
     fecha_registro: datetime
     tipo_usuario: str
+    telefono: str | None = None
+    acepta_marketing: bool = False
+    acepta_personalizacion: bool = False
+    sucursal_id: uuid.UUID | None = None
+    sucursal_nombre: str | None = None

@@ -9,7 +9,19 @@ from backend.services.cart.app.schemas import (
     CartResponse,
     MAX_CART_ITEMS,
 )
-from backend.shared.models import Carrito, Cliente, ItemCarrito, Variante
+from backend.shared.models import Carrito, Cliente, Inventario, ItemCarrito, Variante
+
+
+class OutOfStockError(ValueError):
+    """Se pidieron más piezas de las disponibles."""
+
+    def __init__(self, sku: str, disponibles: int) -> None:
+        """Guarda el SKU y cuántas piezas hay para el mensaje al cliente."""
+        self.sku = sku
+        self.disponibles = disponibles
+        super().__init__(
+            "Este producto está agotado." if disponibles <= 0 else f"Solo hay {disponibles} disponibles."
+        )
 
 
 class CartRepository:
@@ -36,8 +48,10 @@ class CartRepository:
         """
         if carrito_id is not None:
             cart = self.db.query(Carrito).filter(Carrito.id == carrito_id).first()
-            if cart:
+            # Solo el dueño usa su carrito (el invitado, uno sin dueño); antes bastaba conocer el id.
+            if cart and cart.estado == "activo" and cart.cliente_id == cliente_id:
                 return cart
+            carrito_id = None
 
         if cliente_id is not None:
             cliente = self.db.query(Cliente).filter(Cliente.usuario_id == cliente_id).first()
@@ -86,7 +100,7 @@ class CartRepository:
             ValueError: Si la variante no existe o se supera `MAX_CART_ITEMS`.
         """
         variante = self.db.query(Variante).filter(Variante.sku == variante_sku).first()
-        if not variante:
+        if not variante or variante.producto.estado != "publicado":
             raise ValueError(f"La variante '{variante_sku}' no existe en el catálogo")
 
         cart = self.get_or_create_cart(carrito_id=carrito_id, cliente_id=cliente_id)
@@ -98,6 +112,7 @@ class CartRepository:
             )
             .first()
         )
+        self._check_stock(variante_sku, (item.cantidad if item else 0) + cantidad)
         if item:
             if item.cantidad + cantidad > MAX_CART_ITEMS:
                 raise ValueError(f"No se pueden exceder {MAX_CART_ITEMS} unidades por ítem")
@@ -136,6 +151,7 @@ class CartRepository:
         )
         if not item:
             raise ValueError(f"El ítem '{variante_sku}' no se encuentra en el carrito")
+        self._check_stock(variante_sku, cantidad)
         item.cantidad = cantidad
         self.db.commit()
         self.db.refresh(cart)
@@ -163,7 +179,45 @@ class CartRepository:
         self.db.refresh(cart)
         return self.build_cart_response(cart)
 
-    def build_cart_response(self, cart: Carrito) -> CartResponse:
+    def stock_of(self, variante_sku: str, sucursal_id: uuid.UUID | None = None) -> tuple[int, int | None]:
+        """Piezas disponibles de la variante en todas las sucursales y en la sucursal pedida."""
+        rows = (
+            self.db.query(Inventario.sucursal_id, Inventario.cantidad_disponible)
+            .filter(Inventario.variante_sku == variante_sku)
+            .all()
+        )
+        total = sum(max(0, qty) for _, qty in rows)
+        in_branch = None if sucursal_id is None else sum(max(0, q) for b, q in rows if b == sucursal_id)
+        return int(total), in_branch
+
+    def _check_stock(self, variante_sku: str, cantidad: int) -> None:
+        """No deja pedir más piezas de las que hay entre todas las sucursales."""
+        total, _ = self.stock_of(variante_sku)
+        if cantidad > total:
+            raise OutOfStockError(variante_sku, total)
+
+    def merge_guest_cart(self, guest_cart_id: uuid.UUID, cliente_id: uuid.UUID) -> CartResponse:
+        """Pasa los productos del carrito de invitado al de la cuenta (suma cantidades hasta el stock)."""
+        cart = self.get_or_create_cart(cliente_id=cliente_id)
+        guest = self.db.query(Carrito).filter(Carrito.id == guest_cart_id).first()
+        if guest and guest.cliente_id is None and guest.estado == "activo" and guest.id != cart.id:
+            current = {i.variante_sku: i for i in cart.items}
+            for guest_item in guest.items:
+                total, _ = self.stock_of(guest_item.variante_sku)
+                existing = current.get(guest_item.variante_sku)
+                wanted = min(MAX_CART_ITEMS, total, guest_item.cantidad + (existing.cantidad if existing else 0))
+                if wanted <= 0:
+                    continue
+                if existing:
+                    existing.cantidad = wanted
+                else:
+                    self.db.add(ItemCarrito(carrito_id=cart.id, variante_sku=guest_item.variante_sku, cantidad=wanted))
+            guest.estado = "abandonado"
+            self.db.commit()
+            self.db.refresh(cart)
+        return self.build_cart_response(cart)
+
+    def build_cart_response(self, cart: Carrito, sucursal_id: uuid.UUID | None = None) -> CartResponse:
         """
         Calcula el detalle del carrito haciendo join con `variantes.precio` en tiempo real (Anexo 2.2.2 - 2FN).
 
@@ -185,6 +239,7 @@ class CartRepository:
             )
             subtotal = (precio_vigente * Decimal(item.cantidad)).quantize(Decimal("0.01"))
             total += subtotal
+            stock_total, stock_branch = self.stock_of(item.variante_sku, sucursal_id)
             item_responses.append(
                 CartItemDetailResponse(
                     variante_sku=item.variante_sku,
@@ -194,6 +249,9 @@ class CartRepository:
                     subtotal=subtotal,
                     imagen_url=variante.imagen_url if variante else None,
                     atributos=dict(variante.atributos or {}) if variante else {},
+                    producto_sku=variante.producto.variantes[0].sku if variante and variante.producto else None,
+                    stock_disponible=stock_total,
+                    stock_sucursal=stock_branch,
                 )
             )
         return CartResponse(

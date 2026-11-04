@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     max_login_attempts: int = 5
     lockout_minutes: int = 15
     reservation_ttl_minutes: int = 15
+    # Dirección pública de la tienda: los correos llevan enlaces a ella (restablecer contraseña, pedidos).
+    frontend_url: str = "http://localhost:5173"
+    # Pasarela de pruebas servida por el backend (/api/v1/pagos/sandbox). En producción va en False.
+    pasarela_sandbox: bool = True
 
 
 settings = Settings()

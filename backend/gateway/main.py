@@ -16,6 +16,7 @@ from backend.services.catalog.app.router import router as catalog_router
 from backend.services.checkout.app.router import router as checkout_router
 from backend.services.inventory.app.router import router as inventory_router
 from backend.services.payments.app.router import router as payments_router
+from backend.services.payments.app.sandbox import router as payments_sandbox_router
 from backend.services.shipping.app.router import router as shipping_router
 from backend.services.users.app.router import router as users_router
 from backend.shared.configuracion import get_section
@@ -61,6 +62,7 @@ app.include_router(inventory_router)
 app.include_router(cart_router)
 app.include_router(checkout_router)
 app.include_router(payments_router)
+app.include_router(payments_sandbox_router)
 app.include_router(shipping_router)
 
 

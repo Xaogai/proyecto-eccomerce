@@ -14,8 +14,12 @@ export function withQuery(url: string, query: Record<string, QueryValue> = {}): 
   return qs ? `${url}?${qs}` : url
 }
 
-export async function bget<T>(url: string, query?: Record<string, QueryValue>): Promise<T> {
-  const { data } = await api.get<T>(withQuery(url, query))
+export async function bget<T>(
+  url: string,
+  query?: Record<string, QueryValue>,
+  headers?: Record<string, string>,
+): Promise<T> {
+  const { data } = await api.get<T>(withQuery(url, query), { headers })
   return data
 }
 

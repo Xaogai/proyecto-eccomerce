@@ -17,6 +17,12 @@ class CartItemAddRequest(BaseModel):
     cantidad: int = Field(..., gt=0, le=MAX_CART_ITEMS)
 
 
+class CartMergeRequest(BaseModel):
+    """Carrito de invitado que pasa a la cuenta al iniciar sesión."""
+
+    carrito_invitado_id: uuid.UUID
+
+
 class CartItemUpdateRequest(BaseModel):
     """Solicitud para fijar la cantidad exacta de un ítem en el carrito (0 elimina el ítem)."""
 
@@ -34,6 +40,9 @@ class CartItemDetailResponse(BaseModel):
     subtotal: Decimal
     imagen_url: str | None = None
     atributos: dict[str, Any] = Field(default_factory=dict)
+    producto_sku: str | None = Field(default=None, description="SKU con el que se abre la ficha del producto")
+    stock_disponible: int = 0
+    stock_sucursal: int | None = Field(default=None, description="Piezas en la sucursal pedida con sucursal_id")
 
 
 class CartResponse(BaseModel):

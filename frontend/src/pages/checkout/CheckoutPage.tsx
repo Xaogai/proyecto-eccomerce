@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { usesRealBackend } from '@/api/client'
 import { ApiError } from '@/api/errors'
 import { useAuth } from '@/app/providers/authContext'
 import { useFeatureFlag } from '@/app/featureFlags'
@@ -95,6 +96,9 @@ export function CheckoutPage() {
   }, [stores.data, storeId, setValue])
 
   if (cart.isPending || status === 'cargando') return <PageSkeleton label="Preparando el checkout" />
+  // El backend real solo acepta compras con sesión: el invitado inicia sesión o crea su cuenta y regresa.
+  if (usesRealBackend && status === 'anonimo' && !checkout.isSuccess)
+    return <Navigate to="/cuenta/login?next=%2Fcheckout" replace />
   if (cart.isError || !cart.data)
     return <ErrorState headingLevel={1} title="No pudimos cargar tu pedido" onRetry={() => cart.refetch()} />
   if (cart.data.items.length === 0 && !checkout.isSuccess) return <Navigate to="/carrito" replace />

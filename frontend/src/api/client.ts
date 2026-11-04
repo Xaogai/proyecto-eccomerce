@@ -36,7 +36,12 @@ export function refreshAccessToken(): Promise<string | null> {
     try {
       const rt = tokenStorage.get()
       const { data } = await raw.post('/auth/refresh', rt ? { refresh_token: rt } : {})
-      const parsed = refreshResponseSchema.parse(data)
+      // El backend real informa la vigencia en minutos (expires_in_minutes).
+      const parsed = refreshResponseSchema.parse(
+        usesRealBackend
+          ? { ...data, expires_in: (data.expires_in ?? data.expires_in_minutes * 60) | 0 }
+          : data,
+      )
       accessToken = parsed.access_token
       tokenStorage.set(parsed.refresh_token)
       return accessToken
