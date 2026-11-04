@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Sucursales en móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 1300px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF; padding: 8px 10px; display: flex; align-items: center; gap: 4px">
+    <a href="Movil-9-Inicio.dc.html" aria-label="Volver" style="width: 44px; height: 44px; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1 style="margin: 0; flex: 1; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Sucursales</h1>
+  </header>
+  <main style="padding: 14px 16px; display: flex; flex-direction: column; gap: 12px">
+    <form role="search" style="display: flex; gap: 8px">
+      <label for="cp" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Código postal o ciudad</label>
+      <input id="cp" type="search" value="50000" style="flex: 1; min-width: 0; height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit">
+      <button type="submit" style="min-height: 50px; padding: 0 16px; border: 0; border-radius: 4px; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600">Buscar</button>
+    </form>
+    <div role="tablist" aria-label="Vista" style="display: grid; grid-template-columns: 1fr 1fr; background: #FFFFFF; border-radius: 6px; padding: 4px; gap: 4px">
+      <button type="button" role="tab" aria-selected="{{isList}}" onClick="{{showList}}" style="min-height: 44px; border: 0; border-radius: 4px; background: {{listBg}}; color: {{listFg}}; font: inherit; font-weight: 600">Lista</button>
+      <button type="button" role="tab" aria-selected="{{isMap}}" onClick="{{showMap}}" style="min-height: 44px; border: 0; border-radius: 4px; background: {{mapBg}}; color: {{mapFg}}; font: inherit; font-weight: 600">Mapa</button>
+    </div>
+    <sc-if value="{{mapOn}}" hint-placeholder-val="{{ false }}">
+      <div aria-hidden="true" style="height: 260px; border-radius: 6px; background: #DDE2E6; position: relative; overflow: hidden">
+        <div style="position: absolute; inset: 0; background-image: linear-gradient(#CBD2D8 1px, transparent 1px), linear-gradient(90deg, #CBD2D8 1px, transparent 1px); background-size: 40px 40px"></div>
+        <span style="position: absolute; left: 30%; top: 36%; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #C2410C"></span>
+        <span style="position: absolute; left: 62%; top: 60%; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #15181B"></span>
+        <span style="position: absolute; left: 12%; top: 14%; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #15181B"></span>
+      </div>
+    </sc-if>
+    <h2 style="margin: 0; font-size: 16px">3 sucursales cerca de CP 50000</h2>
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+      <sc-for list="{{stores}}" as="s" hint-placeholder-count="3">
+        <li style="background: #FFFFFF; border-radius: 6px; padding: 14px; border: {{s.border}}; display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline"><h3 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px">{{s.name}}</h3><span style="color: #4E5862">{{s.km}}</span></div>
+          <span style="font-size: 15px">{{s.addr}}</span>
+          <span style="font-size: 15px; color: #4E5862">{{s.hours}}</span>
+          <span style="font-size: 15px; font-weight: 600; color: #1E7A46">{{s.stock}}</span>
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 6px">
+            <button type="button" onClick="{{s.pick}}" aria-pressed="{{s.isMine}}" style="min-height: 46px; border: 0; border-radius: 4px; background: {{s.btnBg}}; color: #FFFFFF; font: inherit; font-weight: 600">{{s.cta}}</button>
+            <a href="#" style="min-height: 46px; border-radius: 4px; border: 1px solid #B9C1C8; text-decoration: none; display: flex; align-items: center; justify-content: center">Llegar</a>
+          </div>
+        </li>
+      </sc-for>
+    </ol>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { mine: 0, map: false }; }
+  renderVals() {
+    const S = [
+      { name: 'Toluca Centro', km: '1.2 km', addr: 'Av. Ejemplo 123, Centro', hours: 'Lun a dom 7:00 a 21:00', stock: 'Tiene todo tu carrito' },
+      { name: 'Metepec', km: '6.8 km', addr: 'Blvd. Ejemplo 45', hours: 'Lun a dom 7:00 a 22:00', stock: 'Tiene todo tu carrito' },
+      { name: 'Lerma', km: '14.5 km', addr: 'Carretera Ejemplo km 3', hours: 'Lun a sáb 8:00 a 20:00', stock: 'Tiene 2 de 3 productos' }
+    ];
+    const m = this.state.mine, map = this.state.map;
+    return {
+      mapOn: map, isMap: map ? 'true' : 'false', isList: map ? 'false' : 'true',
+      listBg: map ? '#FFFFFF' : '#15181B', listFg: map ? '#15181B' : '#FFFFFF',
+      mapBg: map ? '#15181B' : '#FFFFFF', mapFg: map ? '#FFFFFF' : '#15181B',
+      showList: () => this.setState({ map: false }), showMap: () => this.setState({ map: true }),
+      stores: S.map((s, i) => ({ ...s, isMine: i === m ? 'true' : 'false', border: i === m ? '2px solid #C2410C' : '1px solid #FFFFFF', btnBg: i === m ? '#15181B' : '#C2410C', cta: i === m ? 'Es tu sucursal' : 'Elegir sucursal', pick: () => this.setState({ mine: i }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

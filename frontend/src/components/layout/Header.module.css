@@ -1,0 +1,127 @@
+.header {
+  background: var(--color-carbon);
+  color: var(--color-superficie);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 10px;
+}
+
+.logo {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-superficie);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.logoDot {
+  color: var(--color-naranja-claro);
+}
+
+.logoSuffix {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-texto-oscuro);
+}
+
+.iconLink,
+.textLink,
+.cartLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: var(--tactil-min);
+  min-height: var(--tactil-min);
+  justify-content: center;
+  color: var(--color-superficie);
+  text-decoration: none;
+}
+
+/* En móvil "Carrito" solo lo lee el lector de pantalla; desde 769 px se ve */
+.cartText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (min-width: 769px) {
+  .cartText {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+  }
+}
+
+.count {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--color-naranja);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mobileRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 14px;
+}
+
+.searchLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-texto-2);
+  text-decoration: none;
+}
+
+.searchLink svg {
+  color: var(--color-carbon);
+}
+
+.searchSlot {
+  flex: 1 1 360px;
+  min-width: 0;
+}
+
+.soloEscritorio {
+  display: none !important;
+}
+
+@media (min-width: 769px) {
+  .bar {
+    gap: 16px;
+    padding-block: 14px;
+  }
+
+  .logo {
+    flex: none;
+    font-size: 32px;
+  }
+
+  .soloEscritorio {
+    display: flex !important;
+  }
+
+  .soloMovil {
+    display: none !important;
+  }
+}

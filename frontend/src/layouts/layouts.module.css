@@ -1,0 +1,114 @@
+.main {
+  /* El pie nunca aparece arriba mientras carga la página: si no, brinca al llegar el contenido (CLS). */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 14px;
+  padding-bottom: 32px;
+}
+
+@media (min-width: 769px) {
+  .main {
+    padding-top: 20px;
+    padding-bottom: 48px;
+  }
+}
+
+.narrow {
+  max-width: 960px;
+}
+
+.storeInfo {
+  display: none;
+  color: var(--color-texto-oscuro);
+}
+
+@media (min-width: 769px) {
+  .storeInfo {
+    display: inline;
+  }
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tactil-min);
+  color: var(--color-superficie);
+}
+
+.secure {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-texto-oscuro);
+  font-weight: 600;
+}
+
+/* Contenido con navegación lateral (Mi cuenta, Admin, Sucursal) */
+.withSide {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sideContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (min-width: 1025px) {
+  .withSide {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .withSide > nav {
+    flex: 0 0 240px;
+    position: sticky;
+    top: 16px;
+  }
+}
+
+.internal {
+  padding: 20px var(--gutter-movil) 40px;
+}
+
+@media (min-width: 769px) {
+  .internal {
+    padding-inline: var(--gutter);
+  }
+}
+
+.internalBar {
+  flex-wrap: wrap;
+  padding-inline: var(--gutter-movil);
+  gap: 12px 20px;
+}
+
+@media (min-width: 769px) {
+  .internalBar {
+    padding-inline: var(--gutter);
+  }
+}
+
+.internalBar > a {
+  flex: 1;
+}
+
+.who {
+  color: var(--color-texto-oscuro);
+}
+
+.exit {
+  min-height: var(--tactil-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-superficie);
+  text-decoration: underline;
+}

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Crear cuenta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45; display: flex; flex-direction: column">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 16px">
+      <a href="Escritorio-6-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <span style="margin-left: auto; color: #C9D0D6">Toluca Centro · CP 50000</span>
+    </div>
+  </header>
+  <main style="flex: 1; max-width: 1000px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 40px 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <form novalidate aria-labelledby="rt" style="flex: 1 1 460px; background: #FFFFFF; border-radius: 6px; padding: 28px; display: flex; flex-direction: column; gap: 16px">
+      <h1 id="rt" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1; text-transform: uppercase">Crea tu cuenta</h1>
+      <div role="alert" style="background: #FBE6E4; color: #B42318; border-radius: 4px; padding: 10px 12px; font-weight: 600">Revisa 1 campo antes de continuar.</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+        <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Nombre<input type="text" autocomplete="given-name" value="Ana" style="height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Apellidos<input type="text" autocomplete="family-name" value="López" style="height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Correo electrónico<input type="email" autocomplete="email" value="ana@ejemplo.com" style="height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <label for="pw" style="font-weight: 600">Contraseña</label>
+        <div style="display: flex; gap: 8px">
+          <input id="pw" type="password" autocomplete="new-password" value="taller7" aria-invalid="true" aria-describedby="pw-err" style="flex: 1; min-width: 0; height: 50px; border: 2px solid #B42318; border-radius: 4px; padding: 0 12px; font: inherit">
+          <button type="button" aria-label="Mostrar contraseña" style="min-width: 90px; height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit">Mostrar</button>
+        </div>
+        <span id="pw-err" style="font-size: 14px; font-weight: 600; color: #B42318">Tu contraseña tiene 7 caracteres. Usa al menos 8.</span>
+      </div>
+      <label style="display: flex; gap: 12px; align-items: flex-start">
+        <input type="checkbox" required style="width: 22px; height: 22px; margin-top: 1px; flex: none; accent-color: #C2410C">
+        <span>He leído y acepto el <a href="#" style="font-weight: 600">aviso de privacidad</a>, que explica cómo usamos y protegemos mis datos personales.</span>
+      </label>
+      <label style="display: flex; gap: 12px; align-items: flex-start; color: #4E5862">
+        <input type="checkbox" style="width: 22px; height: 22px; margin-top: 1px; flex: none; accent-color: #C2410C">
+        <span>Quiero recibir ofertas por correo (opcional).</span>
+      </label>
+      <a href="Escritorio-14-MiCuenta.dc.html" style="min-height: 52px; border-radius: 4px; background: #C2410C; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none; display: flex; align-items: center; justify-content: center">Crear cuenta</a>
+      <p style="margin: 0; text-align: center">¿Ya tienes cuenta? <a href="Escritorio-12-Login.dc.html" style="font-weight: 600">Inicia sesión</a></p>
+    </form>
+    <aside style="flex: 1 1 300px; background: #15181B; color: #FFFFFF; border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Con tu cuenta</h2>
+      <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; color: #C9D0D6">
+        <li>Sigues tus pedidos y recolecciones.</li>
+        <li>Guardas direcciones para pagar más rápido.</li>
+        <li>Usas tu lista de deseos.</li>
+        <li>Ves, corriges o eliminas tus datos cuando quieras.</li>
+      </ul>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

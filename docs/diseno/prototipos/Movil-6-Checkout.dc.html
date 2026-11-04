@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Checkout en móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 1750px; position: relative; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF; padding: 8px 10px; display: flex; align-items: center; gap: 4px">
+    <a href="Movil-5-Carrito.dc.html" aria-label="Volver al carrito" style="width: 44px; height: 44px; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1 style="margin: 0; flex: 1; font-family: 'Barlow Condensed', sans-serif; font-size: 28px; text-transform: uppercase">Checkout</h1>
+    <span style="display: flex; align-items: center; gap: 6px; font-size: 14px; color: #C9D0D6; padding-right: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Compra segura</span>
+  </header>
+
+  <form style="padding: 14px 16px 160px; display: flex; flex-direction: column; gap: 14px">
+    <section aria-labelledby="m1" style="background: #FFFFFF; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <h2 id="m1" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase"><span style="color: #C2410C">1</span> Tus datos</h2>
+      <div style="background: #F5F6F7; border-radius: 4px; padding: 10px 12px; font-size: 15px; display: flex; flex-direction: column; gap: 2px">
+        <span>Compras como invitado.</span>
+        <a href="Movil-8-Registro.dc.html" style="font-weight: 600; min-height: 36px; display: flex; align-items: center">Iniciar sesión o crear cuenta</a>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Nombre completo<input type="text" autocomplete="name" value="Ana López" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Correo electrónico<input type="email" autocomplete="email" value="ana@ejemplo.com" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Teléfono<input type="tel" autocomplete="tel" value="722 000 0000" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+    </section>
+
+    <section aria-labelledby="m2" style="background: #FFFFFF; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <h2 id="m2" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase"><span style="color: #C2410C">2</span> Entrega</h2>
+      <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+        <legend style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Cómo quieres recibir tu pedido</legend>
+        <label style="display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 6px; border: {{pickBorder}}">
+          <input type="radio" name="modo" checked="{{isPick}}" onChange="{{setPick}}" style="width: 22px; height: 22px; margin-top: 2px; accent-color: #C2410C">
+          <span style="display: flex; flex-direction: column"><span style="font-weight: 600">Recoger en tienda</span><span style="color: #4E5862; font-size: 15px">Gratis · listo en 2 horas</span></span>
+        </label>
+        <label style="display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 6px; border: {{shipBorder}}">
+          <input type="radio" name="modo" checked="{{isShip}}" onChange="{{setShip}}" style="width: 22px; height: 22px; margin-top: 2px; accent-color: #C2410C">
+          <span style="display: flex; flex-direction: column"><span style="font-weight: 600">Envío a domicilio</span><span style="color: #4E5862; font-size: 15px">$149 a CP 50000 · 3 a 5 días hábiles</span></span>
+        </label>
+      </fieldset>
+
+      <sc-if value="{{isPick}}" hint-placeholder-val="{{ true }}">
+        <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+          <legend style="font-weight: 600; margin-bottom: 6px">Sucursales con todo tu pedido</legend>
+          <label style="display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 6px; border: 2px solid #15181B">
+            <input type="radio" name="suc" checked style="width: 22px; height: 22px; margin-top: 2px; accent-color: #C2410C">
+            <span style="display: flex; flex-direction: column; font-size: 15px"><span style="font-weight: 600">Toluca Centro · 1.2 km</span><span style="color: #1E7A46; font-weight: 600">Todo disponible</span><span style="color: #4E5862">Abierto hasta las 21:00</span></span>
+          </label>
+          <label style="display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 6px; border: 1px solid #D3D8DD">
+            <input type="radio" name="suc" style="width: 22px; height: 22px; margin-top: 2px; accent-color: #C2410C">
+            <span style="display: flex; flex-direction: column; font-size: 15px"><span style="font-weight: 600">Metepec · 6.8 km</span><span style="color: #1E7A46; font-weight: 600">Todo disponible</span><span style="color: #4E5862">Abierto hasta las 22:00</span></span>
+          </label>
+          <a href="Movil-15-Tiendas.dc.html" style="font-size: 15px; min-height: 40px; display: flex; align-items: center">Ver todas las sucursales en lista</a>
+        </fieldset>
+      </sc-if>
+
+      <sc-if value="{{isShip}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Calle y número<input type="text" autocomplete="address-line1" value="Hidalgo 210" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Colonia<input type="text" value="Centro" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Código postal<input type="text" inputmode="numeric" autocomplete="postal-code" value="5000" aria-invalid="true" aria-describedby="cp-err" style="height: 48px; border: 2px solid #B42318; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"><span id="cp-err" style="font-weight: 600; font-size: 14px; color: #B42318">El código postal debe tener 5 dígitos. Ejemplo: 50000</span></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Ciudad y estado<input type="text" value="Toluca, Estado de México" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+        </div>
+      </sc-if>
+    </section>
+
+    <section aria-labelledby="m3" style="background: #FFFFFF; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+      <h2 id="m3" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase"><span style="color: #C2410C">3</span> Pago</h2>
+      <p style="margin: 0; background: #F5F6F7; border-radius: 4px; padding: 12px; font-size: 15px">Pagarás con tarjeta en la página segura de <strong>[pasarela de pago]</strong>. Este sitio no pide ni guarda los datos de tu tarjeta.</p>
+    </section>
+
+    <section aria-labelledby="m4" style="background: #FFFFFF; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 15px">
+      <h2 id="m4" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; text-transform: uppercase">Tu pedido</h2>
+      <div style="display: flex; justify-content: space-between; gap: 10px"><span>Taladro percutor 20 V con 1 batería × 1</span><span>$2,899</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 10px"><span>Brocas para concreto × 2</span><span>$438</span></div>
+      <div style="border-top: 1px solid #E3E7EA; padding-top: 8px; display: flex; justify-content: space-between"><span>Subtotal</span><span>$3,337</span></div>
+      <div style="display: flex; justify-content: space-between"><span>{{deliveryLabel}}</span><span>{{deliveryCost}}</span></div>
+    </section>
+  </form>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-top: 1px solid #D3D8DD; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline">
+      <span style="font-weight: 600">Total</span>
+      <span aria-live="polite" style="font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 700">{{total}}</span>
+    </div>
+    <a href="Movil-7-Confirmacion.dc.html" style="min-height: 52px; border-radius: 4px; background: #C2410C; color: #FFFFFF; font-weight: 600; font-size: 17px; text-decoration: none; display: flex; align-items: center; justify-content: center">Pagar {{total}}</a>
+    <span style="font-size: 13px; color: #4E5862; text-align: center">Al pagar aceptas los <a href="#">términos de venta</a> y la <a href="#">política de devoluciones</a>.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1750}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { modo: 'pick' }; }
+  renderVals() {
+    const ship = this.state.modo === 'ship';
+    return {
+      isShip: ship, isPick: !ship,
+      setShip: () => this.setState({ modo: 'ship' }),
+      setPick: () => this.setState({ modo: 'pick' }),
+      shipBorder: ship ? '2px solid #C2410C' : '1px solid #D3D8DD',
+      pickBorder: ship ? '1px solid #D3D8DD' : '2px solid #C2410C',
+      deliveryLabel: ship ? 'Envío a CP 50000' : 'Recoger en Toluca Centro',
+      deliveryCost: ship ? '$149' : 'Gratis',
+      total: ship ? '$3,486' : '$3,337'
+    };
+  }
+}
+</script>
+</body>
+</html>

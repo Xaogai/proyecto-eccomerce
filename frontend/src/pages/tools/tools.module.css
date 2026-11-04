@@ -1,0 +1,241 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+@media (min-width: 769px) {
+  .card {
+    padding: 24px;
+  }
+}
+
+.card h2 {
+  font-size: 26px;
+}
+
+.muted {
+  font-size: 14px;
+  color: var(--color-texto-2);
+}
+
+.grid2 {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 481px) {
+  .grid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tactil-min);
+  font-weight: 600;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+/* ---------- Calculadora ---------- */
+
+.calc {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1025px) {
+  .calc {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .calc > form {
+    flex: 3;
+  }
+
+  .calc > section {
+    flex: 2;
+    position: sticky;
+    top: 16px;
+  }
+}
+
+.result {
+  border: 2px solid var(--color-naranja);
+}
+
+.figures {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.figures > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.figures dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.highlight {
+  flex-direction: column;
+  padding: 12px;
+  border-radius: var(--radio-control);
+  background: var(--color-resalte);
+}
+
+/* ---------- Sucursales ---------- */
+
+.storeSearch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  padding: 16px;
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+.grow {
+  flex: 1 1 260px;
+}
+
+.storesLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1025px) {
+  .storesLayout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .storesLayout > section {
+    flex: 3;
+  }
+}
+
+.storeList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.listTitle {
+  font-family: var(--font-body);
+  font-size: 18px;
+  text-transform: none;
+}
+
+.stores {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.storeCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-superficie);
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+.storeMine {
+  border: 2px solid var(--color-naranja);
+}
+
+.storeHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.storeHead h3 {
+  font-size: 22px;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 6px;
+}
+
+.map {
+  position: relative;
+  flex: 2;
+  min-height: 280px;
+  border-radius: var(--radio);
+  background-color: var(--color-mapa-fondo);
+  background-image:
+    linear-gradient(var(--color-mapa-reticula) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-mapa-reticula) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+@media (min-width: 1025px) {
+  .map {
+    position: sticky;
+    top: 16px;
+    min-height: 420px;
+  }
+}
+
+.pin {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--color-carbon);
+  color: var(--color-superficie);
+  font-weight: 700;
+  transform: translate(-50%, -100%) rotate(-45deg);
+}
+
+.pin > * {
+  transform: rotate(45deg);
+}
+
+.pinMine {
+  background: var(--color-naranja);
+}
+
+.mapNote {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  font-size: 13px;
+  color: var(--color-texto-2);
+}

@@ -1,0 +1,47 @@
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-texto-2);
+}
+
+.num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--color-deshabilitado);
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.done {
+  color: var(--color-carbon);
+}
+
+.done .num {
+  border-color: var(--color-naranja);
+  background: var(--color-naranja);
+  color: var(--color-superficie);
+}
+
+.current {
+  color: var(--color-carbon);
+  font-weight: 600;
+}
+
+.current .num {
+  border-color: var(--color-naranja);
+  color: var(--color-naranja);
+}

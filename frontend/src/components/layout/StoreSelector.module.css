@@ -1,0 +1,61 @@
+.button {
+  border: 1px solid var(--color-borde-oscuro);
+  border-radius: var(--radio-control);
+  background: transparent;
+  color: var(--color-superficie);
+  text-align: left;
+}
+
+.escritorio {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 46px;
+  padding: 0 12px;
+  line-height: 1.15;
+}
+
+.movil {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tactil-min);
+  padding: 0 12px;
+}
+
+.pin {
+  color: var(--color-naranja-claro);
+}
+
+.grow {
+  flex: 1;
+}
+
+.small {
+  font-size: 12px;
+  color: var(--color-texto-oscuro-2);
+}
+
+.name {
+  font-weight: 600;
+}
+
+.secondary {
+  color: var(--color-texto-oscuro-2);
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+}
+
+.secondaryText {
+  font-size: 14px;
+  color: var(--color-texto-2);
+}

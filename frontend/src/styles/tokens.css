@@ -1,0 +1,100 @@
+/* Copia de docs/diseno/tokens.css. Si cambia el original, se vuelve a copiar; no editar aquí. */
+/* Sistema Taller · tokens de diseño
+   Importar una vez en frontend/src/main.tsx:  import '../../docs/diseno/tokens.css'  (o copiar a src/styles/)
+   Fuentes: npm install @fontsource/barlow @fontsource/barlow-condensed
+            import '@fontsource/barlow/400.css'; '@fontsource/barlow/500.css'; '@fontsource/barlow/600.css';
+            import '@fontsource/barlow-condensed/600.css'; '@fontsource/barlow-condensed/700.css'; */
+
+:root {
+  /* Color */
+  --color-carbon: #15181b; /* encabezado, pie, texto principal, botón secundario */
+  --color-naranja: #c2410c; /* acción principal, categoría activa, acentos (blanco encima: 5.2:1) */
+  --color-naranja-claro: #f26b2a; /* punto del logo y foco sobre fondo oscuro */
+  --color-acero: #edeff1; /* fondo de página */
+  --color-superficie: #ffffff; /* tarjetas y paneles */
+  --color-superficie-2: #f5f6f7; /* fondo de imagen de producto, cabeceras de tabla */
+  --color-texto-2: #4e5862; /* texto secundario (6.7:1 sobre blanco) */
+  --color-borde: #d3d8dd;
+  --color-borde-campo: #b9c1c8;
+  --color-separador: #e3e7ea;
+  --color-borde-oscuro: #656e78; /* borde de botones sobre carbón (3.4:1); antes #4A535C, que no llegaba a 3:1 */
+  --color-deshabilitado: #868f98; /* switch apagado, paso futuro, botón deshabilitado (3.3:1); antes #8E979F (2.97:1) */
+  --color-resalte: #fff4ec; /* fila seleccionada o con diferencias (árbol de categorías, comparador) */
+  --color-separador-suave: #f0f2f4; /* líneas de filas en árboles y fondo de barras de gráficas */
+
+  /* Superficies oscuras (header, pie, admin y visor 360°) */
+  --color-carbon-2: #1f2327; /* controles sobre fondo oscuro (flechas del visor 360°) */
+  --color-visor: #0e1012; /* fondo del visor 360° */
+  --color-texto-oscuro: #c9d0d6; /* texto principal sobre carbón: marca, menú (11.4:1) */
+  --color-texto-oscuro-2: #b7c0c8; /* texto secundario sobre carbón: "Tu sucursal · CP" (9.7:1) */
+  --color-error-oscuro: #ffb4a8; /* error sobre fondo oscuro (10.5:1) */
+  --color-naranja-oscuro: #f7a26b; /* acento naranja sobre carbón (8.8:1) */
+
+  /* Mapa (placeholder del localizador de tiendas) */
+  --color-mapa-fondo: #dde2e6;
+  --color-mapa-reticula: #cbd2d8;
+
+  /* Calificación */
+  --color-estrella: #f2a33a; /* relleno; el contorno usa --color-aviso para tener 3:1 */
+
+  /* Estados: cada tono tiene color de icono o borde, texto (sobre su fondo) y fondo */
+  --color-ok: #1e7a46; /* disponible, publicado, pago confirmado, entregado */
+  --color-ok-texto: #1e7a46; /* 4.6:1 sobre su fondo */
+  --color-ok-fondo: #e2f1e8;
+  --color-aviso: #8a5300; /* pocas piezas, pendiente de pago, listo para recoger, cuenta bloqueada */
+  --color-aviso-texto: #6b4100; /* 7.7:1 sobre su fondo */
+  --color-aviso-fondo: #fbefd6;
+  --color-error: #b42318; /* agotado, pago rechazado, incidencia, error de campo */
+  --color-error-texto: #b42318; /* 5.5:1 sobre su fondo */
+  --color-error-fondo: #fbe6e4;
+  --color-error-fondo-suave: #fff6f5; /* fila sin stock en tablas */
+  --color-info: #1d4480; /* pagado, en preparación, enviado */
+  --color-info-texto: #1d4480; /* 7.8:1 sobre su fondo */
+  --color-info-fondo: #e1e9f5;
+  --color-neutro: #3f4851; /* creado, borrador, cancelado, reembolsado */
+  --color-neutro-texto: #3f4851; /* 7.7:1 sobre su fondo */
+  --color-neutro-fondo: #e6eaee;
+
+  /* Tipografía */
+  --font-display: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; /* títulos, precios, en mayúsculas */
+  --font-body: 'Barlow', 'Segoe UI', sans-serif;
+  --text-sm: 13px;
+  --text-base: 15px; /* escritorio */
+  --text-movil: 16px; /* móvil */
+  --text-precio-tarjeta: 32px;
+  --text-precio-ficha: 52px;
+  --text-h1: 52px;
+  --text-h1-movil: 40px;
+
+  /* Forma y espacio */
+  --radio: 6px; /* tarjetas */
+  --radio-control: 4px; /* botones e inputs */
+  --tactil-min: 44px; /* áreas táctiles mínimas (WCAG) */
+  --boton-alto: 46px;
+  --boton-alto-principal: 52px;
+  --gutter: 24px;
+  --gutter-movil: 16px;
+  --contenido-max: 1200px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-naranja-claro);
+  outline-offset: 2px;
+}
+
+/* Tono de cada estado (fuente única; en código vive en src/lib/orderStatus.ts)
+   Pedido:   creado → neutro · pendiente de pago → aviso · pagado → info · en preparación → info
+             listo para recoger → aviso · enviado → info · entregado → ok · incidencia → error
+             cancelado → neutro · reembolsado → neutro
+   Pago:     pendiente → aviso · confirmado → ok · rechazado → error
+             (el resultado del pago es verde aunque el badge del pedido "Pagado" sea azul:
+              uno es el resultado de una acción y el otro un paso del proceso)
+   Producto: publicado → ok · borrador → neutro · agotado → error
+   Stock:    disponible → ok · pocas piezas → aviso · agotado → error · solo envío → texto-2 */
+
+/* Puntos de quiebre (sec. 27.4 del Documento de Calidad)
+   320–480  móvil: 1 columna, filtros en panel completo
+   481–768  2 columnas
+   769–1024 3 columnas, menú de categorías visible
+   1025–1440 filtros laterales y comparador
+   1441+    más productos por fila */

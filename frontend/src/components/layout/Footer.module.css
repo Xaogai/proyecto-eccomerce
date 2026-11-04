@@ -1,0 +1,20 @@
+.footer {
+  margin-top: auto;
+  background: var(--color-carbon);
+  color: var(--color-texto-oscuro);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+  padding-block: 18px;
+  font-size: 14px;
+}
+
+.links a {
+  display: flex;
+  align-items: center;
+  min-height: var(--tactil-min);
+  color: var(--color-superficie);
+}

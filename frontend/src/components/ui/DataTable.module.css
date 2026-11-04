@@ -1,0 +1,65 @@
+.scroll {
+  /* Contiene a los textos sr-only (position: absolute): si no, Safari los saca del recorte y la página se desborda a lo ancho. */
+  position: relative;
+  overflow-x: auto;
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  font-size: var(--text-base);
+}
+
+.caption {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.table th,
+.table td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-separador);
+}
+
+.table thead th {
+  background: var(--color-superficie-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-texto-2);
+  white-space: nowrap;
+}
+
+.table tbody th {
+  font-weight: 600;
+}
+
+.table .end {
+  text-align: right;
+}
+
+.sortBtn {
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-weight: inherit;
+  color: inherit;
+}
+
+.empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-texto-2);
+}
+
+.skeleton {
+  display: block;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--color-separador);
+}

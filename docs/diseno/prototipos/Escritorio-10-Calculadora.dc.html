@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Calculadora de materiales</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</helmet>
+<div style="min-height: 1150px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="Escritorio-6-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <form role="search" style="flex: 1 1 360px; display: flex; min-width: 0">
+        <label for="q" class="vh">Buscar productos</label>
+        <input id="q" type="search" placeholder="Busca por producto, marca o SKU" style="flex: 1; min-width: 0; height: 46px; border: 0; padding: 0 14px; font: inherit; font-size: 16px; border-radius: 4px 0 0 4px">
+        <button type="submit" style="height: 46px; padding: 0 20px; border: 0; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600; border-radius: 0 4px 4px 0">Buscar</button>
+      </form>
+      <span style="color: #C9D0D6">Toluca Centro · CP 50000</span>
+      <a href="Escritorio-3-Carrito.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Carrito (3)</a>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-direction: column; gap: 18px">
+    <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 1; text-transform: uppercase">Calculadora de materiales</h1>
+    <div role="tablist" aria-label="Tipo de cálculo" style="display: flex; flex-wrap: wrap; gap: 6px">
+      <button type="button" role="tab" aria-selected="true" style="min-height: 46px; padding: 0 20px; border: 0; border-radius: 4px; background: #15181B; color: #FFFFFF; font: inherit; font-weight: 600">Pintura</button>
+      <button type="button" role="tab" aria-selected="false" style="min-height: 46px; padding: 0 20px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit">Piso y azulejo</button>
+      <button type="button" role="tab" aria-selected="false" style="min-height: 46px; padding: 0 20px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit">Taquetes y tornillos</button>
+    </div>
+
+    <div role="tabpanel" aria-label="Pintura" style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+      <form novalidate style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 28px; text-transform: uppercase">Medidas de tus muros</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+          <sc-for list="{{fields}}" as="f" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <label for="{{f.id}}" style="font-weight: 600">{{f.label}}</label>
+              <input id="{{f.id}}" type="text" inputmode="decimal" value="{{f.value}}" onInput="{{f.set}}" aria-invalid="{{f.invalid}}" aria-describedby="{{f.hid}}" style="height: 48px; border: {{f.border}}; border-radius: 4px; padding: 0 12px; font: inherit; font-size: 16px">
+              <span id="{{f.hid}}" style="font-size: 14px; font-weight: {{f.hw}}; color: {{f.hc}}">{{f.help}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600; max-width: 260px">Manos de pintura
+          <select onChange="{{setManos}}" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 10px; font: inherit; font-weight: 400; background: #FFFFFF"><option value="1">1 mano</option><option value="2" selected>2 manos (recomendado)</option><option value="3">3 manos</option></select>
+        </label>
+        <p style="margin: 0; font-size: 14px; color: #4E5862">Calculamos con un rendimiento de 10 m² por litro por mano. Revisa la etiqueta de la pintura que elijas: puede variar.</p>
+      </form>
+
+      <section aria-labelledby="res" aria-live="polite" style="flex: 1 1 320px; background: #15181B; color: #FFFFFF; border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+        <h2 id="res" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 28px; text-transform: uppercase">Resultado</h2>
+        <sc-if value="{{valid}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; justify-content: space-between"><span style="color: #C9D0D6">Superficie a pintar</span><span style="font-weight: 600">{{area}} m²</span></div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="color: #C9D0D6">Pintura necesaria</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1">{{litros}} L</span></div>
+            <div style="border-top: 1px solid #4A535C; padding-top: 10px; display: flex; flex-direction: column; gap: 4px">
+              <span style="font-weight: 600">Te sugerimos comprar</span>
+              <span style="color: #C9D0D6">{{sugerencia}}</span>
+            </div>
+            <a href="Escritorio-3-Carrito.dc.html" style="min-height: 50px; border-radius: 4px; background: #C2410C; color: #FFFFFF; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Agregar pintura sugerida al carrito</a>
+            <a href="Escritorio-1-Listado.dc.html" style="color: #FFFFFF; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center">Ver pinturas vinílicas</a>
+          </div>
+        </sc-if>
+        <sc-if value="{{invalid}}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; color: #FFB4A8; font-weight: 600">Corrige los campos marcados para ver el resultado.</p>
+        </sc-if>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1150}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { ancho: '4', alto: '2.5', muros: '4', desc: '3', manos: 2 }; }
+  renderVals() {
+    const s = this.state;
+    const num = v => { const n = Number(String(v).replace(',', '.')); return v !== '' && isFinite(n) && n >= 0 ? n : null; };
+    const defs = [
+      { id: 'ancho', label: 'Ancho de cada muro (m)', help: 'Ejemplo: 4', min: 0.1 },
+      { id: 'alto', label: 'Alto de cada muro (m)', help: 'Ejemplo: 2.5', min: 0.1 },
+      { id: 'muros', label: 'Número de muros', help: 'Cuenta solo los que vas a pintar', min: 1 },
+      { id: 'desc', label: 'Puertas y ventanas (m²)', help: 'Se descuentan del total. Escribe 0 si no hay', min: 0 }
+    ];
+    let ok = true;
+    const vals = {};
+    const fields = defs.map(d => {
+      const n = num(s[d.id]);
+      const bad = n === null || n < d.min;
+      if (bad) ok = false; else vals[d.id] = n;
+      return {
+        id: d.id, hid: d.id + '-ayuda', label: d.label, value: s[d.id],
+        invalid: bad ? 'true' : 'false',
+        border: bad ? '2px solid #B42318' : '1px solid #B9C1C8',
+        help: bad ? (s[d.id] === '' ? 'Este campo es obligatorio.' : 'Escribe un número válido, mínimo ' + d.min + '.') : d.help,
+        hc: bad ? '#B42318' : '#4E5862', hw: bad ? '600' : '400',
+        set: e => this.setState({ [d.id]: e.target.value })
+      };
+    });
+    let area = 0, litros = 0, sugerencia = '';
+    if (ok) {
+      area = Math.max(0, vals.ancho * vals.alto * vals.muros - vals.desc);
+      litros = Math.ceil(area * s.manos / 10 * 10) / 10;
+      const cub = Math.floor(litros / 19);
+      const gal = Math.ceil((litros - cub * 19) / 4);
+      const parts = [];
+      if (cub) parts.push(cub + (cub > 1 ? ' cubetas' : ' cubeta') + ' de 19 L');
+      if (gal) parts.push(gal + (gal > 1 ? ' galones' : ' galón') + ' de 4 L');
+      sugerencia = parts.join(' y ') || 'No necesitas pintura';
+    }
+    return {
+      fields, valid: ok, invalid: !ok,
+      area: area.toFixed(1), litros: litros.toFixed(1), sugerencia,
+      setManos: e => this.setState({ manos: Number(e.target.value) })
+    };
+  }
+}
+</script>
+</body>
+</html>

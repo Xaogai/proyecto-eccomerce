@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Iniciar sesión</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 900px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45; display: flex; flex-direction: column">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 16px">
+      <a href="Escritorio-6-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <span style="margin-left: auto; color: #C9D0D6">Toluca Centro · CP 50000</span>
+    </div>
+  </header>
+  <main style="flex: 1; max-width: 1000px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 40px 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <form novalidate aria-labelledby="lt" style="flex: 1 1 420px; background: #FFFFFF; border-radius: 6px; padding: 28px; display: flex; flex-direction: column; gap: 16px">
+      <h1 id="lt" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1; text-transform: uppercase">Iniciar sesión</h1>
+      <sc-if value="{{isErr}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background: #FBE6E4; color: #B42318; border-radius: 4px; padding: 12px 14px; font-weight: 600">El correo o la contraseña no coinciden. Te quedan 2 intentos antes de que bloqueemos la cuenta por 15 minutos.</div>
+      </sc-if>
+      <sc-if value="{{isLock}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background: #FBEFD6; color: #6B4100; border-radius: 4px; padding: 14px; display: flex; flex-direction: column; gap: 6px">
+          <strong>Bloqueamos tu cuenta por seguridad</strong>
+          <span style="color: #15181B">Hubo 5 intentos fallidos. Podrás intentar de nuevo a las 21:52, o restablecer tu contraseña ahora con un enlace a tu correo.</span>
+          <a href="#" style="font-weight: 600; color: #15181B">Restablecer contraseña</a>
+        </div>
+      </sc-if>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Correo electrónico<input type="email" autocomplete="email" value="ana@ejemplo.com" style="height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><label for="pw" style="font-weight: 600">Contraseña</label><a href="#" style="font-size: 15px">¿La olvidaste?</a></div>
+        <input id="pw" type="password" autocomplete="current-password" value="contraseña" aria-invalid="{{pwInvalid}}" disabled="{{locked}}" style="height: 50px; border: {{pwBorder}}; border-radius: 4px; padding: 0 12px; font: inherit">
+      </div>
+      <label style="display: flex; align-items: center; gap: 10px; min-height: 40px"><input type="checkbox" style="width: 20px; height: 20px; accent-color: #C2410C"> Mantener mi sesión en este dispositivo</label>
+      <a href="Escritorio-14-MiCuenta.dc.html" aria-disabled="{{locked}}" style="min-height: 52px; border-radius: 4px; background: {{btnBg}}; color: {{btnFg}}; font-weight: 600; font-size: 17px; text-decoration: none; display: flex; align-items: center; justify-content: center">Entrar</a>
+    </form>
+    <aside style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 12px">
+      <div style="background: #FFFFFF; border-radius: 6px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">¿Primera vez?</h2>
+        <p style="margin: 0; color: #4E5862">Con tu cuenta guardas direcciones, sigues tus pedidos y usas tu lista de deseos.</p>
+        <a href="Escritorio-13-Registro.dc.html" style="min-height: 48px; border-radius: 4px; border: 1px solid #15181B; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Crear cuenta</a>
+      </div>
+      <a href="Escritorio-4-Checkout.dc.html" style="min-height: 48px; border-radius: 4px; background: #FFFFFF; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Comprar como invitado</a>
+      <p style="margin: 0; font-size: 14px; color: #4E5862">¿Eres personal de sucursal o administrador? Entra con tu correo de trabajo; verás tu panel según tu rol.</p>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"estado":{"editor":"enum","options":["normal","error","bloqueada"],"default":"normal"},"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const e = this.props.estado ?? 'normal';
+    const err = e === 'error', lock = e === 'bloqueada';
+    return {
+      isErr: err, isLock: lock, locked: lock,
+      pwInvalid: err ? 'true' : 'false',
+      pwBorder: err ? '2px solid #B42318' : '1px solid #B9C1C8',
+      btnBg: lock ? '#E3E7EA' : '#C2410C', btnFg: lock ? '#4E5862' : '#FFFFFF'
+    };
+  }
+}
+</script>
+</body>
+</html>

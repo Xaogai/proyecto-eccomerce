@@ -1,0 +1,48 @@
+.nav {
+  display: none;
+  font-size: 14px;
+  color: var(--color-texto-2);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  gap: 8px;
+}
+
+.item + .item::before {
+  /* texto alternativo vacío: el lector de pantalla no lee la diagonal */
+  content: '/' / '';
+}
+
+.item a {
+  color: var(--color-texto-2);
+}
+
+.current {
+  color: var(--color-carbon);
+  font-weight: 600;
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  min-height: var(--tactil-min);
+  font-size: 14px;
+  color: var(--color-texto-2);
+}
+
+@media (min-width: 769px) {
+  .nav {
+    display: block;
+  }
+
+  .back {
+    display: none;
+  }
+}

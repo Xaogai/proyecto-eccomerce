@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Datos y privacidad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1200px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+      <a href="Escritorio-6-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: #FFFFFF; text-decoration: none">[MARCA]<span style="color: #F26B2A">.</span></a>
+      <span style="flex: 1"></span>
+      <a href="Escritorio-14-MiCuenta.dc.html" style="color: #FFFFFF; min-height: 44px; display: flex; align-items: center">Hola, Ana</a>
+    </div>
+  </header>
+  <div style="max-width: 1200px; margin: 0 auto; padding: 24px 24px 48px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <nav aria-label="Mi cuenta" style="flex: 1 1 220px; background: #FFFFFF; border-radius: 6px; padding: 8px; display: flex; flex-direction: column">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="6">
+        <a href="{{n.href}}" aria-current="{{n.cur}}" style="min-height: 46px; padding: 0 14px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.w}}">{{n.label}}</a>
+      </sc-for>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 48px; line-height: 1; text-transform: uppercase">Datos y privacidad</h1>
+      <p style="margin: 0; color: #4E5862; max-width: 680px">Aquí ejerces tus derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) sobre tus datos personales. Consulta el <a href="#">aviso de privacidad</a>.</p>
+
+      <section aria-labelledby="d1" style="background: #FFFFFF; border-radius: 6px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 id="d1" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Tus datos</h2><span style="font-size: 13px; color: #4E5862">Rectificación</span></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Nombre<input type="text" value="Ana" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Apellidos<input type="text" value="López" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Correo<input type="email" value="ana@ejemplo.com" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Teléfono<input type="tel" value="722 000 0000" style="height: 48px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" style="min-height: 46px; padding: 0 18px; border: 0; border-radius: 4px; background: #15181B; color: #FFFFFF; font: inherit; font-weight: 600">Guardar cambios</button><button type="button" style="min-height: 46px; padding: 0 18px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit">Cambiar contraseña</button></div>
+      </section>
+
+      <section aria-labelledby="d2" style="background: #FFFFFF; border-radius: 6px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 id="d2" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Uso de tus datos</h2><span style="font-size: 13px; color: #4E5862">Oposición</span></div>
+        <label style="display: flex; gap: 12px; align-items: flex-start; min-height: 40px"><input type="checkbox" style="width: 22px; height: 22px; flex: none; accent-color: #C2410C"> <span>Recibir ofertas y promociones por correo</span></label>
+        <label style="display: flex; gap: 12px; align-items: flex-start; min-height: 40px"><input type="checkbox" checked style="width: 22px; height: 22px; flex: none; accent-color: #C2410C"> <span>Avisos de mis pedidos por correo <span style="color: #4E5862">(necesario para recoger y entregar)</span></span></label>
+        <label style="display: flex; gap: 12px; align-items: flex-start; min-height: 40px"><input type="checkbox" style="width: 22px; height: 22px; flex: none; accent-color: #C2410C"> <span>Usar mi historial para recomendarme productos</span></label>
+      </section>
+
+      <section aria-labelledby="d3" style="background: #FFFFFF; border-radius: 6px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 id="d3" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Copia de tus datos</h2><span style="font-size: 13px; color: #4E5862">Acceso</span></div>
+        <p style="margin: 0; color: #4E5862">Te enviamos por correo un archivo con tus datos, pedidos y direcciones. Lo recibes en un máximo de 20 días hábiles.</p>
+        <button type="button" onClick="{{request}}" style="align-self: flex-start; min-height: 46px; padding: 0 18px; border: 1px solid #15181B; border-radius: 4px; background: #FFFFFF; font: inherit; font-weight: 600">Solicitar copia de mis datos</button>
+        <p aria-live="polite" style="margin: 0; font-weight: 600; color: #1E7A46">{{reqMsg}}</p>
+      </section>
+
+      <section aria-labelledby="d4" style="background: #FFFFFF; border-radius: 6px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #B42318">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 id="d4" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Eliminar mi cuenta</h2><span style="font-size: 13px; color: #4E5862">Cancelación</span></div>
+        <p style="margin: 0; color: #4E5862">Borramos tus datos personales. Conservamos solo lo que la ley exige para facturas y garantías. No puedes eliminarla si tienes un pedido en curso.</p>
+        <sc-if value="{{closed}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{open}}" style="align-self: flex-start; min-height: 46px; padding: 0 18px; border: 0; border-radius: 4px; background: #B42318; color: #FFFFFF; font: inherit; font-weight: 600">Quiero eliminar mi cuenta</button>
+        </sc-if>
+        <sc-if value="{{asking}}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="background: #FBE6E4; border-radius: 4px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+            <strong style="color: #B42318">Tienes el pedido 10482 listo para recoger.</strong>
+            <span>Recógelo o cancélalo antes de eliminar tu cuenta. Después podrás hacerlo desde aquí.</span>
+            <div style="display: flex; gap: 8px"><a href="Escritorio-16-Seguimiento.dc.html" style="min-height: 42px; padding: 0 14px; border-radius: 4px; background: #15181B; color: #FFFFFF; font-weight: 600; text-decoration: none; display: flex; align-items: center">Ver pedido</a><button type="button" onClick="{{close}}" style="min-height: 42px; padding: 0 14px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit">Cerrar</button></div>
+          </div>
+        </sc-if>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1200}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { ask: false, req: false }; }
+  renderVals() {
+    const N = [['Resumen', 'Escritorio-14-MiCuenta.dc.html'], ['Mis pedidos', 'Escritorio-15-Pedidos.dc.html'], ['Direcciones', 'Escritorio-17-Direcciones.dc.html'], ['Lista de deseos', 'Escritorio-18-ListaDeseos.dc.html'], ['Datos y privacidad', 'Escritorio-19-Datos.dc.html'], ['Cerrar sesión', 'Escritorio-6-Inicio.dc.html']];
+    return {
+      nav: N.map(([label, href], i) => ({ label, href, cur: i === 4 ? 'page' : 'false', bg: i === 4 ? '#15181B' : '#FFFFFF', fg: i === 4 ? '#FFFFFF' : '#15181B', w: i === 4 ? '600' : '400' })),
+      asking: this.state.ask, closed: !this.state.ask,
+      open: () => this.setState({ ask: true }), close: () => this.setState({ ask: false }),
+      request: () => this.setState({ req: true }),
+      reqMsg: this.state.req ? 'Solicitud registrada con folio ARCO-2291. Te avisaremos a ana@ejemplo.com.' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

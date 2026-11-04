@@ -1,0 +1,86 @@
+/* Estilos globales. Mobile-first: la base es móvil y se amplía con min-width (sec. 27.4). */
+
+body {
+  min-height: 100vh;
+  background: var(--color-acero);
+  color: var(--color-carbon);
+  font-family: var(--font-body);
+  font-size: var(--text-movil);
+  line-height: 1.45;
+}
+
+@media (min-width: 1025px) {
+  body {
+    font-size: var(--text-base);
+  }
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: var(--text-h1-movil);
+}
+
+@media (min-width: 1025px) {
+  h1 {
+    font-size: var(--text-h1);
+  }
+}
+
+h2 {
+  font-size: 28px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+a {
+  color: inherit;
+}
+
+/* El foco al cambiar de ruta va al h1 (tabIndex -1): no se muestra contorno en ese caso. */
+h1:focus:not(:focus-visible),
+main:focus {
+  outline: none;
+}
+
+/* Contenedor centrado con el ancho máximo del diseño */
+.contenedor {
+  width: 100%;
+  max-width: var(--contenido-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter-movil);
+}
+
+@media (min-width: 769px) {
+  .contenedor {
+    padding-inline: var(--gutter);
+  }
+}
+
+/* Solo para lectores de pantalla (la clase .vh de los prototipos) */
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Administración, detalle de pedido</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1300px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700">[MARCA]<span style="color: #F26B2A">.</span> <span style="font-size: 18px; font-weight: 600; color: #C9D0D6; text-transform: uppercase; letter-spacing: .06em">Administración</span></span>
+      <span style="flex: 1"></span>
+      <span style="color: #C9D0D6">Luis Ramírez · Administrador</span>
+    </div>
+  </header>
+  <div style="padding: 20px 24px 40px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+    <nav aria-label="Administración" style="flex: 1 1 200px; background: #FFFFFF; border-radius: 6px; padding: 8px; display: flex; flex-direction: column">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="7">
+        <a href="{{n.href}}" aria-current="{{n.cur}}" style="min-height: 44px; padding: 0 12px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.w}}">{{n.label}}</a>
+      </sc-for>
+    </nav>
+    <main style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+      <a href="Admin-5-Pedidos.dc.html" style="font-size: 14px; color: #4E5862; min-height: 32px; display: flex; align-items: center">‹ Pedidos</a>
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 12px"><h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1; text-transform: uppercase">Pedido 10477</h1><span aria-live="polite" style="font-size: 14px; font-weight: 600; padding: 4px 10px; border-radius: 4px; background: {{stBg}}; color: {{stFg}}">{{status}}</span></div>
+        <span style="color: #4E5862">16 oct 2026 · 14:30 · Envío a domicilio</span>
+      </div>
+
+      <section aria-labelledby="cs" style="background: #FFFFFF; border-radius: 6px; padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; border: 2px solid #15181B">
+        <h2 id="cs" style="margin: 0; flex: 1 1 100%; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Cambiar estado</h2>
+        <label style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 4px; font-weight: 600">Nuevo estado
+          <select onChange="{{pickNext}}" style="height: 46px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 8px; font: inherit; font-weight: 400; background: #FFFFFF">
+            <sc-for list="{{nexts}}" as="x" hint-placeholder-count="3"><option value="{{x.k}}" selected="{{x.sel}}">{{x.label}}</option></sc-for>
+          </select>
+        </label>
+        <label style="flex: 2 1 280px; display: flex; flex-direction: column; gap: 4px; font-weight: 600">Nota para el registro<input type="text" value="Cliente envió fotos; se aprueba reembolso" style="height: 46px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 10px; font: inherit; font-weight: 400"></label>
+        <button type="button" onClick="{{apply}}" disabled="{{done}}" style="min-height: 46px; padding: 0 18px; border: 0; border-radius: 4px; background: {{applyBg}}; color: #FFFFFF; font: inherit; font-weight: 600">Aplicar</button>
+        <span style="flex: 1 1 100%; font-size: 14px; color: #4E5862">Solo se muestran los estados válidos desde "{{status}}" según el ciclo de vida del pedido.</span>
+      </section>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start">
+        <section aria-labelledby="pr" style="flex: 2 1 380px; background: #FFFFFF; border-radius: 6px; padding: 16px 20px; display: flex; flex-direction: column; gap: 6px">
+          <h2 id="pr" style="margin: 0 0 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Productos</h2>
+          <div style="border-top: 1px solid #E3E7EA; padding-top: 8px; display: flex; justify-content: space-between; gap: 10px"><span>Rotomartillo SDS Plus 800 W<br><span style="color: #4E5862; font-size: 14px">SKU 200118 · 1 × $2,899 · desde Toluca Centro</span></span><span style="font-weight: 600">$2,899</span></div>
+          <div style="border-top: 1px solid #E3E7EA; padding-top: 8px; display: flex; justify-content: space-between"><span>Envío a CP 50000</span><span>Incluido</span></div>
+          <div style="border-top: 2px solid #15181B; padding-top: 8px; display: flex; justify-content: space-between; font-weight: 600"><span>Total</span><span>$2,899</span></div>
+          <div style="background: #FBE6E4; border-radius: 4px; padding: 10px 12px; margin-top: 6px"><strong style="color: #B42318">Incidencia del cliente</strong><br>"Llegó con la carcasa rota." 2 fotos adjuntas · 16 oct 19:05</div>
+        </section>
+        <section aria-labelledby="cl" style="flex: 1 1 260px; background: #FFFFFF; border-radius: 6px; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px">
+          <h2 id="cl" style="margin: 0 0 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Cliente</h2>
+          <strong>Luis H.</strong><span style="color: #4E5862">luis.h@ejemplo.com · 722 000 0009</span>
+          <span style="margin-top: 6px">Hidalgo 45, Centro, Toluca · CP 50000</span>
+          <span style="color: #4E5862">Guía MX987654321</span>
+        </section>
+      </div>
+
+      <section aria-labelledby="pg" style="background: #FFFFFF; border-radius: 6px; padding: 16px 20px; display: flex; flex-direction: column; gap: 6px">
+        <h2 id="pg" style="margin: 0 0 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Pago</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px 24px"><span>Tarjeta terminación 0932</span><span style="color: #4E5862">Referencia [REF-PASARELA]</span><span style="font-weight: 600; color: #1E7A46">Cobrado $2,899</span></div>
+        <div style="overflow-x: auto"><table style="width: 100%; min-width: 520px; border-collapse: collapse; font-size: 14px"><thead><tr style="text-align: left; color: #4E5862"><th scope="col" style="padding: 6px 8px">Aviso de la pasarela</th><th scope="col" style="padding: 6px 8px">Hora</th><th scope="col" style="padding: 6px 8px">Resultado</th></tr></thead><tbody>
+          <tr style="border-top: 1px solid #E3E7EA"><td style="padding: 6px 8px">Pago aprobado</td><td style="padding: 6px 8px">14:31:02</td><td style="padding: 6px 8px; color: #1E7A46; font-weight: 600">Procesado</td></tr>
+          <tr style="border-top: 1px solid #E3E7EA"><td style="padding: 6px 8px">Pago aprobado (repetido)</td><td style="padding: 6px 8px">14:31:09</td><td style="padding: 6px 8px; color: #4E5862">Ignorado: ya procesado</td></tr>
+        </tbody></table></div>
+      </section>
+
+      <section aria-labelledby="lg" style="background: #FFFFFF; border-radius: 6px; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px">
+        <h2 id="lg" style="margin: 0 0 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Registro de cambios</h2>
+        <sc-for list="{{log}}" as="l" hint-placeholder-count="5">
+          <div style="border-top: 1px solid #E3E7EA; padding: 6px 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 14px"><span style="font-variant-numeric: tabular-nums; color: #4E5862; min-width: 110px">{{l.t}}</span><span style="font-weight: 600">{{l.what}}</span><span style="color: #4E5862">{{l.who}}</span></div>
+        </sc-for>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { st: 'inc', next: 'reem', log: [
+    ['16 oct 19:05', 'Enviado → Incidencia', 'Cliente'], ['16 oct 16:10', 'En preparación → Enviado', 'Sucursal Toluca Centro'], ['16 oct 14:45', 'Pagado → En preparación', 'Sucursal Toluca Centro'], ['16 oct 14:31', 'Pendiente de pago → Pagado', 'Pasarela de pago'], ['16 oct 14:30', 'Creado', 'Cliente']
+  ] }; }
+  renderVals() {
+    const N = [['Resumen', 'Admin-1-Resumen.dc.html'], ['Productos', 'Admin-2-Productos.dc.html'], ['Categorías', 'Admin-4-Categorias.dc.html'], ['Pedidos', 'Admin-5-Pedidos.dc.html'], ['Usuarios y roles', 'Admin-7-Usuarios.dc.html'], ['Reportes', 'Admin-8-Reportes.dc.html'], ['Configuración', 'Admin-9-Configuracion.dc.html']];
+    const L = { inc: ['Incidencia', '#FBE6E4', '#B42318'], reem: ['Reembolsado', '#E6EAEE', '#3F4851'], env: ['Enviado', '#E1E9F5', '#1D4480'], ent: ['Entregado', '#E2F1E8', '#1E7A46'] };
+    const T = { inc: ['reem', 'env'], env: ['ent', 'inc'], reem: [], ent: [] };
+    const s = this.state;
+    const options = T[s.st];
+    const done = options.length === 0;
+    const next = options.includes(s.next) ? s.next : options[0];
+    return {
+      nav: N.map(([label, href], i) => ({ label, href, cur: i === 3 ? 'page' : 'false', bg: i === 3 ? '#15181B' : '#FFFFFF', fg: i === 3 ? '#FFFFFF' : '#15181B', w: i === 3 ? '600' : '400' })),
+      status: L[s.st][0], stBg: L[s.st][1], stFg: L[s.st][2],
+      nexts: done ? [{ k: '', label: 'Sin cambios posibles', sel: true }] : options.map(k => ({ k, label: k === 'env' ? 'Enviado (reenviar producto nuevo)' : L[k][0], sel: k === next })),
+      done, applyBg: done ? '#8E979F' : '#C2410C',
+      pickNext: e => this.setState({ next: e.target.value }),
+      apply: () => { if (done) return; this.setState({ st: next, log: [['16 oct 20:40', L[s.st][0] + ' → ' + L[next][0], 'Luis Ramírez'], ...s.log] }); },
+      log: s.log.map(([t, what, who]) => ({ t, what, who }))
+    };
+  }
+}
+</script>
+</body>
+</html>

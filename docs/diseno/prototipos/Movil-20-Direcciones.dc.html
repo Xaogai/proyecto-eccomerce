@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Direcciones en móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 1000px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF; padding: 8px 10px; display: flex; align-items: center; gap: 4px">
+    <a href="Movil-17-MiCuenta.dc.html" aria-label="Volver a Mi cuenta" style="width: 44px; height: 44px; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1 style="margin: 0; flex: 1; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Direcciones</h1>
+  </header>
+  <main style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+    <p aria-live="polite" style="margin: 0; color: #4E5862; font-size: 15px">{{msg}}</p>
+    <sc-for list="{{addrs}}" as="a" hint-placeholder-count="2">
+      <article style="background: #FFFFFF; border-radius: 6px; padding: 14px; border: {{a.border}}; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px">{{a.name}}</h2><sc-if value="{{a.def}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 4px; background: #15181B; color: #FFFFFF">Principal</span></sc-if></div>
+        <span style="font-size: 15px">{{a.line1}}</span><span style="font-size: 15px; color: #4E5862">{{a.line2}}</span>
+        <sc-if value="{{a.asking}}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="background: #FBE6E4; border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-weight: 600; color: #B42318">¿Eliminar "{{a.name}}"?</span><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"><button type="button" onClick="{{a.remove}}" style="min-height: 44px; border: 0; border-radius: 4px; background: #B42318; color: #FFFFFF; font: inherit; font-weight: 600">Eliminar</button><button type="button" onClick="{{a.cancel}}" style="min-height: 44px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit">No</button></div></div>
+        </sc-if>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px">
+          <button type="button" style="min-height: 44px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit; font-size: 15px">Editar</button>
+          <button type="button" onClick="{{a.makeDef}}" disabled="{{a.def}}" style="min-height: 44px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit; font-size: 15px">Principal</button>
+          <button type="button" onClick="{{a.ask}}" style="min-height: 44px; border: 0; background: transparent; font: inherit; font-size: 15px; color: #B42318; text-decoration: underline">Eliminar</button>
+        </div>
+      </article>
+    </sc-for>
+    <button type="button" style="min-height: 52px; border: 0; border-radius: 4px; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600">Agregar dirección</button>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { def: 1, ask: null, msg: '2 direcciones guardadas', list: [
+    { id: 1, name: 'Casa', line1: 'Hidalgo 210, Centro', line2: 'Toluca · CP 50000' },
+    { id: 2, name: 'Obra Metepec', line1: 'Av. Ejemplo 88, San Jerónimo', line2: 'Metepec · CP 52140' }
+  ] }; }
+  renderVals() {
+    const s = this.state;
+    return {
+      msg: s.msg,
+      addrs: s.list.map(a => ({ ...a, def: a.id === s.def, asking: a.id === s.ask, border: a.id === s.def ? '2px solid #C2410C' : '1px solid #FFFFFF',
+        makeDef: () => this.setState({ def: a.id, msg: '"' + a.name + '" es tu dirección principal' }),
+        ask: () => this.setState({ ask: a.id }), cancel: () => this.setState({ ask: null }),
+        remove: () => this.setState({ ask: null, list: this.state.list.filter(x => x.id !== a.id), msg: 'Eliminamos "' + a.name + '"' }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

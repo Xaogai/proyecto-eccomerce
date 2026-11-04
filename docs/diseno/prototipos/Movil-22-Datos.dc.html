@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Datos y privacidad en móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 1300px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF; padding: 8px 10px; display: flex; align-items: center; gap: 4px">
+    <a href="Movil-17-MiCuenta.dc.html" aria-label="Volver a Mi cuenta" style="width: 44px; height: 44px; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1 style="margin: 0; flex: 1; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; text-transform: uppercase">Datos y privacidad</h1>
+  </header>
+  <main style="padding: 14px 16px; display: flex; flex-direction: column; gap: 12px">
+    <p style="margin: 0; font-size: 15px; color: #4E5862">Tus derechos ARCO: acceso, rectificación, cancelación y oposición. <a href="#">Aviso de privacidad</a></p>
+    <section style="background: #FFFFFF; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Tus datos</h2>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Nombre completo<input type="text" value="Ana López" style="height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Correo<input type="email" value="ana@ejemplo.com" style="height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 600">Teléfono<input type="tel" value="722 000 0000" style="height: 50px; border: 1px solid #B9C1C8; border-radius: 4px; padding: 0 12px; font: inherit; font-weight: 400"></label>
+      <button type="button" style="min-height: 50px; border: 0; border-radius: 4px; background: #15181B; color: #FFFFFF; font: inherit; font-weight: 600">Guardar cambios</button>
+    </section>
+    <section style="background: #FFFFFF; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Uso de tus datos</h2>
+      <label style="display: flex; gap: 12px; align-items: center; min-height: 48px"><input type="checkbox" style="width: 22px; height: 22px; flex: none; accent-color: #C2410C"> Ofertas por correo</label>
+      <label style="display: flex; gap: 12px; align-items: center; min-height: 48px"><input type="checkbox" style="width: 22px; height: 22px; flex: none; accent-color: #C2410C"> Recomendaciones según mi historial</label>
+    </section>
+    <section style="background: #FFFFFF; border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Copia de tus datos</h2>
+      <span style="font-size: 15px; color: #4E5862">Te la enviamos por correo en un máximo de 20 días hábiles.</span>
+      <button type="button" onClick="{{request}}" style="min-height: 50px; border: 1px solid #15181B; border-radius: 4px; background: #FFFFFF; font: inherit; font-weight: 600">Solicitar copia</button>
+      <span aria-live="polite" style="font-size: 15px; font-weight: 600; color: #1E7A46">{{reqMsg}}</span>
+    </section>
+    <section style="background: #FFFFFF; border-radius: 6px; padding: 16px; border: 1px solid #B42318; display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase">Eliminar mi cuenta</h2>
+      <span style="font-size: 15px; color: #4E5862">Borramos tus datos personales; conservamos solo lo que la ley exige.</span>
+      <sc-if value="{{closed}}" hint-placeholder-val="{{ true }}">
+        <button type="button" onClick="{{open}}" style="min-height: 50px; border: 0; border-radius: 4px; background: #B42318; color: #FFFFFF; font: inherit; font-weight: 600">Quiero eliminar mi cuenta</button>
+      </sc-if>
+      <sc-if value="{{asking}}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background: #FBE6E4; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 15px"><strong style="color: #B42318">Tienes el pedido 10482 por recoger.</strong><span>Recógelo o cancélalo antes de eliminar tu cuenta.</span><button type="button" onClick="{{close}}" style="min-height: 44px; border: 1px solid #B9C1C8; border-radius: 4px; background: #FFFFFF; font: inherit">Entendido</button></div>
+      </sc-if>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { ask: false, req: false }; }
+  renderVals() {
+    return { asking: this.state.ask, closed: !this.state.ask, open: () => this.setState({ ask: true }), close: () => this.setState({ ask: false }), request: () => this.setState({ req: true }), reqMsg: this.state.req ? 'Solicitud ARCO-2291 registrada.' : '' };
+  }
+}
+</script>
+</body>
+</html>

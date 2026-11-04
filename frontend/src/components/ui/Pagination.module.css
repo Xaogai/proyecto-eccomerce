@@ -1,0 +1,36 @@
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tactil-min);
+  min-height: var(--tactil-min);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-carbon);
+  text-decoration: none;
+}
+
+.item[aria-current='page'] {
+  background: var(--color-carbon);
+  color: var(--color-superficie);
+  font-weight: 600;
+}
+
+.text {
+  padding: 0 14px;
+}
+
+.gap {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  color: var(--color-texto-2);
+}

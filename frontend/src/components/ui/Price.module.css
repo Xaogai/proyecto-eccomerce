@@ -1,0 +1,33 @@
+.wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.price {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tarjeta {
+  font-size: var(--text-precio-tarjeta);
+}
+
+.ficha {
+  font-size: var(--text-precio-ficha);
+}
+
+.linea {
+  font-size: 22px;
+}
+
+.from {
+  font-size: 14px;
+  color: var(--color-texto-2);
+}
+
+.before {
+  color: var(--color-texto-2);
+}

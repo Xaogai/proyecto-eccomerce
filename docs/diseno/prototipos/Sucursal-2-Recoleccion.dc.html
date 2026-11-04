@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Sucursal, pedidos para recoger</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#15181B}a:hover{color:#C2410C}
+:focus-visible{outline:3px solid #F26B2A;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #EDEFF1; color: #15181B; font-family: Barlow, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45">
+  <header style="background: #15181B; color: #FFFFFF">
+    <div style="padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700">[MARCA]<span style="color: #F26B2A">.</span> <span style="font-size: 18px; font-weight: 600; color: #C9D0D6; text-transform: uppercase; letter-spacing: .06em">Sucursal Toluca Centro</span></span>
+      <span style="flex: 1"></span>
+      <span style="color: #C9D0D6">Sofía Treviño · Staff</span>
+    </div>
+    <nav aria-label="Sucursal" style="background: #C2410C">
+      <div style="padding: 0 24px; display: flex; gap: 0 26px">
+        <a href="Sucursal-1-Inventario.dc.html" style="color: #FFFFFF; text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; text-transform: uppercase; min-height: 46px; display: flex; align-items: center">Inventario</a>
+        <a href="Sucursal-2-Recoleccion.dc.html" aria-current="page" style="color: #FFFFFF; text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; text-transform: uppercase; min-height: 46px; display: flex; align-items: center; box-shadow: inset 0 -4px 0 #15181B">Pedidos para recoger</a>
+      </div>
+    </nav>
+  </header>
+  <main style="padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 14px">
+    <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1; text-transform: uppercase">Pedidos para recoger</h1>
+    <p aria-live="polite" style="margin: 0; color: #4E5862">{{msg}}</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start">
+      <sc-for list="{{cols}}" as="c" hint-placeholder-count="3">
+        <section aria-label="{{c.title}}" style="background: #DDE2E6; border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 10px">
+          <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase; display: flex; justify-content: space-between">{{c.title}} <span style="font-variant-numeric: tabular-nums">{{c.n}}</span></h2>
+          <sc-if value="{{c.empty}}" hint-placeholder-val="{{ false }}"><p style="margin: 0; color: #4E5862; padding: 8px">Sin pedidos aquí.</p></sc-if>
+          <sc-for list="{{c.items}}" as="o" hint-placeholder-count="2">
+            <article style="background: #FFFFFF; border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; border: {{o.border}}">
+              <div style="display: flex; justify-content: space-between; align-items: baseline"><strong style="font-size: 17px">Pedido {{o.id}}</strong><span style="font-size: 13px; font-weight: 600; color: {{o.tc}}">{{o.time}}</span></div>
+              <span>{{o.who}}</span>
+              <span style="font-size: 14px; color: #4E5862">{{o.items}}</span>
+              <sc-if value="{{o.canReady}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{o.ready}}" style="margin-top: 6px; min-height: 44px; border: 0; border-radius: 4px; background: #C2410C; color: #FFFFFF; font: inherit; font-weight: 600">Marcar listo y avisar al cliente</button></sc-if>
+              <sc-if value="{{o.canDeliver}}" hint-placeholder-val="{{ false }}"><a href="Sucursal-3-Entrega.dc.html" style="margin-top: 6px; min-height: 44px; border-radius: 4px; background: #15181B; color: #FFFFFF; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">Entregar</a></sc-if>
+            </article>
+          </sc-for>
+        </section>
+      </sc-for>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { msg: '5 pedidos hoy', list: [
+    { id: '10481', who: 'Rosa P.', items: '2 productos · pasillos 14 y 22', time: 'Pagado hace 1 h 10 min', st: 'prep', late: true },
+    { id: '10479', who: 'Martha G.', items: '1 producto · pasillo 16', time: 'Pagado hace 25 min', st: 'prep' },
+    { id: '10482', who: 'Ana L.', items: '2 productos · estante R-03', time: 'Listo desde 19:41', st: 'listo' },
+    { id: '10468', who: 'Iván C.', items: '4 productos · estante R-01', time: 'Vence el 21 oct', st: 'listo' },
+    { id: '10455', who: 'Elena R.', items: '1 producto', time: 'Entregado 12:10', st: 'ent' }
+  ] }; }
+  renderVals() {
+    const s = this.state;
+    const C = [['prep', 'Por preparar'], ['listo', 'Listos para recoger'], ['ent', 'Entregados hoy']];
+    return {
+      msg: s.msg,
+      cols: C.map(([k, title]) => {
+        const items = s.list.filter(o => o.st === k);
+        return { title, n: items.length, empty: items.length === 0, items: items.map(o => ({
+          ...o, canReady: k === 'prep', canDeliver: k === 'listo',
+          tc: o.late ? '#B42318' : '#4E5862', border: o.late ? '2px solid #B42318' : '1px solid #FFFFFF',
+          ready: () => this.setState({ msg: 'Pedido ' + o.id + ' listo. Enviamos aviso a ' + o.who, list: this.state.list.map(x => x.id === o.id ? { ...x, st: 'listo', late: false, time: 'Listo desde 20:45' } : x) })
+        })) };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

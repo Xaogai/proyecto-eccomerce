@@ -1,0 +1,89 @@
+.skeleton {
+  display: block;
+  border-radius: 3px;
+  background: var(--color-separador);
+}
+
+.cardSkeleton {
+  /* Mismo alto aproximado que una tarjeta real: así la página no brinca al llegar los productos (CLS). */
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 16px;
+  overflow: hidden;
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+.cardImage {
+  display: block;
+  height: 176px;
+  background: var(--color-separador);
+}
+
+.inset {
+  margin-inline: 16px;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-block: 24px;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px;
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+.error {
+  border: 2px solid var(--color-error);
+}
+
+.icon {
+  color: var(--color-texto-2);
+}
+
+.title {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.text {
+  max-width: 640px;
+  font-size: 17px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.retry {
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--radio-control);
+  background: var(--color-naranja);
+  color: var(--color-superficie);
+  font-weight: 600;
+}
+
+.bar {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--color-separador);
+}
+
+.barFill {
+  height: 100%;
+  background: var(--color-naranja);
+}

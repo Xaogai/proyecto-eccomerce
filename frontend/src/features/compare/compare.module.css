@@ -1,0 +1,137 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tactil-min);
+  cursor: pointer;
+}
+
+.toggle input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-naranja);
+}
+
+.bar {
+  position: sticky;
+  bottom: 8px;
+  z-index: 15;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  border-radius: var(--radio);
+  background: var(--color-carbon);
+  color: var(--color-superficie);
+}
+
+.barTitle {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.barNames {
+  flex: 1 1 200px;
+  min-width: 0;
+  color: var(--color-texto-oscuro);
+}
+
+.barActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.barHint {
+  color: var(--color-texto-oscuro);
+}
+
+/* ---------- Página de comparación ---------- */
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.scroll {
+  /* Contiene a los textos sr-only (position: absolute): si no, Safari los saca del recorte y la página se desborda a lo ancho. */
+  position: relative;
+  overflow-x: auto;
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  table-layout: fixed;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-separador);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table thead th {
+  vertical-align: top;
+}
+
+.corner {
+  width: 180px;
+}
+
+.productCell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 400;
+}
+
+.productCell img {
+  width: 100%;
+  max-width: 160px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: var(--radio-control);
+  background: var(--color-superficie-2);
+}
+
+.productName {
+  font-weight: 600;
+}
+
+.diff {
+  background: var(--color-resalte);
+}
+
+.diff td {
+  font-weight: 600;
+}
+
+/* Primera columna fija al hacer scroll horizontal en móvil */
+.table tbody th,
+.table thead td {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--color-superficie-2);
+}
+
+.diff th {
+  background: var(--color-resalte);
+}
+
+.note {
+  font-size: 14px;
+  color: var(--color-texto-2);
+}

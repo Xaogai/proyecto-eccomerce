@@ -1,0 +1,56 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radio-control);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.ok {
+  background: var(--color-ok-fondo);
+  color: var(--color-ok-texto);
+}
+
+.aviso {
+  background: var(--color-aviso-fondo);
+  color: var(--color-aviso-texto);
+}
+
+.error {
+  background: var(--color-error-fondo);
+  color: var(--color-error-texto);
+}
+
+.info {
+  background: var(--color-info-fondo);
+  color: var(--color-info-texto);
+}
+
+.neutro {
+  background: var(--color-neutro-fondo);
+  color: var(--color-neutro-texto);
+}
+
+.stock {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stock-ok {
+  color: var(--color-ok);
+}
+
+.stock-aviso {
+  color: var(--color-aviso);
+}
+
+.stock-error {
+  color: var(--color-error);
+}
+
+.stock-texto {
+  color: var(--color-texto-2);
+}
