@@ -15,6 +15,7 @@ from backend.shared.models import (
     Pago,
     Pedido,
     Producto,
+    Resena,
     StaffSucursal,
     Sucursal,
     Usuario,
@@ -26,7 +27,7 @@ from backend.shared.security import hash_password
 def _svg_data_uri(title: str, subtitle: str, bg_hex: str, accent_hex: str) -> str:
     """Genera una URL corta hacia el endpoint de ilustración vectorial del producto (<300 chars)."""
     _ = (title, subtitle, bg_hex, accent_hex)
-    return "http://localhost:8000/api/v1/product-image/DEFAULT.svg"
+    return "/api/v1/product-image/DEFAULT.svg"
 
 
 EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
@@ -202,7 +203,7 @@ def _ensure_extended_catalog(db: Session, suc_toluca: Sucursal, suc_metepec: Suc
     for base_sku in ("TAL-20V-ROJ", "TAL-20V-AMA"):
         v_base = db.query(Variante).filter(Variante.sku == base_sku).first()
         if v_base:
-            v_base.imagen_url = f"http://localhost:8000/api/v1/product-image/{base_sku}.svg"
+            v_base.imagen_url = f"/api/v1/product-image/{base_sku}.svg"
 
     for spec in EXTENDED_CATALOG_SPECS:
         first_sku = spec["variantes"][0]["sku"]
@@ -225,7 +226,7 @@ def _ensure_extended_catalog(db: Session, suc_toluca: Sucursal, suc_metepec: Suc
                     producto_id=prod.id,
                     atributos=v_spec["atributos"],
                     precio=v_spec["precio"],
-                    imagen_url=f"http://localhost:8000/api/v1/product-image/{sku_code}.svg",
+                    imagen_url=f"/api/v1/product-image/{sku_code}.svg",
                 )
             )
             db.flush()
@@ -249,6 +250,114 @@ def _ensure_extended_catalog(db: Session, suc_toluca: Sucursal, suc_metepec: Suc
     db.commit()
 
 
+STORE_DETAILS: dict[str, dict[str, Any]] = {
+    "Sucursal Toluca Centro": {
+        "calle": "Av. Benito Juárez 210, Col. Centro",
+        "ciudad": "Toluca",
+        "codigo_postal": "50000",
+        "telefono": "722 214 5500",
+        "horario": "Lun a sáb 7:00 a 22:00, dom 8:00 a 20:00",
+        "latitud": Decimal("19.292545"),
+        "longitud": Decimal("-99.653912"),
+        "servicios": ["Recoger en tienda", "Corte de madera", "Igualación de pintura", "Renta de herramienta"],
+    },
+    "Sucursal Metepec": {
+        "calle": "Av. Tecnológico 1600, Col. San Salvador Tizatlalli",
+        "ciudad": "Metepec",
+        "codigo_postal": "52172",
+        "telefono": "722 271 8800",
+        "horario": "Lun a dom 7:00 a 22:00",
+        "latitud": Decimal("19.256412"),
+        "longitud": Decimal("-99.606437"),
+        "servicios": ["Recoger en tienda", "Corte de madera", "Llaves y duplicados"],
+    },
+}
+
+SYNTHETIC_REVIEWS: list[dict[str, Any]] = [
+    {"sku": "TAL-20V-ROJ", "autor": "Ana T.", "calificacion": 5, "titulo": "Potente y ligero",
+     "comentario": "Lo uso para muebles y perforar concreto ligero; la batería dura toda la tarde.", "verificada": True},
+    {"sku": "TAL-20V-ROJ", "autor": "Luis M.", "calificacion": 4, "titulo": "Buen taladro",
+     "comentario": "Cumple bien, solo me hubiera gustado que trajera un segundo cargador.", "verificada": False},
+    {"sku": "ROT-BOS-850W", "autor": "Carmen R.", "calificacion": 5, "titulo": "Perfecto para concreto",
+     "comentario": "El modo de cincelado me ahorró rentar un rotomartillo más grande.", "verificada": False},
+]
+
+
+def _company_owner(db: Session) -> Usuario | None:
+    """Cuenta de la empresa (admin): dueña de las direcciones de las sucursales."""
+    return db.query(Usuario).filter(Usuario.email == "admin.sintetico@ferremarket.local").first()
+
+
+def _ensure_store_details(db: Session) -> None:
+    """Dirección propia, teléfono, horario, ubicación y servicios de cada sucursal (idempotente)."""
+    owner = _company_owner(db)
+    for nombre, info in STORE_DETAILS.items():
+        branch = db.query(Sucursal).filter(Sucursal.nombre == nombre).first()
+        if branch is None:
+            continue
+        if owner is not None and (branch.direccion is None or branch.direccion.cliente_id != owner.id):
+            direccion = Direccion(
+                cliente_id=owner.id,
+                alias=nombre,
+                calle=info["calle"],
+                ciudad=info["ciudad"],
+                codigo_postal=info["codigo_postal"],
+                entidad="Estado de México",
+                es_predeterminada=False,
+            )
+            db.add(direccion)
+            db.flush()
+            branch.direccion_id = direccion.id
+        branch.telefono = info["telefono"]
+        branch.horario = info["horario"]
+        branch.latitud = info["latitud"]
+        branch.longitud = info["longitud"]
+        branch.servicios = info["servicios"]
+    db.commit()
+
+
+def _ensure_product_details(db: Session) -> None:
+    """Especificaciones, imágenes con ruta relativa, pasillo y reseñas de muestra (idempotente)."""
+    for product in db.query(Producto).all():
+        if not product.especificaciones and product.variantes:
+            common = dict(product.variantes[0].atributos or {})
+            for var in product.variantes[1:]:
+                common = {k: v for k, v in common.items() if (var.atributos or {}).get(k) == v}
+            specs = {"Marca": product.marca} if product.marca else {}
+            specs.update({k.replace("_", " ").capitalize(): str(v) for k, v in common.items()})
+            product.especificaciones = specs
+        for var in product.variantes:
+            if var.imagen_url and var.imagen_url.startswith("http://localhost:8000"):
+                var.imagen_url = var.imagen_url.removeprefix("http://localhost:8000")
+    for index, inv in enumerate(db.query(Inventario).order_by(Inventario.variante_sku).all()):
+        if inv.pasillo is None:
+            inv.pasillo = f"{12 + index % 9}-{chr(65 + index % 4)}"
+    db.commit()
+    _ensure_reviews(db)
+
+
+def _ensure_reviews(db: Session) -> None:
+    """Reseñas de muestra si todavía no hay ninguna."""
+    if db.query(Resena).count() == 0:
+        ana = db.query(Usuario).filter(Usuario.email == "ana.torres.sintetica@ferremarket.local").first()
+        for spec in SYNTHETIC_REVIEWS:
+            variante = db.query(Variante).filter(Variante.sku == spec["sku"]).first()
+            if variante is None:
+                continue
+            db.add(
+                Resena(
+                    producto_id=variante.producto_id,
+                    usuario_id=ana.id if ana and spec["verificada"] else None,
+                    autor=spec["autor"],
+                    calificacion=spec["calificacion"],
+                    titulo=spec["titulo"],
+                    comentario=spec["comentario"],
+                    compra_verificada=spec["verificada"],
+                )
+            )
+    db.commit()
+
+
 def seed_synthetic_data(db: Session) -> dict[str, Any]:
     """
     Puebla la base de datos con datos 100% sintéticos (4 roles, sucursales, catálogo jerárquico 3 niveles,
@@ -258,6 +367,8 @@ def seed_synthetic_data(db: Session) -> dict[str, Any]:
     existing_metepec = db.query(Sucursal).filter(Sucursal.nombre == "Sucursal Metepec").first()
     if existing_branch and existing_metepec:
         _ensure_extended_catalog(db, existing_branch, existing_metepec)
+        _ensure_store_details(db)
+        _ensure_product_details(db)
         return {"status": "already_seeded", "branch_id": str(existing_branch.id)}
 
     pwd_hash = hash_password("Sintetico2026!")
@@ -296,7 +407,7 @@ def seed_synthetic_data(db: Session) -> dict[str, Any]:
     db.add(direccion_ana)
     db.flush()
 
-    suc_toluca = Sucursal(nombre="Sucursal Toluca Centro", direccion_id=direccion_ana.id)
+    suc_toluca = Sucursal(nombre="Sucursal Toluca Centro", direccion_id=None)
     suc_metepec = Sucursal(nombre="Sucursal Metepec", direccion_id=None)
     db.add_all([suc_toluca, suc_metepec])
     db.flush()
@@ -395,6 +506,8 @@ def seed_synthetic_data(db: Session) -> dict[str, Any]:
     )
     db.commit()
     _ensure_extended_catalog(db, suc_toluca, suc_metepec)
+    _ensure_store_details(db)
+    _ensure_product_details(db)
 
     return {
         "status": "seeded",

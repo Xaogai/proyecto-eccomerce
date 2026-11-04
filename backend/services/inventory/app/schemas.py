@@ -20,6 +20,14 @@ class BranchResponse(BaseModel):
     id: uuid.UUID
     nombre: str
     direccion_id: uuid.UUID | None = None
+    calle: str | None = None
+    ciudad: str | None = None
+    codigo_postal: str | None = None
+    telefono: str | None = None
+    horario: str | None = None
+    latitud: float | None = None
+    longitud: float | None = None
+    servicios: list[str] = Field(default_factory=list)
 
 
 class StockReservationRequest(BaseModel):

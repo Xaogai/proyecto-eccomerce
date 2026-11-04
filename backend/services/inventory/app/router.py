@@ -18,7 +18,7 @@ from backend.services.inventory.app.schemas import (
     StockUpdateRequest,
 )
 from backend.shared.database import get_db
-from backend.shared.models import Usuario
+from backend.shared.models import Sucursal, Usuario
 from backend.shared.security import record_audit_event, require_roles
 
 router = APIRouter(prefix="/api/v1", tags=["Inventario y Sucursales"])
@@ -29,12 +29,30 @@ def get_inventory_repository(db: Session = Depends(get_db)) -> InventoryReposito
     return InventoryRepository(db)
 
 
+def branch_response(branch: Sucursal) -> BranchResponse:
+    """Sucursal con su dirección, teléfono, horario, ubicación y servicios."""
+    direccion = branch.direccion
+    return BranchResponse(
+        id=branch.id,
+        nombre=branch.nombre,
+        direccion_id=branch.direccion_id,
+        calle=direccion.calle if direccion else None,
+        ciudad=direccion.ciudad if direccion else None,
+        codigo_postal=direccion.codigo_postal if direccion else None,
+        telefono=branch.telefono,
+        horario=branch.horario,
+        latitud=float(branch.latitud) if branch.latitud is not None else None,
+        longitud=float(branch.longitud) if branch.longitud is not None else None,
+        servicios=list(branch.servicios or []),
+    )
+
+
 @router.get("/branches", response_model=list[BranchResponse])
 def list_branches(
     repo: InventoryRepository = Depends(get_inventory_repository),
-) -> Any:
+) -> list[BranchResponse]:
     """Lista las sucursales disponibles para consulta de stock o recolección en tienda."""
-    return repo.list_branches()
+    return [branch_response(b) for b in repo.list_branches()]
 
 
 @router.post("/branches", response_model=BranchResponse, status_code=status.HTTP_201_CREATED)
@@ -46,7 +64,7 @@ def create_branch(
     """Crea una nueva sucursal física (restringido a administradores)."""
     branch = repo.create_branch(payload.nombre, payload.direccion_id)
     record_audit_event("branch_created", str(admin_user.id), f"branch:{branch.id}", {"nombre": branch.nombre})
-    return branch
+    return branch_response(branch)
 
 
 @router.get("/inventory/{sku}", response_model=list[BranchStockResponse])

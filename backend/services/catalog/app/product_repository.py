@@ -1,19 +1,74 @@
 """Repositorio de Catálogo siguiendo el Patrón Repositorio (Sec. 14.2)."""
 
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from decimal import Decimal
+import unicodedata
 import uuid
 from typing import Any
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from backend.services.catalog.app.schemas import (
+    CategoryPathItem,
+    Facet,
+    FacetOption,
+    ImageResponse,
     ProductCreateRequest,
     ProductDetailResponse,
+    ReviewResponse,
+    ReviewSummary,
     VariantResponse,
 )
-from backend.shared.models import Categoria, Inventario, Producto, Sucursal, Variante
+from backend.shared.models import (
+    Categoria,
+    Cliente,
+    Inventario,
+    ItemPedido,
+    Pedido,
+    Producto,
+    Resena,
+    Sucursal,
+    Usuario,
+    Variante,
+)
 
 PAGE_SIZE_DEFAULT = 20
+PAGE_SIZE_MAX = 96
+ESTADOS_PEDIDO_COMPRADO = {"confirmado", "en_preparacion", "listo_para_recoger", "enviado", "entregado"}
+
+
+def normalize_text(text: str) -> str:
+    """Minúsculas y sin acentos, para buscar "rotomartillo" y encontrar "Rotomartillo"."""
+    decomposed = unicodedata.normalize("NFD", text.lower())
+    return "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn")
+
+
+@dataclass
+class ProductQuery:
+    """Filtros del listado (HU-01, HU-09). Los precios van en pesos."""
+
+    category_id: uuid.UUID | None = None
+    page: int = 1
+    page_size: int = PAGE_SIZE_DEFAULT
+    q: str | None = None
+    marcas: list[str] = field(default_factory=list)
+    atributos: dict[str, list[str]] = field(default_factory=dict)
+    min_price: Decimal | None = None
+    max_price: Decimal | None = None
+    orden: str = "relevancia"
+    sucursal_id: uuid.UUID | None = None
+    disponible_hoy: bool = False
+
+
+@dataclass
+class _Row:
+    """Producto ya serializado con los datos que usan los filtros y el orden."""
+
+    product: Producto
+    detail: ProductDetailResponse
+    min_price: Decimal
+    attrs: dict[str, set[str]]
 
 
 class ProductRepository:
@@ -30,7 +85,7 @@ class ProductRepository:
         Returns:
             list[dict[str, Any]]: Árbol de categorías raíz con sus subcategorías.
         """
-        all_cats = self.db.query(Categoria).all()
+        all_cats = self.db.query(Categoria).order_by(Categoria.nombre).all()
         by_parent: dict[uuid.UUID | None, list[Categoria]] = {}
         for cat in all_cats:
             by_parent.setdefault(cat.categoria_padre_id, []).append(cat)
@@ -64,15 +119,60 @@ class ProductRepository:
         self.db.refresh(cat)
         return cat
 
-    def _serialize_product(self, product: Producto) -> ProductDetailResponse:
-        """Construye la respuesta de un producto incluyendo el stock total por variante."""
+    def category_with_descendants(self, category_id: uuid.UUID) -> set[uuid.UUID]:
+        """IDs de la categoría y de todas sus subcategorías (un departamento muestra todo lo que contiene)."""
+        rows = self.db.query(Categoria.id, Categoria.categoria_padre_id).all()
+        children: dict[uuid.UUID | None, list[uuid.UUID]] = {}
+        for cat_id, parent_id in rows:
+            children.setdefault(parent_id, []).append(cat_id)
+        found: set[uuid.UUID] = set()
+        pending = [category_id]
+        while pending:
+            current = pending.pop()
+            if current in found:
+                continue
+            found.add(current)
+            pending.extend(children.get(current, []))
+        return found
+
+    def category_path(self, category_id: uuid.UUID) -> list[CategoryPathItem]:
+        """Ruta desde el departamento hasta la categoría del producto (migas de pan)."""
+        path: list[CategoryPathItem] = []
+        current = self.db.get(Categoria, category_id)
+        while current is not None and len(path) < 3:
+            path.insert(0, CategoryPathItem(id=current.id, nombre=current.nombre))
+            current = current.padre
+        return path
+
+    def _rating(self, product_id: uuid.UUID) -> tuple[float, int]:
+        """Promedio y total de reseñas del producto."""
+        avg, count = (
+            self.db.query(func.avg(Resena.calificacion), func.count(Resena.id))
+            .filter(Resena.producto_id == product_id)
+            .one()
+        )
+        return round(float(avg or 0), 1), int(count or 0)
+
+    def _stock(self, sku: str, sucursal_id: uuid.UUID | None) -> tuple[int, int | None]:
+        """Piezas disponibles (sin las apartadas) en todas las sucursales y en la sucursal pedida."""
+        rows = (
+            self.db.query(Inventario.sucursal_id, Inventario.cantidad_disponible, Inventario.cantidad_reservada)
+            .filter(Inventario.variante_sku == sku)
+            .all()
+        )
+        total = sum(max(0, disp) for _, disp, _ in rows)
+        in_branch = None
+        if sucursal_id is not None:
+            in_branch = sum(max(0, disp) for branch, disp, _ in rows if branch == sucursal_id)
+        return int(total), in_branch
+
+    def _serialize_product(
+        self, product: Producto, sucursal_id: uuid.UUID | None = None, with_path: bool = False
+    ) -> ProductDetailResponse:
+        """Construye la respuesta de un producto con stock por variante, imágenes y calificación."""
         variant_responses: list[VariantResponse] = []
         for var in product.variantes:
-            total_stock = (
-                self.db.query(func.coalesce(func.sum(Inventario.cantidad_disponible), 0))
-                .filter(Inventario.variante_sku == var.sku)
-                .scalar()
-            )
+            total_stock, branch_stock = self._stock(var.sku, sucursal_id)
             variant_responses.append(
                 VariantResponse(
                     sku=var.sku,
@@ -80,9 +180,18 @@ class ProductRepository:
                     atributos=var.atributos or {},
                     precio=Decimal(str(var.precio)),
                     imagen_url=var.imagen_url,
-                    stock_disponible=int(total_stock or 0),
+                    stock_disponible=total_stock,
+                    stock_sucursal=branch_stock,
                 )
             )
+        images = [ImageResponse(url=img.url, texto_alternativo=img.texto_alternativo) for img in product.imagenes]
+        if not images:
+            images = [
+                ImageResponse(url=var.imagen_url, texto_alternativo=product.nombre)
+                for var in product.variantes[:1]
+                if var.imagen_url
+            ]
+        avg, count = self._rating(product.id)
         return ProductDetailResponse(
             id=product.id,
             categoria_id=product.categoria_id,
@@ -90,14 +199,24 @@ class ProductRepository:
             descripcion=product.descripcion,
             marca=product.marca,
             variantes=variant_responses,
+            estado=product.estado,
+            especificaciones=product.especificaciones or {},
+            imagenes=images,
+            calificacion_promedio=avg,
+            total_resenas=count,
+            ruta_categoria=self.category_path(product.categoria_id) if with_path else [],
         )
 
-    def get_by_sku(self, sku: str) -> ProductDetailResponse | None:
+    def get_by_sku(
+        self, sku: str, sucursal_id: uuid.UUID | None = None, include_drafts: bool = False
+    ) -> ProductDetailResponse | None:
         """
         Obtiene el detalle de un producto y todas sus variantes a partir de un SKU (Sec. 13.1, 14.2).
 
         Args:
             sku: Código único de variante (SKU).
+            sucursal_id: Sucursal para informar el stock de cada variante en ella.
+            include_drafts: Si es False, un producto en borrador no se encuentra (tienda pública).
 
         Returns:
             ProductDetailResponse | None: Producto con variantes y stock, o None si no existe.
@@ -105,7 +224,128 @@ class ProductRepository:
         variante = self.db.query(Variante).filter(Variante.sku == sku).first()
         if not variante:
             return None
-        return self._serialize_product(variante.producto)
+        if variante.producto.estado != "publicado" and not include_drafts:
+            return None
+        return self._serialize_product(variante.producto, sucursal_id=sucursal_id, with_path=True)
+
+    def _rows(self, query: ProductQuery) -> list[_Row]:
+        """Productos publicados de la categoría y la búsqueda, antes de los filtros de facetas."""
+        db_query = (
+            self.db.query(Producto)
+            .options(selectinload(Producto.variantes), selectinload(Producto.imagenes))
+            .filter(Producto.estado == "publicado")
+        )
+        if query.category_id is not None:
+            db_query = db_query.filter(Producto.categoria_id.in_(self.category_with_descendants(query.category_id)))
+        rows: list[_Row] = []
+        terms = normalize_text(query.q).split() if query.q else []
+        for product in db_query.all():
+            if not product.variantes:
+                continue
+            if terms:
+                haystack = normalize_text(f"{product.nombre} {product.marca or ''} {product.descripcion or ''}")
+                if not all(term in haystack for term in terms):
+                    continue
+            attrs: dict[str, set[str]] = {}
+            for var in product.variantes:
+                for key, value in (var.atributos or {}).items():
+                    attrs.setdefault(str(key), set()).add(str(value))
+            if product.marca:
+                attrs["marca"] = {product.marca}
+            rows.append(
+                _Row(
+                    product=product,
+                    detail=self._serialize_product(product, sucursal_id=query.sucursal_id),
+                    min_price=min(Decimal(str(v.precio)) for v in product.variantes),
+                    attrs=attrs,
+                )
+            )
+        return rows
+
+    @staticmethod
+    def _passes(row: _Row, query: ProductQuery, except_key: str | None = None) -> bool:
+        """Aplica los filtros menos el de la faceta `except_key` (así cada faceta cuenta sobre el resto)."""
+        selected = dict(query.atributos)
+        if query.marcas:
+            selected["marca"] = query.marcas
+        for key, values in selected.items():
+            if key == except_key or not values:
+                continue
+            wanted = {normalize_text(v) for v in values}
+            if not {normalize_text(v) for v in row.attrs.get(key, set())} & wanted:
+                return False
+        if except_key != "precio":
+            if query.min_price is not None and row.min_price < query.min_price:
+                return False
+            if query.max_price is not None and row.min_price > query.max_price:
+                return False
+        if query.disponible_hoy and query.sucursal_id is not None:
+            if not any((v.stock_sucursal or 0) > 0 for v in row.detail.variantes):
+                return False
+        return True
+
+    @staticmethod
+    def _facets(rows: list[_Row], query: ProductQuery) -> list[Facet]:
+        """Marca primero y después cada atributo, con conteos que respetan los demás filtros."""
+        keys = ["marca", *sorted({k for r in rows for k in r.attrs if k != "marca"})]
+        selected = dict(query.atributos)
+        if query.marcas:
+            selected["marca"] = query.marcas
+        facets: list[Facet] = []
+        for key in keys:
+            counts: dict[str, int] = {}
+            for row in rows:
+                if ProductRepository._passes(row, query, except_key=key):
+                    for value in row.attrs.get(key, set()):
+                        counts[value] = counts.get(value, 0) + 1
+            chosen = selected.get(key, [])
+            for value in chosen:
+                counts.setdefault(value, 0)
+            if len(counts) < 2 and not chosen:
+                continue
+            titulo = "Marca" if key == "marca" else key.replace("_", " ").capitalize()
+            facets.append(
+                Facet(
+                    clave=key,
+                    titulo=titulo,
+                    opciones=[
+                        FacetOption(valor=value, total=total, seleccionada=value in chosen)
+                        for value, total in sorted(counts.items(), key=lambda kv: normalize_text(kv[0]))
+                    ],
+                )
+            )
+        return facets
+
+    @staticmethod
+    def _sort_key(query: ProductQuery) -> Callable[[_Row], Any]:
+        """Criterio de orden: precio, calificación o relevancia de la búsqueda."""
+        terms = normalize_text(query.q).split() if query.q else []
+
+        def relevance(row: _Row) -> tuple[int, int]:
+            name = normalize_text(row.product.nombre)
+            score = sum(3 if name.startswith(t) else 2 if t in name else 1 for t in terms)
+            return (-score, -row.detail.total_resenas)
+
+        sorters: dict[str, Callable[[_Row], Any]] = {
+            "precio_asc": lambda r: r.min_price,
+            "precio_desc": lambda r: -r.min_price,
+            "calificacion": lambda r: (-r.detail.calificacion_promedio, -r.detail.total_resenas),
+            "nuevo": lambda r: normalize_text(r.product.nombre),
+        }
+        return sorters.get(query.orden, relevance)
+
+    def search(self, query: ProductQuery) -> tuple[list[ProductDetailResponse], int, list[Facet]]:
+        """
+        Lista productos publicados con filtros combinables, facetas, orden y paginación (HU-01, HU-09).
+
+        Returns:
+            tuple: Productos de la página, total de coincidencias y facetas.
+        """
+        rows = self._rows(query)
+        filtered = sorted((r for r in rows if self._passes(r, query)), key=self._sort_key(query))
+        start = (query.page - 1) * query.page_size
+        page_items = [r.detail for r in filtered[start : start + query.page_size]]
+        return page_items, len(filtered), self._facets(rows, query)
 
     def list_by_category(
         self,
@@ -118,46 +358,20 @@ class ProductRepository:
         atributo_clave: str | None = None,
         atributo_valor: str | None = None,
     ) -> tuple[list[ProductDetailResponse], int]:
-        """
-        Lista productos paginados con soporte de filtrado por categoría, marca, precio y atributos (HU-01, HU-09).
-
-        Args:
-            category_id: UUID de la categoría a filtrar.
-            page: Número de página (1-indexed).
-            marca: Filtro opcional por marca.
-            min_price: Precio mínimo de variante.
-            max_price: Precio máximo de variante.
-            q: Término de búsqueda en nombre o descripción.
-            atributo_clave: Clave de atributo dinámico (ej. 'color').
-            atributo_valor: Valor esperado del atributo.
-
-        Returns:
-            tuple[list[ProductDetailResponse], int]: Lista de productos y total de coincidencias.
-        """
-        query = self.db.query(Producto)
-        if category_id is not None:
-            query = query.filter(Producto.categoria_id == category_id)
-        if marca:
-            query = query.filter(Producto.marca.ilike(f"%{marca}%"))
-        if q:
-            query = query.filter(Producto.nombre.ilike(f"%{q}%"))
-        if min_price is not None or max_price is not None:
-            query = query.join(Variante)
-            if min_price is not None:
-                query = query.filter(Variante.precio >= min_price)
-            if max_price is not None:
-                query = query.filter(Variante.precio <= max_price)
-            query = query.distinct()
-
-        products = query.offset((page - 1) * PAGE_SIZE_DEFAULT).limit(PAGE_SIZE_DEFAULT).all()
-        results = [self._serialize_product(p) for p in products]
-        if atributo_clave and atributo_valor:
-            results = [
-                r
-                for r in results
-                if any(str(v.atributos.get(atributo_clave, "")).lower() == atributo_valor.lower() for v in r.variantes)
-            ]
-        return results, len(results)
+        """Compatibilidad con la firma anterior: delega en `search`."""
+        atributos = {atributo_clave: [atributo_valor]} if atributo_clave and atributo_valor else {}
+        items, total, _ = self.search(
+            ProductQuery(
+                category_id=category_id,
+                page=page,
+                q=q,
+                marcas=[marca] if marca else [],
+                atributos=atributos,
+                min_price=min_price,
+                max_price=max_price,
+            )
+        )
+        return items, total
 
     def create_product(self, payload: ProductCreateRequest) -> ProductDetailResponse:
         """
@@ -223,3 +437,71 @@ class ProductRepository:
         self.db.commit()
         self.db.refresh(variante)
         return variante, old_price
+
+    # ---------- Reseñas ----------
+
+    def list_reviews(
+        self, product_id: uuid.UUID, page: int, page_size: int
+    ) -> tuple[list[ReviewResponse], int, ReviewSummary]:
+        """Reseñas del producto, las más recientes primero, con promedio y conteo por estrellas."""
+        base = self.db.query(Resena).filter(Resena.producto_id == product_id)
+        total = base.count()
+        reviews = base.order_by(Resena.fecha.desc()).offset((page - 1) * page_size).limit(page_size).all()
+        by_star = [0, 0, 0, 0, 0]
+        for (rating,) in self.db.query(Resena.calificacion).filter(Resena.producto_id == product_id).all():
+            by_star[5 - int(rating)] += 1
+        avg, _ = self._rating(product_id)
+        return (
+            [self._serialize_review(r) for r in reviews],
+            total,
+            ReviewSummary(promedio=avg, total=total, por_estrellas=by_star),
+        )
+
+    @staticmethod
+    def _serialize_review(review: Resena) -> ReviewResponse:
+        """Reseña pública: el autor va solo con nombre e inicial del apellido."""
+        return ReviewResponse(
+            id=review.id,
+            autor=review.autor,
+            calificacion=review.calificacion,
+            titulo=review.titulo,
+            comentario=review.comentario,
+            fecha=review.fecha,
+            compra_verificada=review.compra_verificada,
+        )
+
+    def has_purchased(self, user_id: uuid.UUID, product_id: uuid.UUID) -> bool:
+        """True si el usuario tiene un pedido pagado con alguna variante del producto."""
+        return (
+            self.db.query(ItemPedido)
+            .join(Pedido, Pedido.id == ItemPedido.pedido_id)
+            .join(Variante, Variante.sku == ItemPedido.variante_sku)
+            .join(Cliente, Cliente.usuario_id == Pedido.cliente_id)
+            .filter(
+                Pedido.cliente_id == user_id,
+                Variante.producto_id == product_id,
+                Pedido.estado.in_(ESTADOS_PEDIDO_COMPRADO),
+            )
+            .first()
+            is not None
+        )
+
+    def create_review(
+        self, product_id: uuid.UUID, user: Usuario, calificacion: int, titulo: str, comentario: str
+    ) -> ReviewResponse:
+        """Guarda la reseña; queda como compra verificada si el usuario compró el producto."""
+        parts = user.nombre.split()
+        autor = f"{parts[0]} {parts[1][0]}." if len(parts) > 1 else user.nombre
+        review = Resena(
+            producto_id=product_id,
+            usuario_id=user.id,
+            autor=autor,
+            calificacion=calificacion,
+            titulo=titulo.strip(),
+            comentario=comentario.strip(),
+            compra_verificada=self.has_purchased(user.id, product_id),
+        )
+        self.db.add(review)
+        self.db.commit()
+        self.db.refresh(review)
+        return self._serialize_review(review)

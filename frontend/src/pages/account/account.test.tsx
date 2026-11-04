@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { tokenStorage } from '@/api/tokenStorage'
 import { db } from '@/mocks/db/store'
 import { API, issueRefreshToken } from '@/mocks/handlers/utils'
@@ -207,7 +207,12 @@ describe('datos y privacidad (ARCO)', () => {
 })
 
 describe('devolución y reseña', () => {
+  afterEach(() => vi.useRealTimers())
+
   it('pide foto si el producto llegó dañado y envía la solicitud', async () => {
+    // El pedido 10311 se entregó a inicios de octubre: se fija la fecha dentro de sus 30 días para devolver.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-20T12:00:00'))
     asAna()
     renderRoute('/cuenta/pedidos/10311/devolucion')
     expect(await screen.findByRole('heading', { level: 1, name: 'Solicitar devolución' })).toBeInTheDocument()

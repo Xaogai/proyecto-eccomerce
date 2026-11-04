@@ -8,18 +8,26 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from backend.services.catalog.app.product_repository import PAGE_SIZE_DEFAULT, ProductRepository
+from backend.services.catalog.app.product_repository import (
+    PAGE_SIZE_DEFAULT,
+    PAGE_SIZE_MAX,
+    ProductQuery,
+    ProductRepository,
+)
 from backend.services.catalog.app.schemas import (
     CategoryCreateRequest,
     CategoryTreeResponse,
     PaginatedProductsResponse,
+    PaginatedReviewsResponse,
     ProductCreateRequest,
     ProductDetailResponse,
+    ReviewCreateRequest,
+    ReviewResponse,
     VariantPriceUpdateRequest,
 )
 from backend.shared.database import get_db
 from backend.shared.models import Categoria, Usuario, Variante
-from backend.shared.security import record_audit_event, require_roles
+from backend.shared.security import get_current_user, record_audit_event, require_roles
 
 router = APIRouter(prefix="/api/v1", tags=["Catálogo y Búsqueda"])
 
@@ -59,49 +67,99 @@ def create_category(
 @router.get("/products/{sku}", response_model=ProductDetailResponse)
 def get_product(
     sku: str,
+    sucursal_id: uuid.UUID | None = Query(default=None, description="Sucursal para el stock de cada variante"),
     repo: ProductRepository = Depends(get_product_repository),
 ) -> ProductDetailResponse:
     """
-    Obtiene el detalle de un producto y sus variantes por SKU (Sec. 13.1, Sec. 14.2, HU-02).
+    Obtiene el detalle de un producto publicado y sus variantes por SKU (Sec. 13.1, Sec. 14.2, HU-02).
     """
-    product = repo.get_by_sku(sku)
+    product = repo.get_by_sku(sku, sucursal_id=sucursal_id)
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
     return product
 
 
+def _parse_attributes(raw: list[str] | str) -> dict[str, list[str]]:
+    """Convierte `atributo=color:rojo,azul` (repetible) en {"color": ["rojo", "azul"]}."""
+    parsed: dict[str, list[str]] = {}
+    for item in [raw] if isinstance(raw, str) else raw:
+        key, _, values = item.partition(":")
+        if key and values:
+            parsed.setdefault(key.strip(), []).extend(v.strip() for v in values.split(",") if v.strip())
+    return parsed
+
+
 @router.get("/products", response_model=PaginatedProductsResponse)
 def list_products(
-    category: uuid.UUID | None = Query(default=None, description="ID de categoría"),
+    category: uuid.UUID | None = Query(default=None, description="ID de categoría (incluye sus subcategorías)"),
     categoria_id: uuid.UUID | None = Query(default=None, description="Alias de ID de categoría"),
     page: int = Query(default=1, ge=1, description="Número de página"),
-    marca: str | None = Query(default=None, description="Filtro por marca (HU-09)"),
+    page_size: int = Query(default=PAGE_SIZE_DEFAULT, ge=1, le=PAGE_SIZE_MAX),
+    marca: str | None = Query(default=None, description="Una o varias marcas separadas por coma (HU-09)"),
     min_price: Decimal | None = Query(default=None, ge=0),
     max_price: Decimal | None = Query(default=None, ge=0),
-    q: str | None = Query(default=None, description="Búsqueda por texto"),
+    q: str | None = Query(default=None, description="Búsqueda por texto en nombre, marca y descripción"),
+    atributo: list[str] = Query(default=[], description="Filtro `clave:valor1,valor2` (repetible)"),
     atributo_clave: str | None = Query(default=None, description="Clave de atributo (ej. color)"),
     atributo_valor: str | None = Query(default=None, description="Valor de atributo (ej. rojo)"),
+    orden: str = Query(default="relevancia", pattern="^(relevancia|precio_asc|precio_desc|nuevo|calificacion)$"),
+    sucursal_id: uuid.UUID | None = Query(default=None, description="Sucursal para el stock de cada producto"),
+    disponible_hoy: bool = Query(default=False, description="Solo productos con stock en sucursal_id"),
     repo: ProductRepository = Depends(get_product_repository),
 ) -> PaginatedProductsResponse:
     """
-    Lista productos paginados dentro de una categoría o combinando filtros (Sec. 13.1, HU-01, HU-09).
+    Lista productos publicados con filtros combinables, facetas, orden y paginación (Sec. 13.1, HU-01, HU-09).
     """
-    items, total = repo.list_by_category(
-        category_id=category or categoria_id,
-        page=page,
-        marca=marca,
-        min_price=min_price,
-        max_price=max_price,
-        q=q,
-        atributo_clave=atributo_clave,
-        atributo_valor=atributo_valor,
+    atributos = _parse_attributes(atributo)
+    if atributo_clave and atributo_valor:
+        atributos.setdefault(atributo_clave, []).append(atributo_valor)
+    items, total, facetas = repo.search(
+        ProductQuery(
+            category_id=category or categoria_id,
+            page=page,
+            page_size=page_size,
+            q=q,
+            marcas=[m.strip() for m in marca.split(",") if m.strip()] if marca else [],
+            atributos=atributos,
+            min_price=min_price,
+            max_price=max_price,
+            orden=orden,
+            sucursal_id=sucursal_id,
+            disponible_hoy=disponible_hoy,
+        )
     )
-    return PaginatedProductsResponse(
-        page=page,
-        page_size=PAGE_SIZE_DEFAULT,
-        total=total,
-        items=items,
-    )
+    return PaginatedProductsResponse(page=page, page_size=page_size, total=total, items=items, facetas=facetas)
+
+
+@router.get("/products/{sku}/resenas", response_model=PaginatedReviewsResponse)
+def list_product_reviews(
+    sku: str,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=5, ge=1, le=50),
+    repo: ProductRepository = Depends(get_product_repository),
+) -> PaginatedReviewsResponse:
+    """Reseñas de un producto, las más recientes primero, con el resumen por estrellas."""
+    product = repo.get_by_sku(sku)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
+    items, total, summary = repo.list_reviews(product.id, page, page_size)
+    return PaginatedReviewsResponse(page=page, page_size=page_size, total=total, items=items, resumen=summary)
+
+
+@router.post("/products/{sku}/resenas", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
+def create_product_review(
+    sku: str,
+    payload: ReviewCreateRequest,
+    current_user: Usuario = Depends(get_current_user),
+    repo: ProductRepository = Depends(get_product_repository),
+) -> ReviewResponse:
+    """Publica la reseña de un cliente; se marca como compra verificada si compró el producto."""
+    product = repo.get_by_sku(sku)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
+    review = repo.create_review(product.id, current_user, payload.calificacion, payload.titulo, payload.comentario)
+    record_audit_event("review_created", str(current_user.id), f"product:{product.id}", {"rating": review.calificacion})
+    return review
 
 
 @router.get("/product-image/{sku}.svg", include_in_schema=False)

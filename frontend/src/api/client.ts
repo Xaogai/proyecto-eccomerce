@@ -79,6 +79,13 @@ api.interceptors.response.use(
 )
 
 /**
+ * Con datos simulados (modo mock y pruebas) MSW contesta el contrato tal cual. Con el backend real,
+ * cada llamada pasa por la capa de traducción de src/api/backend (rutas y nombres del backend).
+ */
+export const usesRealBackend =
+  import.meta.env.MODE !== 'mock' && import.meta.env.MODE !== 'test' && import.meta.env.VITE_MOCKS !== 'true'
+
+/**
  * GET/POST tipados. En desarrollo valida la respuesta con zod para detectar
  * enseguida si backend (o el mock) se salió del contrato.
  */
@@ -87,6 +94,7 @@ function check<T>(schema: ZodType<T>, data: unknown): T {
 }
 
 export async function get<T>(url: string, schema: ZodType<T>, params?: object): Promise<T> {
+  if (usesRealBackend) return check(schema, await translateCall('get', url, params))
   const { data } = await api.get(url, { params })
   return check(schema, data)
 }
@@ -97,6 +105,22 @@ export async function send<T>(
   schema: ZodType<T>,
   body?: unknown,
 ): Promise<T> {
+  if (usesRealBackend) return check(schema, await translateCall(method, url, undefined, body))
   const { data } = await api.request({ method, url, data: body })
   return check(schema, data)
+}
+
+/** Carga la capa de traducción solo cuando hace falta (no entra al paquete de los datos simulados). */
+async function translateCall(
+  method: 'get' | 'post' | 'patch' | 'put' | 'delete',
+  url: string,
+  params?: object,
+  body?: unknown,
+): Promise<unknown> {
+  const { translate } = await import('./backend')
+  try {
+    return await translate(method, url, params, body)
+  } catch (error) {
+    throw toApiError(error)
+  }
 }

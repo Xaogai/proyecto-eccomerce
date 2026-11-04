@@ -18,6 +18,7 @@ from backend.services.inventory.app.router import router as inventory_router
 from backend.services.payments.app.router import router as payments_router
 from backend.services.shipping.app.router import router as shipping_router
 from backend.services.users.app.router import router as users_router
+from backend.shared.configuracion import get_section
 from backend.shared.database import SessionLocal, engine, get_db
 from backend.shared.migrations import upgrade_database
 from backend.shared.models import ItemCarrito, Pago, Pedido, Usuario
@@ -86,6 +87,12 @@ def gateway_health() -> dict[str, Any]:
             "shipping",
         ],
     }
+
+
+@app.get("/api/v1/funciones", tags=["Monitoreo y Salud"])
+def feature_flags(db: Session = Depends(get_db)) -> dict[str, bool]:
+    """Funciones activas de la tienda (vista 360, calculadora, comparador, reseñas y fila de espera)."""
+    return {k: bool(v) for k, v in get_section(db, "funciones").items()}
 
 
 @app.get("/api/v1/admin/audit-logs", tags=["Administración y Auditoría"])

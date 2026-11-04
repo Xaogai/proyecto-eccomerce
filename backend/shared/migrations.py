@@ -39,11 +39,12 @@ def upgrade_database(target_engine: Engine | None = None, revision: str = "head"
         existing_tables = set(inspector.get_table_names())
         cfg.attributes["connection"] = connection
         if "usuarios" in existing_tables and "alembic_version" not in existing_tables:
-            stamp_rev = (
-                "0002_operational_tables"
-                if "bitacora_auditoria" in existing_tables
-                else "0001_initial_schema_2fn"
-            )
+            if "resenas" in existing_tables:
+                stamp_rev = "0003_tienda_en_linea"
+            elif "bitacora_auditoria" in existing_tables:
+                stamp_rev = "0002_operational_tables"
+            else:
+                stamp_rev = "0001_initial_schema_2fn"
             command.stamp(cfg, stamp_rev)
         command.upgrade(cfg, revision)
 

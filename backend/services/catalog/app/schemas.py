@@ -1,5 +1,6 @@
 """Esquemas Pydantic para el servicio de Catálogo (Categorías, Productos y Variantes)."""
 
+from datetime import datetime
 from decimal import Decimal
 import uuid
 from typing import Any
@@ -60,6 +61,21 @@ class VariantResponse(BaseModel):
     precio: Decimal
     imagen_url: str | None = None
     stock_disponible: int = 0
+    stock_sucursal: int | None = Field(default=None, description="Piezas en la sucursal pedida con sucursal_id")
+
+
+class ImageResponse(BaseModel):
+    """Imagen del producto con su texto alternativo."""
+
+    url: str
+    texto_alternativo: str
+
+
+class CategoryPathItem(BaseModel):
+    """Eslabón de la ruta de categorías (departamento → subcategoría → categoría)."""
+
+    id: uuid.UUID
+    nombre: str
 
 
 class ProductDetailResponse(BaseModel):
@@ -71,12 +87,73 @@ class ProductDetailResponse(BaseModel):
     descripcion: str | None = None
     marca: str | None = None
     variantes: list[VariantResponse]
+    estado: str = "publicado"
+    especificaciones: dict[str, Any] = Field(default_factory=dict)
+    imagenes: list[ImageResponse] = Field(default_factory=list)
+    calificacion_promedio: float = 0.0
+    total_resenas: int = 0
+    ruta_categoria: list[CategoryPathItem] = Field(default_factory=list)
+
+
+class FacetOption(BaseModel):
+    """Valor de una faceta con cuántos productos lo tienen aplicando los demás filtros."""
+
+    valor: str
+    total: int
+    seleccionada: bool
+
+
+class Facet(BaseModel):
+    """Faceta del listado: la marca o un atributo de las variantes (HU-09)."""
+
+    clave: str
+    titulo: str
+    opciones: list[FacetOption]
 
 
 class PaginatedProductsResponse(BaseModel):
-    """Respuesta paginada del listado/búsqueda de productos."""
+    """Respuesta paginada del listado/búsqueda de productos con sus facetas."""
 
     page: int
     page_size: int
     total: int
     items: list[ProductDetailResponse]
+    facetas: list[Facet] = Field(default_factory=list)
+
+
+class ReviewCreateRequest(BaseModel):
+    """Reseña nueva de un producto."""
+
+    calificacion: int = Field(..., ge=1, le=5)
+    titulo: str = Field(..., min_length=3, max_length=120)
+    comentario: str = Field(..., min_length=10, max_length=2000)
+
+
+class ReviewResponse(BaseModel):
+    """Reseña publicada."""
+
+    id: uuid.UUID
+    autor: str
+    calificacion: int
+    titulo: str
+    comentario: str
+    fecha: datetime
+    compra_verificada: bool
+
+
+class ReviewSummary(BaseModel):
+    """Promedio, total y conteo por estrellas (índice 0 = 5 estrellas)."""
+
+    promedio: float
+    total: int
+    por_estrellas: list[int]
+
+
+class PaginatedReviewsResponse(BaseModel):
+    """Reseñas paginadas de un producto con su resumen."""
+
+    page: int
+    page_size: int
+    total: int
+    items: list[ReviewResponse]
+    resumen: ReviewSummary
