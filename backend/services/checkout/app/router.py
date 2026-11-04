@@ -58,7 +58,7 @@ async def payment_webhook(
     """
     Recibe la confirmación asíncrona de la pasarela de pago con idempotencia (Sec. 13.1, Anexo 1.5, AE-29).
     """
-    # La firma es obligatoria: sin ella cualquiera podía marcar un pedido como pagado.
+    # Sin firma cualquiera podría marcar un pedido como pagado.
     raw_body = await request.body()
     if not x_webhook_signature or not verify_webhook_signature(raw_body, x_webhook_signature):
         raise HTTPException(

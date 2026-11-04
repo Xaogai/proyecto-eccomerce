@@ -26,6 +26,7 @@ from backend.services.users.app.schemas import (
 )
 from backend.services.users.app.user_repository import UserRepository
 from backend.shared.config import settings
+from backend.shared.configuracion import security_value
 from backend.shared.database import get_db
 from backend.shared.models import Pedido, Usuario
 from backend.shared.notifications import list_user_notifications, send_email_notification
@@ -172,7 +173,7 @@ def login_user(
             detail={
                 "code": "invalid_credentials",
                 "message": "El correo o la contraseña no son correctos.",
-                "intentos_restantes": max(0, settings.max_login_attempts - attempts),
+                "intentos_restantes": max(0, security_value("intentos_maximos") - attempts),
             },
         )
     clear_failed_logins(normalized_email)
@@ -182,7 +183,7 @@ def login_user(
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
-        expires_in_minutes=settings.jwt_access_expires_min,
+        expires_in_minutes=security_value("minutos_sesion"),
     )
 
 
@@ -213,7 +214,7 @@ def refresh_access_token(
     return TokenResponse(
         access_token=new_access,
         refresh_token=new_refresh,
-        expires_in_minutes=settings.jwt_access_expires_min,
+        expires_in_minutes=security_value("minutos_sesion"),
     )
 
 
@@ -265,7 +266,7 @@ def request_password_reset(
         template_type="password_reset",
         metadata={"expires_in_minutes": 15},
     )
-    # El token solo viaja por correo: antes se regresaba aquí y cualquiera podía tomar una cuenta ajena.
+    # El token solo viaja por correo: en la respuesta permitiría tomar cuentas ajenas.
     return {"detail": "Si el correo está registrado, recibirá las instrucciones de recuperación."}
 
 

@@ -1,5 +1,6 @@
 // Rutas del contrato que se resuelven contra el backend real. Cada archivo cubre un grupo de EP.
 import { accountRoutes } from './account'
+import { adminRoutes } from './admin'
 import { authRoutes } from './auth'
 import { catalogRoutes } from './catalog'
 import { bget } from './http'
@@ -10,6 +11,7 @@ register(catalogRoutes)
 register(authRoutes)
 register(orderRoutes)
 register(accountRoutes)
+register(adminRoutes)
 register([{ method: 'get', path: '/feature-flags', handle: () => bget('/funciones') }])
 
 export { translate } from './router'

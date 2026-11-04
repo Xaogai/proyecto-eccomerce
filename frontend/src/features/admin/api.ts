@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
-import { api, get, send } from '@/api/client'
+import { api, get, send, sendForm, usesRealBackend } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
 import { toApiError } from '@/api/errors'
 import {
@@ -121,12 +121,7 @@ export function useUploadImage(id: string) {
       const form = new FormData()
       form.append('file', file)
       form.append('alt', alt)
-      try {
-        const res = await api.post(endpoints.adminProductImages(id), form)
-        return imageSchema.parse(res.data)
-      } catch (error) {
-        throw toApiError(error)
-      }
+      return sendForm(endpoints.adminProductImages(id), imageSchema, form)
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: adminKeys.product(id) }),
   })
@@ -256,7 +251,9 @@ export function useReport(period: string) {
 /** Descarga el CSV con el token de la sesión (un enlace normal no lleva el encabezado Authorization). */
 export async function downloadReportCsv(period: string) {
   try {
-    const res = await api.get(endpoints.adminReportsCsv, { params: { period }, responseType: 'blob' })
+    // El backend real llama "periodo" al parámetro.
+    const params = usesRealBackend ? { periodo: period } : { period }
+    const res = await api.get(endpoints.adminReportsCsv, { params, responseType: 'blob' })
     const url = URL.createObjectURL(res.data as Blob)
     const a = document.createElement('a')
     a.href = url

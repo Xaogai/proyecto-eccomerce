@@ -6,7 +6,7 @@ import threading
 import uuid
 from sqlalchemy.orm import Session
 
-from backend.shared.config import settings
+from backend.shared.configuracion import security_value
 from backend.shared.models import Inventario, ReservaInventario, Sucursal
 
 # Serializa las reservas dentro de un proceso; entre procesos/instancias la exclusión la da
@@ -189,7 +189,7 @@ class InventoryRepository:
                 cantidad=quantity,
                 estado="active",
                 creada_en=now,
-                expira_en=now + timedelta(minutes=settings.reservation_ttl_minutes),
+                expira_en=now + timedelta(minutes=security_value("minutos_reserva")),
                 idempotency_key=idempotency_key,
             )
             self.db.add(row)

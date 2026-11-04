@@ -1,6 +1,5 @@
-// Capa de traducción entre el contrato del frontend (docs/api/endpoints-propuestos.md) y el backend real.
-// Las pantallas y los datos simulados hablan el contrato; aquí cada ruta se convierte a la del backend
-// (nombres en español, pesos en lugar de centavos, otras rutas) y la respuesta vuelve con la forma del contrato.
+// Traduce el contrato del frontend (docs/api/endpoints-propuestos.md) a las rutas y nombres del backend real.
+// Las pantallas y los datos simulados siguen hablando el contrato.
 import { ApiError } from '../errors'
 
 export type Method = 'get' | 'post' | 'patch' | 'put' | 'delete'

@@ -28,7 +28,7 @@ export function variantLabel(atributos: Record<string, unknown>, fallback: strin
   return values.length ? values.map((v) => v.charAt(0).toUpperCase() + v.slice(1)).join(' · ') : fallback
 }
 
-// ---------- Datos de referencia con caché corta ----------
+// Categorías y sucursales con caché de 5 minutos
 
 const TTL_MS = 5 * 60_000
 const cache = new Map<string, { at: number; value: Promise<unknown> }>()

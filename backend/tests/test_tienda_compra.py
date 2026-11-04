@@ -29,7 +29,7 @@ def _cart_with(client: InProcessASGIClient, headers: dict[str, str], sku: str = 
     return str(res.json()["id"])
 
 
-# ---------- Sesión ----------
+# Sesión
 
 
 def test_registro_publico_siempre_crea_cliente(client: InProcessASGIClient, db_session: Session) -> None:
@@ -101,7 +101,7 @@ def test_perfil_del_staff_trae_su_sucursal(client: InProcessASGIClient) -> None:
     assert me["sucursal_nombre"] == "Sucursal Toluca Centro"
 
 
-# ---------- Carrito ----------
+# Carrito
 
 
 def test_carrito_ajeno_no_se_puede_leer_ni_modificar(client: InProcessASGIClient) -> None:
@@ -135,7 +135,7 @@ def test_carrito_de_invitado_pasa_a_la_cuenta(client: InProcessASGIClient) -> No
     assert {i["variante_sku"]: i["cantidad"] for i in otra_vez["items"]}["ROT-BOS-850W"] == 2, "no se suma dos veces"
 
 
-# ---------- Checkout y pasarela de pruebas ----------
+# Checkout y pasarela de pruebas
 
 
 def test_recoger_en_tienda_con_codigo_y_pasarela_de_pruebas(client: InProcessASGIClient, db_session: Session) -> None:

@@ -48,7 +48,7 @@ class CartRepository:
         """
         if carrito_id is not None:
             cart = self.db.query(Carrito).filter(Carrito.id == carrito_id).first()
-            # Solo el dueño usa su carrito (el invitado, uno sin dueño); antes bastaba conocer el id.
+            # Solo el dueño usa su carrito (el de invitado no tiene dueño); conocer el id no basta.
             if cart and cart.estado == "activo" and cart.cliente_id == cliente_id:
                 return cart
             carrito_id = None

@@ -145,7 +145,6 @@ class ProductRepository:
         return path
 
     def _rating(self, product_id: uuid.UUID) -> tuple[float, int]:
-        """Promedio y total de reseñas del producto."""
         avg, count = (
             self.db.query(func.avg(Resena.calificacion), func.count(Resena.id))
             .filter(Resena.producto_id == product_id)
@@ -438,7 +437,7 @@ class ProductRepository:
         self.db.refresh(variante)
         return variante, old_price
 
-    # ---------- Reseñas ----------
+    # Reseñas
 
     def list_reviews(
         self, product_id: uuid.UUID, page: int, page_size: int
@@ -459,7 +458,6 @@ class ProductRepository:
 
     @staticmethod
     def _serialize_review(review: Resena) -> ReviewResponse:
-        """Reseña pública: el autor va solo con nombre e inicial del apellido."""
         return ReviewResponse(
             id=review.id,
             autor=review.autor,
@@ -489,7 +487,7 @@ class ProductRepository:
     def create_review(
         self, product_id: uuid.UUID, user: Usuario, calificacion: int, titulo: str, comentario: str
     ) -> ReviewResponse:
-        """Guarda la reseña; queda como compra verificada si el usuario compró el producto."""
+        """Guarda la reseña con autor "Nombre I." y compra verificada si el usuario compró el producto."""
         parts = user.nombre.split()
         autor = f"{parts[0]} {parts[1][0]}." if len(parts) > 1 else user.nombre
         review = Resena(

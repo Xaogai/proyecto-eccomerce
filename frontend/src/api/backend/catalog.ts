@@ -245,7 +245,7 @@ async function compare(query: Record<string, string>) {
   )
 }
 
-// ---------- Sucursales (EP-08) ----------
+// Sucursales (EP-08)
 
 export function toStore(b: BStore): Store {
   return {

@@ -47,7 +47,7 @@ def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
     return UserRepository(db)
 
 
-# ---------- Direcciones ----------
+# Direcciones
 
 
 @router.patch("/addresses/{address_id}", response_model=AddressResponse)
@@ -70,14 +70,13 @@ def delete_my_address(
     current_user: Usuario = Depends(get_current_user),
     repo: UserRepository = Depends(get_user_repository),
 ) -> None:
-    """Borra una dirección propia."""
     direccion = repo.get_address(current_user.id, address_id)
     if direccion is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dirección no encontrada")
     repo.delete_address(direccion)
 
 
-# ---------- Lista de deseos ----------
+# Lista de deseos
 
 
 def _wishlist(db: Session, user_id: uuid.UUID) -> list[WishlistItemResponse]:
@@ -132,7 +131,7 @@ def remove_from_wishlist(
     return _wishlist(db, current_user.id)
 
 
-# ---------- Consentimientos y ARCO ----------
+# Consentimientos y ARCO
 
 
 @router.patch("/consentimientos", response_model=ConsentsResponse)

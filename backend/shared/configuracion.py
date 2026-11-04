@@ -4,13 +4,21 @@ import copy
 from typing import Any
 from sqlalchemy.orm import Session
 
+from backend.shared.config import settings
+from backend.shared.database import operational_session
 from backend.shared.models import Configuracion
 
 DEFAULTS: dict[str, dict[str, Any]] = {
-    # Funciones que el admin puede apagar sin desplegar: vista 360, calculadora, comparador, reseñas y fila de espera.
+    # Funciones que el admin puede apagar sin desplegar.
     "funciones": {"v360": True, "calc": True, "cmp": True, "rev": True, "queue": False},
     "envios": {"envio_gratis_desde": "1500.00", "dias_devolucion": 30},
-    "seguridad": {"intentos_maximos": 5, "minutos_bloqueo": 15, "minutos_sesion": 15},
+    # Los valores de arranque vienen de las variables de entorno; el admin puede ajustarlos después.
+    "seguridad": {
+        "intentos_maximos": settings.max_login_attempts,
+        "minutos_bloqueo": settings.lockout_minutes,
+        "minutos_sesion": settings.jwt_access_expires_min,
+        "minutos_reserva": settings.reservation_ttl_minutes,
+    },
 }
 
 
@@ -36,3 +44,9 @@ def set_section(db: Session, clave: str, cambios: dict[str, Any]) -> dict[str, A
         stored.valor = values
     db.commit()
     return values
+
+
+def security_value(clave: str) -> int:
+    """Valor vigente de seguridad (intentos, bloqueo, sesión o reserva) para el código sin sesión de petición."""
+    with operational_session() as session:
+        return int(get_section(session, "seguridad")[clave])

@@ -44,7 +44,6 @@ ZERO = Decimal("0.00")
 
 
 def money(value: Any) -> Decimal:
-    """Decimal con dos posiciones."""
     return Decimal(str(value)).quantize(Decimal("0.01"))
 
 

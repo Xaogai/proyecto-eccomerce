@@ -116,7 +116,7 @@ def test_baja_de_cuenta_pide_contrasena_y_sin_pedidos_en_curso(client: InProcess
     assert db_session.query(Usuario).filter(Usuario.email == ANA).first() is None, "datos anonimizados"
 
 
-# ---------- Devoluciones (multipart) ----------
+# Devoluciones (multipart)
 
 
 @pytest.fixture()

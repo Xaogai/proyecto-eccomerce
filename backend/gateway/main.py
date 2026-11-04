@@ -11,6 +11,10 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
+from backend.services.admin.app.catalog_router import media_router
+from backend.services.admin.app.catalog_router import router as admin_catalog_router
+from backend.services.admin.app.operations_router import router as admin_operations_router
+from backend.services.admin.app.users_router import router as admin_users_router
 from backend.services.cart.app.router import router as cart_router
 from backend.services.catalog.app.router import router as catalog_router
 from backend.services.checkout.app.returns import router as returns_router
@@ -59,6 +63,10 @@ app.add_middleware(
 )
 
 app.include_router(users_router)
+app.include_router(admin_catalog_router)
+app.include_router(admin_operations_router)
+app.include_router(admin_users_router)
+app.include_router(media_router)
 app.include_router(account_router)
 app.include_router(catalog_router)
 app.include_router(inventory_router)
@@ -167,6 +175,7 @@ def verify_data_quality(
 
 @app.post("/api/v1/admin/seed-synthetic", tags=["Administración y Auditoría"])
 def trigger_synthetic_seed(
+    _admin: Usuario = Depends(require_roles("admin")),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Ejecuta migraciones de Alembic y genera datos sintéticos de prueba (Sec. 20, AE-26)."""

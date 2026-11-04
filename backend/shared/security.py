@@ -12,6 +12,7 @@ import jwt
 from sqlalchemy.orm import Session
 
 from backend.shared.config import settings
+from backend.shared.configuracion import security_value
 from backend.shared.database import get_db, operational_session
 from backend.shared.models import BitacoraAuditoria, IntentoLoginFallido, TokenRevocado, Usuario
 
@@ -135,7 +136,7 @@ def create_access_token(user_id: str, email: str, role: str) -> str:
         "type": "access",
         "jti": str(uuid.uuid4()),
         "iat": int(now.timestamp()),
-        "exp": int((now + timedelta(minutes=settings.jwt_access_expires_min)).timestamp()),
+        "exp": int((now + timedelta(minutes=security_value("minutos_sesion"))).timestamp()),
     }
     return _encode_jwt(payload)
 
@@ -226,7 +227,7 @@ def revoke_token(token: str) -> None:
 
 def _recent_failed_attempts(session: Session, email: str) -> int:
     """Cuenta los intentos fallidos del correo dentro de la ventana de bloqueo."""
-    window_start = datetime.now(timezone.utc) - timedelta(minutes=settings.lockout_minutes)
+    window_start = datetime.now(timezone.utc) - timedelta(minutes=security_value("minutos_bloqueo"))
     return (
         session.query(IntentoLoginFallido)
         .filter(IntentoLoginFallido.email == email, IntentoLoginFallido.fecha > window_start)
@@ -238,14 +239,14 @@ def check_account_lockout(email: str) -> None:
     """Verifica si una cuenta está bloqueada temporalmente por intentos fallidos (Sec. 18.1)."""
     with operational_session() as session:
         attempts = _recent_failed_attempts(session, email)
-    if attempts >= settings.max_login_attempts:
+    if attempts >= security_value("intentos_maximos"):
         record_audit_event("account_locked", None, f"user:{email}", {"attempts": attempts})
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail={
                 "code": "account_locked",
                 "message": "Bloqueamos tu cuenta por seguridad tras varios intentos fallidos.",
-                "reintentar_en_s": settings.lockout_minutes * 60,
+                "reintentar_en_s": security_value("minutos_bloqueo") * 60,
             },
         )
 

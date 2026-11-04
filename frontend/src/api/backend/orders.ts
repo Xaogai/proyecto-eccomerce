@@ -71,7 +71,7 @@ function cartError(error: unknown): never {
 
 const store = (query: Record<string, string>) => ({ sucursal_id: query.store_id })
 
-// ---------- Pedidos ----------
+// Pedidos
 
 interface BOrder {
   id: string

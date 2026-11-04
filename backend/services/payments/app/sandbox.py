@@ -1,7 +1,6 @@
-"""Pasarela de pruebas hospedada por el backend: el cliente paga o rechaza y vuelve a la confirmación del pedido.
+"""Pasarela de pruebas del backend (`settings.pasarela_sandbox`): pagar o rechazar sin campos de tarjeta.
 
-Sustituye a la página de la pasarela real en desarrollo y pruebas (`settings.pasarela_sandbox`). El sitio nunca
-muestra campos de tarjeta; aquí tampoco: solo dos botones. El resultado se procesa igual que un webhook firmado.
+El resultado se procesa igual que un webhook firmado.
 """
 
 from decimal import Decimal
