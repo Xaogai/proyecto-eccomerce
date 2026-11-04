@@ -38,6 +38,7 @@ services:
       PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-stripe}
       PAYMENT_API_KEY: ${PAYMENT_API_KEY:-sandbox_key_default}
     ports: ["8000:8000"]
+    volumes: [media:/app/media]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -60,3 +61,4 @@ services:
 
 volumes:
   pgdata:
+  media:

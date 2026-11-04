@@ -12,7 +12,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY pyproject.toml ./
 COPY backend ./backend
 
-RUN useradd --create-home --shell /bin/bash appuser && \
+# /app/media: fotos de devoluciones e imágenes de producto (volumen "media" en docker-compose).
+RUN mkdir -p /app/media && \
+    useradd --create-home --shell /bin/bash appuser && \
     chown -R appuser:appuser /app
 
 USER appuser

@@ -1,5 +1,6 @@
 """Repositorio de acceso a datos para usuarios, roles y direcciones (Patrón Repositorio - Sec. 14.2)."""
 
+from typing import Any
 import uuid
 from sqlalchemy.orm import Session
 
@@ -7,6 +8,7 @@ from backend.shared.models import (
     Administrador,
     Cliente,
     Direccion,
+    ListaDeseos,
     StaffSucursal,
     Usuario,
 )
@@ -127,6 +129,10 @@ class UserRepository:
         anon_suffix = str(user.id)[:8]
         user.nombre = f"Usuario Cancelado {anon_suffix}"
         user.email = f"deleted_{anon_suffix}@anon.ferremarket.local"
+        user.telefono = None
+        user.acepta_marketing = False
+        user.acepta_personalizacion = False
+        self.db.query(ListaDeseos).filter(ListaDeseos.usuario_id == user.id).delete()
         self.db.query(Direccion).filter(Direccion.cliente_id == user.id).delete()
         self.db.commit()
 
@@ -140,43 +146,57 @@ class UserRepository:
             self.db.refresh(cliente)
         return cliente
 
-    def add_address(
-        self,
-        cliente_id: uuid.UUID,
-        calle: str,
-        ciudad: str,
-        codigo_postal: str,
-        es_predeterminada: bool = False,
-    ) -> Direccion:
+    def add_address(self, cliente_id: uuid.UUID, **fields: Any) -> Direccion:
         """
         Agrega una dirección postal asociada al cliente.
 
         Args:
             cliente_id: UUID del cliente.
-            calle: Calle y número.
-            ciudad: Ciudad o municipio.
-            codigo_postal: Código postal.
-            es_predeterminada: Si se marca como dirección predeterminada.
+            fields: Columnas de `direcciones` (calle, ciudad, codigo_postal, es_predeterminada, colonia…).
 
         Returns:
-            Direccion: Dirección creada.
+            Direccion: Dirección creada. La primera dirección del cliente queda como predeterminada.
         """
         self.ensure_cliente_profile(cliente_id)
+        es_predeterminada = bool(fields.pop("es_predeterminada", False)) or not self.list_addresses(cliente_id)
         if es_predeterminada:
-            self.db.query(Direccion).filter(Direccion.cliente_id == cliente_id).update(
-                {"es_predeterminada": False}
-            )
-        direccion = Direccion(
-            cliente_id=cliente_id,
-            calle=calle,
-            ciudad=ciudad,
-            codigo_postal=codigo_postal,
-            es_predeterminada=es_predeterminada,
-        )
+            self._clear_default(cliente_id)
+        direccion = Direccion(cliente_id=cliente_id, es_predeterminada=es_predeterminada, **fields)
         self.db.add(direccion)
         self.db.commit()
         self.db.refresh(direccion)
         return direccion
+
+    def _clear_default(self, cliente_id: uuid.UUID) -> None:
+        """Quita la marca de predeterminada a las direcciones del cliente."""
+        self.db.query(Direccion).filter(Direccion.cliente_id == cliente_id).update({"es_predeterminada": False})
+
+    def get_address(self, cliente_id: uuid.UUID, address_id: uuid.UUID) -> Direccion | None:
+        """Dirección del cliente (None si no existe o es de otra persona)."""
+        d = self.db.get(Direccion, address_id)
+        return d if d is not None and d.cliente_id == cliente_id else None
+
+    def update_address(self, direccion: Direccion, changes: dict[str, Any]) -> Direccion:
+        """Aplica los cambios enviados; marcarla como predeterminada desmarca las demás."""
+        if changes.pop("es_predeterminada", None):
+            self._clear_default(direccion.cliente_id)
+            direccion.es_predeterminada = True
+        for key, value in changes.items():
+            setattr(direccion, key, value)
+        self.db.commit()
+        self.db.refresh(direccion)
+        return direccion
+
+    def delete_address(self, direccion: Direccion) -> None:
+        """Borra la dirección; si era la predeterminada, pasa la marca a otra."""
+        cliente_id, era_principal = direccion.cliente_id, direccion.es_predeterminada
+        self.db.delete(direccion)
+        self.db.flush()
+        if era_principal:
+            otra = self.db.query(Direccion).filter(Direccion.cliente_id == cliente_id).first()
+            if otra is not None:
+                otra.es_predeterminada = True
+        self.db.commit()
 
     def list_addresses(self, cliente_id: uuid.UUID) -> list[Direccion]:
         """Lista todas las direcciones registradas de un cliente."""

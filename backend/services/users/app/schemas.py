@@ -91,6 +91,31 @@ class AddressCreateRequest(BaseModel):
     ciudad: str = Field(..., min_length=2, max_length=100)
     codigo_postal: str = Field(..., min_length=4, max_length=10)
     es_predeterminada: bool = False
+    alias: str | None = Field(default=None, max_length=50)
+    nombre_recibe: str | None = Field(default=None, max_length=150)
+    numero_exterior: str | None = Field(default=None, max_length=20)
+    numero_interior: str | None = Field(default=None, max_length=20)
+    colonia: str | None = Field(default=None, max_length=100)
+    entidad: str | None = Field(default=None, max_length=100)
+    telefono: str | None = Field(default=None, max_length=20)
+    referencias: str | None = Field(default=None, max_length=300)
+
+
+class AddressUpdateRequest(BaseModel):
+    """Cambios a una dirección guardada (solo los campos enviados)."""
+
+    calle: str | None = Field(default=None, min_length=3, max_length=200)
+    ciudad: str | None = Field(default=None, min_length=2, max_length=100)
+    codigo_postal: str | None = Field(default=None, min_length=4, max_length=10)
+    es_predeterminada: bool | None = None
+    alias: str | None = Field(default=None, max_length=50)
+    nombre_recibe: str | None = Field(default=None, max_length=150)
+    numero_exterior: str | None = Field(default=None, max_length=20)
+    numero_interior: str | None = Field(default=None, max_length=20)
+    colonia: str | None = Field(default=None, max_length=100)
+    entidad: str | None = Field(default=None, max_length=100)
+    telefono: str | None = Field(default=None, max_length=20)
+    referencias: str | None = Field(default=None, max_length=300)
 
 
 class AddressResponse(BaseModel):
@@ -104,6 +129,54 @@ class AddressResponse(BaseModel):
     ciudad: str
     codigo_postal: str
     es_predeterminada: bool
+    alias: str | None = None
+    nombre_recibe: str | None = None
+    numero_exterior: str | None = None
+    numero_interior: str | None = None
+    colonia: str | None = None
+    entidad: str | None = None
+    telefono: str | None = None
+    referencias: str | None = None
+
+
+class ConsentsUpdateRequest(BaseModel):
+    """Consentimientos opcionales del titular (LFPDPPP): publicidad y recomendaciones."""
+
+    acepta_marketing: bool | None = None
+    acepta_personalizacion: bool | None = None
+
+
+class ConsentsResponse(BaseModel):
+    """Consentimientos vigentes."""
+
+    acepta_marketing: bool
+    acepta_personalizacion: bool
+
+
+class ArcoRequest(BaseModel):
+    """Solicitud de derechos ARCO que atiende el responsable de datos."""
+
+    tipo: str = Field(..., pattern="^(acceso|rectificacion|cancelacion|oposicion)$")
+    detalle: str | None = Field(default=None, max_length=2000)
+
+
+class ArcoResponse(BaseModel):
+    """Folio y fecha límite de respuesta (20 días hábiles, LFPDPPP art. 32)."""
+
+    folio: str
+    fecha_limite: datetime
+
+
+class AccountDeleteRequest(BaseModel):
+    """Confirmación con contraseña para eliminar la cuenta."""
+
+    password: str
+
+
+class WishlistAddRequest(BaseModel):
+    """Producto que se guarda en la lista de deseos."""
+
+    variante_sku: str = Field(..., min_length=1, max_length=50)
 
 
 class UserUpdateRequest(BaseModel):
@@ -111,6 +184,7 @@ class UserUpdateRequest(BaseModel):
 
     nombre: str | None = Field(default=None, min_length=2, max_length=150)
     email: str | None = Field(default=None, max_length=150)
+    telefono: str | None = Field(default=None, max_length=20)
 
 
 class RoleChangeRequest(BaseModel):

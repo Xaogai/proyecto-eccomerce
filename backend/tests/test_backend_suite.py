@@ -181,7 +181,11 @@ def test_lfpdppp_privacy_notice_and_arco_rights(client: InProcessASGIClient) -> 
     assert rect_resp.json()["nombre"] == "Usuario ARCO Rectificado"
 
     # Derecho de Cancelación / Oposición
-    canc_resp = client.delete("/api/v1/users/me", headers=headers)
+    sin_contrasena = client.request("DELETE", "/api/v1/users/me", json_body={"password": "otra"}, headers=headers)
+    assert sin_contrasena.status_code == 400
+    canc_resp = client.request(
+        "DELETE", "/api/v1/users/me", json_body={"password": "PasswordARCO123!"}, headers=headers
+    )
     assert canc_resp.status_code == 200
 
 

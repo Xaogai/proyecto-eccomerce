@@ -334,6 +334,23 @@ def _ensure_product_details(db: Session) -> None:
             inv.pasillo = f"{12 + index % 9}-{chr(65 + index % 4)}"
     db.commit()
     _ensure_reviews(db)
+    _ensure_customer_details(db)
+
+
+def _ensure_customer_details(db: Session) -> None:
+    """Completa la dirección de muestra de Ana con colonia, número, estado y teléfono (idempotente)."""
+    ana = db.query(Usuario).filter(Usuario.email == "ana.torres.sintetica@ferremarket.local").first()
+    if ana is None:
+        return
+    for direccion in db.query(Direccion).filter(Direccion.cliente_id == ana.id, Direccion.colonia.is_(None)):
+        direccion.alias = "Casa"
+        direccion.nombre_recibe = "Ana Torres"
+        direccion.calle = "Av. Independencia"
+        direccion.numero_exterior = "100"
+        direccion.colonia = "Centro"
+        direccion.entidad = "Estado de México"
+        direccion.telefono = "7221234567"
+    db.commit()
 
 
 def _ensure_reviews(db: Session) -> None:

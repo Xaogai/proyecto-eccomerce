@@ -115,6 +115,17 @@ export async function send<T>(
   return check(schema, data)
 }
 
+/** POST multipart (fotos de devolución e imágenes de producto). */
+export async function sendForm<T>(url: string, schema: ZodType<T>, form: FormData): Promise<T> {
+  if (usesRealBackend) return check(schema, await translateCall('post', url, undefined, form))
+  try {
+    const { data } = await api.post(url, form)
+    return check(schema, data)
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
 /** Carga la capa de traducción solo cuando hace falta (no entra al paquete de los datos simulados). */
 async function translateCall(
   method: 'get' | 'post' | 'patch' | 'put' | 'delete',

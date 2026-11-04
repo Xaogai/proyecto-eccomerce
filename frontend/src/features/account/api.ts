@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
-import { api, get, send } from '@/api/client'
+import { get, send, sendForm } from '@/api/client'
 import { endpoints } from '@/api/endpoints'
-import { toApiError } from '@/api/errors'
 import {
   type Address,
   addressSchema,
@@ -58,12 +57,7 @@ export function useCreateReturn(orderId: string) {
       const form = new FormData()
       form.append('data', JSON.stringify(data))
       if (photo) form.append('photo', photo)
-      try {
-        const res = await api.post(endpoints.orderReturns(orderId), form)
-        return returnResultSchema.parse(res.data)
-      } catch (error) {
-        throw toApiError(error)
-      }
+      return sendForm(endpoints.orderReturns(orderId), returnResultSchema, form)
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
   })

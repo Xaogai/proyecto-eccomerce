@@ -22,3 +22,6 @@ test-results/
 *.db
 *.db-shm
 *.db-wal
+
+# Archivos que suben los usuarios
+media/

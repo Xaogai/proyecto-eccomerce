@@ -1,5 +1,6 @@
 """Controladores REST para Autenticación, Usuarios, Direcciones y Derechos ARCO (LFPDPPP)."""
 
+from datetime import datetime, timezone
 import uuid
 from typing import Any
 
@@ -8,6 +9,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from backend.services.users.app.schemas import (
+    AccountDeleteRequest,
     AddressCreateRequest,
     AddressResponse,
     PasswordResetConfirmRequest,
@@ -25,7 +27,7 @@ from backend.services.users.app.schemas import (
 from backend.services.users.app.user_repository import UserRepository
 from backend.shared.config import settings
 from backend.shared.database import get_db
-from backend.shared.models import Usuario
+from backend.shared.models import Pedido, Usuario
 from backend.shared.notifications import list_user_notifications, send_email_notification
 from backend.shared.security import (
     bearer_scheme,
@@ -359,23 +361,57 @@ def update_my_profile(
     payload: UserUpdateRequest,
     current_user: Usuario = Depends(get_current_user),
     repo: UserRepository = Depends(get_user_repository),
-) -> Usuario:
+) -> UserResponse:
     """Derecho de Rectificación (ARCO - LFPDPPP): Permite corregir datos del usuario."""
     updated = repo.update_user(current_user, nombre=payload.nombre, email=payload.email)
+    if payload.telefono is not None:
+        updated.telefono = payload.telefono.strip() or None
+        repo.db.commit()
     record_audit_event("arco_rectificacion", str(current_user.id), f"user:{current_user.id}")
-    return updated
+    return user_response(updated)
+
+
+ESTADOS_EN_CURSO = ("pendiente_pago", "confirmado", "en_preparacion", "listo_para_recoger", "enviado", "incidencia")
 
 
 @router.delete("/users/me")
 def cancel_my_account(
+    payload: AccountDeleteRequest,
     current_user: Usuario = Depends(get_current_user),
     repo: UserRepository = Depends(get_user_repository),
 ) -> dict[str, str]:
-    """Derecho de Cancelación y Oposición (ARCO - LFPDPPP): Anonimiza datos y elimina direcciones."""
+    """
+    Derecho de Cancelación y Oposición (ARCO - LFPDPPP): Anonimiza datos y elimina direcciones.
+
+    Pide la contraseña y no procede con pedidos en curso (hay que entregarlos o cancelarlos antes).
+    """
+    if not verify_password(payload.password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "wrong_password", "message": "La contraseña no es correcta."},
+        )
+    en_curso = (
+        repo.db.query(Pedido)
+        .filter(Pedido.cliente_id == current_user.id, Pedido.estado.in_(ESTADOS_EN_CURSO))
+        .order_by(Pedido.fecha.desc())
+        .all()
+    )
+    if en_curso:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "code": "active_orders",
+                "message": "Tienes pedidos en curso.",
+                "pedidos": [{"id": str(p.id), "folio": p.folio, "estado": p.estado} for p in en_curso],
+            },
+        )
     user_id_str = str(current_user.id)
     repo.anonymize_user(current_user)
     record_audit_event("arco_cancelacion", user_id_str, f"user:{user_id_str}")
-    return {"detail": "Sus datos personales han sido anonimizados y eliminados conforme a los derechos ARCO (LFPDPPP)"}
+    return {
+        "detail": "Sus datos personales han sido anonimizados y eliminados conforme a los derechos ARCO (LFPDPPP)",
+        "fecha_efectiva": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @router.post("/users/me/addresses", response_model=AddressResponse, status_code=status.HTTP_201_CREATED)
@@ -385,13 +421,7 @@ def add_my_address(
     repo: UserRepository = Depends(get_user_repository),
 ) -> Any:
     """Agrega una dirección de envío a la cuenta del cliente autenticado."""
-    return repo.add_address(
-        cliente_id=current_user.id,
-        calle=payload.calle,
-        ciudad=payload.ciudad,
-        codigo_postal=payload.codigo_postal,
-        es_predeterminada=payload.es_predeterminada,
-    )
+    return repo.add_address(cliente_id=current_user.id, **payload.model_dump())
 
 
 @router.get("/users/me/addresses", response_model=list[AddressResponse])

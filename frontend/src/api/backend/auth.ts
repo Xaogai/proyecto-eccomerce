@@ -140,7 +140,13 @@ export const authRoutes: Route[] = [
     handle: async ({ body }) => {
       const { current, password } = body as { current: string; password: string }
       await bsend('post', '/users/me/password', { password_actual: current, password_nueva: password }).catch(
-        (e: unknown) => renameFields(e, { password_actual: 'current', password_nueva: 'password' }),
+        (e: unknown) => {
+          const err = toApiError(e)
+          // Contraseña actual incorrecta: el formulario la marca en su campo.
+          if (err.code === 'wrong_password')
+            throw new ApiError(422, err.message, 'validation_error', { current: err.message })
+          return renameFields(err, { password_actual: 'current', password_nueva: 'password' })
+        },
       )
       return null
     },
