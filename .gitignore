@@ -17,3 +17,8 @@ test-results/
 .vscode/
 .idea/
 .DS_Store
+
+# Bases SQLite locales
+*.db
+*.db-shm
+*.db-wal
