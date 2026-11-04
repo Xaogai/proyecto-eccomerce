@@ -1,4 +1,4 @@
-// Formatos para es-MX. El dinero llega de la API en centavos (T-03 en docs/api/endpoints-propuestos.md).
+// Formatos para es-MX. El dinero llega de la API en centavos (tema T-03 del contrato de API).
 
 const moneda = new Intl.NumberFormat('es-MX', {
   style: 'currency',

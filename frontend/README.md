@@ -25,7 +25,7 @@ La primera vez, instala los navegadores de las pruebas end-to-end con `npx playw
 
 ## Datos simulados
 
-Con `npm run dev:mock`, MSW contesta las peticiones a `/api/v1` en el navegador. Los datos salen de los prototipos de `docs/diseno/prototipos/`.
+Con `npm run dev:mock`, MSW contesta las peticiones a `/api/v1` en el navegador. Los datos salen de los prototipos de diseño.
 
 En la esquina inferior izquierda hay un panel para cambiar de escenario: lento, sin resultados, error del servidor, sin conexión, fila de espera y pago rechazado. También se puede elegir con `?mock=error` en la URL.
 
@@ -47,7 +47,7 @@ En desarrollo, `/_ui` muestra todos los componentes base.
 
 `npm run dev` envía todo `/api` al gateway del backend (`http://localhost:8000`; otra dirección con `API_URL` en un `.env.local`).
 
-Las pantallas usan el contrato de `docs/api/endpoints-propuestos.md`. Con el backend real, cada llamada pasa por `src/api/backend/`, que la convierte a la ruta del backend (nombres en español, pesos en lugar de centavos) y regresa la respuesta con la forma del contrato. Con datos simulados y en las pruebas esa capa no se usa.
+Las pantallas usan el contrato de API (EP-01 a EP-53). Con el backend real, cada llamada pasa por `src/api/backend/`, que la convierte a la ruta del backend (nombres en español, pesos en lugar de centavos) y regresa la respuesta con la forma del contrato. Con datos simulados y en las pruebas esa capa no se usa.
 
 Las cuentas de prueba del backend están en el README de la raíz.
 
@@ -67,7 +67,4 @@ src/
 
 ## Documentación
 
-- Plan por fases: `docs/diseno/plan-frontend.md`
-- Diseño y pantallas: `docs/diseno/README.md`
-- Accesibilidad y responsive: `docs/diseno/checklist.md`
-- Contrato de API: `docs/api/endpoints-propuestos.md`
+El plan por fases, los prototipos de diseño, el checklist de accesibilidad, el contrato de API y el material de QA se guardan fuera de este repositorio.

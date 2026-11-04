@@ -1,5 +1,5 @@
 // Datos semilla. Los primeros registros de cada colección salen de los <script> de
-// docs/diseno/prototipos/*.dc.html para que las pantallas se vean como el diseño;
+// prototipos de diseño (*.dc.html) para que las pantallas se vean como el diseño;
 // faker completa el volumen (paginación, tablas). Semilla fija: siempre los mismos datos.
 import { fakerES_MX as faker } from '@faker-js/faker'
 import type { Category } from '@/api/schemas/catalog'

@@ -25,3 +25,6 @@ test-results/
 
 # Archivos que suben los usuarios
 media/
+
+# Documentación de diseño, contrato de API y QA: se guarda fuera del repositorio
+docs/

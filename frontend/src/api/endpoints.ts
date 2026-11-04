@@ -1,4 +1,4 @@
-// Rutas de /api/v1 en un solo lugar. El comentario es el ID del contrato (docs/api/endpoints-propuestos.md).
+// Rutas de /api/v1 en un solo lugar. El comentario es el ID del contrato de API (EP-xx).
 export const endpoints = {
   categories: '/categories', // EP-01
   products: '/products', // EP-02

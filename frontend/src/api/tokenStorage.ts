@@ -1,4 +1,4 @@
-// Único lugar que sabe dónde vive el refresh token (T-02 en docs/api/endpoints-propuestos.md).
+// Único lugar que sabe dónde vive el refresh token (tema T-02 del contrato de API).
 //
 // AHORA (datos simulados): sessionStorage (dura lo que la pestaña) o localStorage si la persona
 // marcó "Mantener mi sesión en este dispositivo".

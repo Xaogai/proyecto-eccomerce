@@ -1,4 +1,4 @@
-// Traduce el contrato del frontend (docs/api/endpoints-propuestos.md) a las rutas y nombres del backend real.
+// Traduce el contrato del frontend (EP-xx) a las rutas y nombres del backend real.
 // Las pantallas y los datos simulados siguen hablando el contrato.
 import { ApiError } from '../errors'
 

@@ -1,6 +1,6 @@
-/* Copia de docs/diseno/tokens.css. Si cambia el original, se vuelve a copiar; no editar aquí. */
+/* Tokens de diseño del frontend: los colores y tipografías salen de aquí. */
 /* Sistema Taller · tokens de diseño
-   Importar una vez en frontend/src/main.tsx:  import '../../docs/diseno/tokens.css'  (o copiar a src/styles/)
+   Se importa una vez en src/main.tsx.
    Fuentes: npm install @fontsource/barlow @fontsource/barlow-condensed
             import '@fontsource/barlow/400.css'; '@fontsource/barlow/500.css'; '@fontsource/barlow/600.css';
             import '@fontsource/barlow-condensed/600.css'; '@fontsource/barlow-condensed/700.css'; */

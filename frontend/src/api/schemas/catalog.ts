@@ -1,4 +1,4 @@
-// EP-01 a EP-07 de docs/api/endpoints-propuestos.md
+// EP-01 a EP-07 del contrato de API
 import { z } from 'zod'
 import { imageSchema, isoDate, money, page } from './common'
 

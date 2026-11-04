@@ -1,4 +1,4 @@
-// Fuente única de estados (tabla al final de docs/diseno/tokens.css).
+// Fuente única de estados (tabla al final de src/styles/tokens.css).
 // Las transiciones son la propuesta del frontend; en el admin manda `allowed_transitions` de la API (EP-42).
 
 export type Tone = 'ok' | 'aviso' | 'error' | 'info' | 'neutro'

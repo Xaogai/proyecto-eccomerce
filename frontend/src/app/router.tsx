@@ -16,7 +16,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage'
 import { RouteErrorPage } from '@/pages/RouteErrorPage'
 import { GuestOnly, RequireAuth } from './guards'
 
-// Mapa de rutas de docs/diseno/plan-frontend.md (sec. 2). Mi cuenta, acceso, herramientas,
+// Mapa de rutas del plan del frontend (sec. 2). Mi cuenta, acceso, herramientas,
 // admin y sucursal se cargan bajo demanda (lazy).
 
 const MOCKS =
