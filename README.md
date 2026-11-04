@@ -185,6 +185,21 @@ npm run preview    # Previsualizar la compilación
 npm run lint       # Análisis estático con Oxlint
 ```
 
+### Todo con Docker (como en producción)
+
+```bash
+docker compose up -d --build
+```
+
+Requiere `JWT_SECRET_KEY` en `.env`. Al arrancar, el backend aplica las migraciones y carga los datos sintéticos.
+
+| Servicio | URL |
+| -------- | --- |
+| Tienda (nginx con el build de producción) | http://localhost:5173 |
+| API Gateway y documentación | http://localhost:8000/docs |
+
+nginx manda `/api/` al backend, así que el frontend y la API comparten origen.
+
 ### Infraestructura
 
 | Servicio      | URL                                             |

@@ -22,7 +22,7 @@ jobs:
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -r backend/requirements.txt
 
       - name: Verify PEP 8 & McCabe Cyclomatic Complexity <= 10 (RQ-MANT-001)
         run: ruff check backend run_app.py

@@ -8,6 +8,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Docker para producción:
+  - El frontend se sirve con nginx: `/api/` va al backend y el resto de rutas a React Router.
+  - El backend tiene revisión de salud y el frontend espera a que esté listo.
+  - `JWT_SECRET_KEY` se toma de `.env` y el compose no arranca si falta.
+  - `.dockerignore` en la raíz y en el frontend, para que no se copien `node_modules`, `.venv`, `.env` ni las bases locales a las imágenes.
 - Auditoría contra el Documento de Calidad:
   - CI del frontend en GitHub Actions (sec. 15.1): linter, formato, pruebas con cobertura, build con presupuesto, `npm audit` y end-to-end en 5 navegadores.
   - Cobertura con `npm run coverage` y mínimo de 80% en sesión y JWT, carrito, checkout y utilidades (sec. 10.2).
@@ -83,6 +88,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Tokens de diseño estandarizados: cada color de los prototipos tiene nombre por uso, se ajustó el contraste de los estados deshabilitado y borde oscuro, y se fijó un tono por estado de pedido.
 
 ### Corregido
+
+- La imagen del backend y el CI instalan las dependencias con `backend/requirements.txt`; `pip install -e .` fallaba porque `pyproject.toml` no lista dependencias y encuentra `backend` y `frontend` como paquetes.
 
 - Vite actualizado a 8.3.5 por 2 vulnerabilidades altas (solo en desarrollo).
 - Las pruebas con espera ya no fallan cuando la cobertura las hace más lentas.
