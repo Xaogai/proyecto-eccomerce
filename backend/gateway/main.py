@@ -19,6 +19,7 @@ from backend.services.cart.app.router import router as cart_router
 from backend.services.catalog.app.router import router as catalog_router
 from backend.services.checkout.app.returns import router as returns_router
 from backend.services.checkout.app.router import router as checkout_router
+from backend.services.inventory.app.branch_router import router as branch_router
 from backend.services.inventory.app.router import router as inventory_router
 from backend.services.payments.app.router import router as payments_router
 from backend.services.payments.app.sandbox import router as payments_sandbox_router
@@ -70,6 +71,7 @@ app.include_router(media_router)
 app.include_router(account_router)
 app.include_router(catalog_router)
 app.include_router(inventory_router)
+app.include_router(branch_router)
 app.include_router(cart_router)
 app.include_router(checkout_router)
 app.include_router(returns_router)

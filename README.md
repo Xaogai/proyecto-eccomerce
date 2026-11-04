@@ -200,6 +200,34 @@ Requiere `JWT_SECRET_KEY` en `.env`. Al arrancar, el backend aplica las migracio
 
 nginx manda `/api/` al backend, así que el frontend y la API comparten origen.
 
+### Sin Docker (desarrollo)
+
+```bash
+# Terminal 1: backend en http://localhost:8000 (con SQLite si no tienes PostgreSQL)
+DATABASE_URL=sqlite:///./ferremarket.db uvicorn backend.gateway.main:app --port 8000
+
+# Terminal 2: frontend en http://localhost:5173 contra ese backend
+cd frontend
+npm run dev
+```
+
+`npm run dev:mock` sigue funcionando sin backend, con los datos simulados.
+
+### Probar la tienda con el backend
+
+Cuentas de prueba (contraseña `Sintetico2026!`):
+
+| Correo | Rol |
+| ------ | --- |
+| `ana.torres.sintetica@ferremarket.local` | Cliente |
+| `staff.toluca.sintetico@ferremarket.local` | Staff de Sucursal Toluca Centro |
+| `admin.sintetico@ferremarket.local` | Administrador |
+
+- **Pago:** el checkout lleva a la pasarela de pruebas del backend (`/api/v1/pagos/sandbox/…`), con un botón para pagar y otro para simular un pago rechazado. En producción se apaga con `PASARELA_SANDBOX=false`.
+- **Correos:** sin `SMTP_HOST`, cada correo (bienvenida, recuperar contraseña, pedido listo) se imprime en la consola del backend con su enlace.
+- **Comprar** pide iniciar sesión: el backend no acepta compras como invitado. El carrito del invitado pasa a la cuenta al entrar.
+- **Recoger en tienda:** el código de 4 dígitos llega en la confirmación del pedido; el staff lo usa en Sucursal → Entregar pedido.
+
 ### Infraestructura
 
 | Servicio      | URL                                             |

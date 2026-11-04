@@ -172,7 +172,7 @@ export function toOrder(o: BOrder, now = Date.now()): Order {
         },
     timeline,
     pickup_code: pickup ? (o.codigo_recoleccion ?? undefined) : undefined,
-    payment_label: o.metodo_pago ? `Pago con ${o.metodo_pago}` : undefined,
+    payment_label: o.metodo_pago ?? undefined,
     return_deadline: returnDeadline(o, now),
     returns: o.devoluciones.map((d) => ({ folio: d.folio, status: d.estado, created_at: d.fecha })),
   }

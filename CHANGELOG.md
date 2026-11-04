@@ -8,6 +8,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Integración del frontend con el backend real (EP-01 a EP-53):
+  - Capa de traducción en `frontend/src/api/backend/`: las pantallas siguen usando el contrato y los datos simulados no cambian.
+  - Backend: catálogo con facetas y stock por sucursal, reseñas, carrito con stock y unión del de invitado, checkout con envío por código postal, pasarela de pruebas, pedidos con historial, devoluciones con foto, Mi cuenta completa, panel de administración y panel de sucursal.
+  - Migración 0003 con imágenes, reseñas, lista de deseos, historial de pedidos, devoluciones y configuración.
+  - Configuración de seguridad (intentos, bloqueo, sesión y reserva) editable por el admin y aplicada al momento.
+  - 50 pruebas nuevas del backend (64 en total, 94% de cobertura) y 24 de la traducción.
 - Docker para producción:
   - El frontend se sirve con nginx: `/api/` va al backend y el resto de rutas a React Router.
   - El backend tiene revisión de salud y el frontend espera a que esté listo.
@@ -89,6 +95,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Corregido
 
+- Seguridad del backend:
+  - El registro público ya no acepta `tipo_usuario: admin` ni `staff`.
+  - El token para restablecer la contraseña ya no se regresa en la respuesta; solo viaja por correo.
+  - Un carrito ya no se puede leer, modificar ni pagar con solo conocer su id.
+  - El webhook de pago exige firma, y solo el admin puede firmar en el modo de pruebas.
+  - `POST /payments` solo acepta pedidos propios y por su monto.
+  - `POST /admin/seed-synthetic` pide sesión de admin.
+  - La baja de cuenta pide la contraseña y no procede con pedidos en curso.
+- El checkout cobra el envío y lo calcula por código postal (antes eran $99 fijos y no se cobraban).
+- El total del listado contaba solo la página y el filtro por atributo se aplicaba después de paginar.
 - La imagen del backend y el CI instalan las dependencias con `backend/requirements.txt`; `pip install -e .` fallaba porque `pyproject.toml` no lista dependencias y encuentra `backend` y `frontend` como paquetes.
 
 - Vite actualizado a 8.3.5 por 2 vulnerabilidades altas (solo en desarrollo).

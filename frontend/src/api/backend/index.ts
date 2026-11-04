@@ -2,6 +2,7 @@
 import { accountRoutes } from './account'
 import { adminRoutes } from './admin'
 import { authRoutes } from './auth'
+import { branchRoutes } from './branch'
 import { catalogRoutes } from './catalog'
 import { bget } from './http'
 import { orderRoutes } from './orders'
@@ -12,6 +13,7 @@ register(authRoutes)
 register(orderRoutes)
 register(accountRoutes)
 register(adminRoutes)
+register(branchRoutes)
 register([{ method: 'get', path: '/feature-flags', handle: () => bget('/funciones') }])
 
 export { translate } from './router'

@@ -45,7 +45,11 @@ En desarrollo, `/_ui` muestra todos los componentes base.
 
 ## Backend real
 
-`npm run dev` envía cada prefijo de `/api/v1` a su microservicio. Las URL se configuran en un `.env.local`, por ejemplo `API_CATALOG_URL=http://localhost:8001`; los nombres están en `vite.config.ts`.
+`npm run dev` envía todo `/api` al gateway del backend (`http://localhost:8000`; otra dirección con `API_URL` en un `.env.local`).
+
+Las pantallas usan el contrato de `docs/api/endpoints-propuestos.md`. Con el backend real, cada llamada pasa por `src/api/backend/`, que la convierte a la ruta del backend (nombres en español, pesos en lugar de centavos) y regresa la respuesta con la forma del contrato. Con datos simulados y en las pruebas esa capa no se usa.
+
+Las cuentas de prueba del backend están en el README de la raíz.
 
 ## Estructura
 
