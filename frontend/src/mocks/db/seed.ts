@@ -224,6 +224,8 @@ const toluca = (n: number, others = 6): Record<string, number> => ({
 })
 
 const iso = (d: string) => new Date(d).toISOString()
+/** Pedido 10311: entregado hace 10 días, para que siempre esté dentro de los 30 días para devolver. */
+const ENTREGADO_RECIENTE = new Date(Date.now() - 10 * 86_400_000).toISOString()
 
 /** Los 6 taladros del prototipo Escritorio-1-Listado y sus variantes de Escritorio-2-Ficha. */
 const prototypeProducts: DbProduct[] = [
@@ -722,7 +724,7 @@ export const orders: DbOrder[] = [
     guest_token: null,
     status: 'entregado',
     payment_status: 'pagado',
-    created_at: iso('2026-10-02T10:00:00'),
+    created_at: ENTREGADO_RECIENTE,
     contact: contactoAna,
     items: [
       {
@@ -754,7 +756,7 @@ export const orders: DbOrder[] = [
     fulfillment: { type: 'pickup', store_id: 'metepec' },
     timeline: timeline(
       ['creado', 'pendiente_pago', 'pagado', 'en_preparacion', 'listo_para_recoger', 'entregado'],
-      '2026-10-02T10:00:00',
+      ENTREGADO_RECIENTE,
     ),
   },
   {
