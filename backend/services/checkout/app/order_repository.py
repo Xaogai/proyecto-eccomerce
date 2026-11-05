@@ -44,6 +44,7 @@ ZERO = Decimal("0.00")
 
 
 def money(value: Any) -> Decimal:
+    """Monto redondeado a centavos (el texto evita errores de float al venir de Numeric o de un cálculo)."""
     return Decimal(str(value)).quantize(Decimal("0.01"))
 
 

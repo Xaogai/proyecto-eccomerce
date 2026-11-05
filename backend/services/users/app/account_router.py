@@ -70,6 +70,7 @@ def delete_my_address(
     current_user: Usuario = Depends(get_current_user),
     repo: UserRepository = Depends(get_user_repository),
 ) -> None:
+    """Borra una dirección propia; si era la principal, la marca pasa a otra. 404 si es de otra persona."""
     direccion = repo.get_address(current_user.id, address_id)
     if direccion is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dirección no encontrada")
