@@ -33,10 +33,10 @@ export function toUser(u: BUser): User {
   }
 }
 
+// El refresh token no se pasa a la app: el navegador lo guarda en la cookie HttpOnly que pone el backend.
 export const toRefreshResponse = (t: BTokens) => ({
   access_token: t.access_token,
   expires_in: t.expires_in_minutes * 60,
-  refresh_token: t.refresh_token,
 })
 
 /** Errores del backend con los nombres del contrato (attempts_left, retry_after_s). */
@@ -62,8 +62,12 @@ async function session(tokens: BTokens): Promise<LoginResponse> {
   return { ...toRefreshResponse(tokens), user: toUser(me) }
 }
 
-async function login(body: { email: string; password: string }): Promise<LoginResponse> {
-  const tokens = await bsend<BTokens>('post', '/auth/login', body).catch(renameErrorData)
+async function login(body: { email: string; password: string; remember?: boolean }): Promise<LoginResponse> {
+  const tokens = await bsend<BTokens>('post', '/auth/login', {
+    email: body.email,
+    password: body.password,
+    recordar: body.remember ?? false,
+  }).catch(renameErrorData)
   return session(tokens)
 }
 

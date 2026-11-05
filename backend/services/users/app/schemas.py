@@ -41,12 +41,13 @@ class UserLoginRequest(BaseModel):
 
     email: str
     password: str
+    recordar: bool = Field(default=False, description="Mantiene la cookie de sesión al cerrar el navegador")
 
 
 class TokenRefreshRequest(BaseModel):
-    """Solicitud de renovación de access token mediante refresh token."""
+    """Solicitud de renovación de access token; sin cuerpo se usa la cookie HttpOnly."""
 
-    refresh_token: str
+    refresh_token: str | None = None
 
 
 class LogoutRequest(BaseModel):

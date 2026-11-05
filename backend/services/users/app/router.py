@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -148,20 +148,41 @@ def register_user(
     return user_response(user)
 
 
+REFRESH_COOKIE = "refresh_token"
+
+
+def set_refresh_cookie(response: Response, token: str, persistent: bool) -> None:
+    """Refresh token en cookie HttpOnly para que el JavaScript de la página no pueda leerlo (Sec. 18.1)."""
+    response.set_cookie(
+        REFRESH_COOKIE,
+        token,
+        max_age=settings.jwt_refresh_expires_days * 86400 if persistent else None,
+        httponly=True,
+        secure=settings.cookie_secure,
+        samesite="strict",
+        path="/api/v1/auth",
+    )
+
+
 @router.post("/auth/login", response_model=TokenResponse)
 def login_user(
     payload: UserLoginRequest,
+    response: Response,
     repo: UserRepository = Depends(get_user_repository),
 ) -> TokenResponse:
     """
     Autentica al usuario y emite tokens JWT access y refresh (Sec. 13.1, Sec. 18.1).
 
     Args:
-        payload: Correo y contraseña.
+        payload: Correo, contraseña y si se mantiene la sesión al cerrar el navegador.
+        response: Respuesta donde se pone la cookie HttpOnly con el refresh token.
         repo: Repositorio de usuarios.
 
     Returns:
         TokenResponse: Par de tokens access y refresh.
+
+    Raises:
+        HTTPException: 401 con los intentos restantes, o 429 si la cuenta está bloqueada.
     """
     normalized_email = payload.email.strip().lower()
     check_account_lockout(normalized_email)
@@ -178,8 +199,9 @@ def login_user(
         )
     clear_failed_logins(normalized_email)
     access_token = create_access_token(str(user.id), user.email, user.tipo_usuario)
-    refresh_token = create_refresh_token(str(user.id), user.email, user.tipo_usuario)
+    refresh_token = create_refresh_token(str(user.id), user.email, user.tipo_usuario, payload.recordar)
     record_audit_event("user_login", str(user.id), f"user:{user.id}", {"role": user.tipo_usuario})
+    set_refresh_cookie(response, refresh_token, payload.recordar)
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -189,28 +211,40 @@ def login_user(
 
 @router.post("/auth/refresh", response_model=TokenResponse)
 def refresh_access_token(
-    payload: TokenRefreshRequest,
+    response: Response,
+    payload: TokenRefreshRequest | None = None,
+    refresh_cookie: str | None = Cookie(default=None, alias=REFRESH_COOKIE),
     repo: UserRepository = Depends(get_user_repository),
 ) -> TokenResponse:
     """
     Renueva el access token y rota el refresh token (invalidando el anterior - Sec. 18.1).
 
     Args:
-        payload: Refresh token vigente.
+        response: Respuesta donde se pone la cookie con el refresh token nuevo.
+        payload: Refresh token en el cuerpo (clientes sin cookie).
+        refresh_cookie: Refresh token de la cookie HttpOnly (el navegador).
         repo: Repositorio de usuarios.
 
     Returns:
         TokenResponse: Nuevos tokens access y refresh.
+
+    Raises:
+        HTTPException: 401 si no hay token, está vencido o ya se usó.
     """
-    claims = decode_token(payload.refresh_token, expected_type="refresh")
-    revoke_token(payload.refresh_token)
+    token = (payload.refresh_token if payload else None) or refresh_cookie
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sesión no iniciada")
+    claims = decode_token(token, expected_type="refresh")
+    revoke_token(token)
     user_id = uuid.UUID(str(claims["sub"]))
     user = repo.get_by_id(user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado")
 
     new_access = create_access_token(str(user.id), user.email, user.tipo_usuario)
-    new_refresh = create_refresh_token(str(user.id), user.email, user.tipo_usuario)
+    recordar = bool(claims.get("recordar"))
+    new_refresh = create_refresh_token(str(user.id), user.email, user.tipo_usuario, recordar)
+    set_refresh_cookie(response, new_refresh, persistent=recordar)
     return TokenResponse(
         access_token=new_access,
         refresh_token=new_refresh,
@@ -220,13 +254,18 @@ def refresh_access_token(
 
 @router.post("/auth/logout")
 def logout_user(
+    response: Response,
     payload: LogoutRequest | None = None,
+    refresh_cookie: str | None = Cookie(default=None, alias=REFRESH_COOKIE),
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> dict[str, str]:
     """
     Invalida el token actual en el cierre de sesión (Sec. 18.1, AE-22).
 
     Args:
+        response: Respuesta donde se borra la cookie del refresh token.
+        payload: Refresh token en el cuerpo (clientes sin cookie).
+        refresh_cookie: Refresh token de la cookie HttpOnly.
         credentials: Bearer token actual.
 
     Returns:
@@ -235,11 +274,12 @@ def logout_user(
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No autenticado")
     revoke_token(credentials.credentials)
-    if payload is not None and payload.refresh_token:
+    for token in {payload.refresh_token if payload else None, refresh_cookie} - {None}:
         try:
-            revoke_token(payload.refresh_token)
+            revoke_token(str(token))
         except HTTPException:
             pass  # un refresh token ya inválido no impide cerrar sesión
+    response.delete_cookie(REFRESH_COOKIE, path="/api/v1/auth")
     return {"detail": "Sesión cerrada y token revocado exitosamente"}
 
 

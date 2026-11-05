@@ -257,3 +257,31 @@ def test_pasarela_de_pruebas_apagada_en_produccion(client: InProcessASGIClient) 
         assert client.get("/api/v1/pagos/sandbox/cualquiera").status_code == 404
     finally:
         setattr(settings, "pasarela_sandbox", True)
+
+
+def test_refresh_token_en_cookie_httponly(db_session: Session) -> None:
+    from fastapi.testclient import TestClient
+
+    from backend.gateway.main import app
+    from backend.shared.database import get_db
+
+    app.dependency_overrides[get_db] = lambda: db_session
+    try:
+        with TestClient(app) as http:
+            login = http.post("/api/v1/auth/login", json={"email": ANA, "password": PASSWORD, "recordar": True})
+            cookie = login.headers["set-cookie"]
+            assert "HttpOnly" in cookie and "SameSite=strict" in cookie and "Path=/api/v1/auth" in cookie
+            assert "Max-Age" in cookie, "con 'Mantener mi sesión' la cookie sobrevive al cerrar el navegador"
+
+            renovado = http.post("/api/v1/auth/refresh")
+            assert renovado.status_code == 200, "renueva solo con la cookie, sin cuerpo"
+            assert "Max-Age" in renovado.headers["set-cookie"], "la rotación conserva 'recordar'"
+
+            headers = {"Authorization": f"Bearer {renovado.json()['access_token']}"}
+            assert http.post("/api/v1/auth/logout", headers=headers).status_code == 200
+            assert http.post("/api/v1/auth/refresh").status_code == 401, "el logout borra e invalida la cookie"
+
+            sin_recordar = http.post("/api/v1/auth/login", json={"email": ANA, "password": PASSWORD})
+            assert "Max-Age" not in sin_recordar.headers["set-cookie"], "cookie solo de esta visita"
+    finally:
+        app.dependency_overrides.clear()

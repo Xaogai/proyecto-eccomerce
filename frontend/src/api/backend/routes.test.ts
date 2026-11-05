@@ -276,6 +276,8 @@ describe('sesión', () => {
       await translate('post', '/auth/login', undefined, { email: 'a', password: 'b' }),
     )
     expect(res.expires_in).toBe(900)
+    expect(res.refresh_token).toBeUndefined()
+    expect(calls[0].body).toEqual({ email: 'a', password: 'b', recordar: false })
     expect(lastCall().headers).toEqual({ Authorization: 'Bearer a' })
 
     replies.unshift([

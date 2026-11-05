@@ -71,7 +71,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       login: async (email, password, remember) =>
-        startSession(await send('post', endpoints.login, loginResponseSchema, { email, password }), remember),
+        startSession(
+          await send('post', endpoints.login, loginResponseSchema, { email, password, remember }),
+          remember,
+        ),
       register: async (input: RegisterInput) =>
         startSession(await send('post', endpoints.register, loginResponseSchema, input)),
       logout: async () => {

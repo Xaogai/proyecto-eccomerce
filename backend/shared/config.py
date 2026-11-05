@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
     # Pasarela de pruebas servida por el backend (/api/v1/pagos/sandbox). En producción va en False.
     pasarela_sandbox: bool = True
+    # Cookie del refresh token solo por HTTPS; en producción va en True.
+    cookie_secure: bool = False
     # Fotos de devoluciones e imágenes que suben los usuarios (volumen en Docker).
     media_dir: str = str(ROOT_DIR / "media")
 

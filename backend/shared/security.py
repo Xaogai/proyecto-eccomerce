@@ -141,7 +141,7 @@ def create_access_token(user_id: str, email: str, role: str) -> str:
     return _encode_jwt(payload)
 
 
-def create_refresh_token(user_id: str, email: str, role: str) -> str:
+def create_refresh_token(user_id: str, email: str, role: str, recordar: bool = False) -> str:
     """
     Crea un refresh token JWT de larga duración para rotación de sesión (Sec. 18.1).
 
@@ -149,6 +149,7 @@ def create_refresh_token(user_id: str, email: str, role: str) -> str:
         user_id: UUID del usuario en formato string.
         email: Correo electrónico del usuario.
         role: Rol del usuario ('cliente', 'admin', 'staff').
+        recordar: Si la cookie sobrevive al cerrar el navegador; cada rotación lo conserva.
 
     Returns:
         str: Refresh token JWT firmado.
@@ -158,6 +159,7 @@ def create_refresh_token(user_id: str, email: str, role: str) -> str:
         "sub": user_id,
         "email": email,
         "role": role,
+        "recordar": recordar,
         "type": "refresh",
         "jti": str(uuid.uuid4()),
         "iat": int(now.timestamp()),

@@ -7,6 +7,8 @@ export default defineConfig((env) =>
       environment: 'jsdom',
       globals: true,
       setupFiles: ['./src/test/setupTests.ts'],
+      // Las pruebas de páginas renderizan la app completa; con la suite en paralelo pasan de 5 s en equipos lentos.
+      testTimeout: 15_000,
       include: ['src/**/*.test.{ts,tsx}'],
       css: { modules: { classNameStrategy: 'non-scoped' } },
       // npm run coverage. Mínimo 80% en los módulos críticos (sec. 10.2 del Documento de Calidad):

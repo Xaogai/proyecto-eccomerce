@@ -8,7 +8,7 @@ from typing import Any, Callable, get_args
 import uuid
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.params import Body, Depends as DependsParam, Header as HeaderParam, Path as PathParam, Query as QueryParam
+from fastapi.params import Body, Cookie as CookieParam, Depends as DependsParam, Header as HeaderParam, Path as PathParam, Query as QueryParam
 from fastapi.routing import APIRoute
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ValidationError
@@ -149,6 +149,15 @@ class InProcessASGIClient:
                 return hv
         return default_val
 
+    @staticmethod
+    def _response_or_cookie(name: str, default: Any, headers: dict[str, str]) -> Any:
+        """`Response` vacía para los endpoints que ponen cookies, o el valor de una cookie del encabezado."""
+        if not isinstance(default, CookieParam):
+            return Response()
+        raw_cookies = next((v for k, v in headers.items() if k.lower() == "cookie"), "")
+        cookies = dict(part.strip().split("=", 1) for part in raw_cookies.split(";") if "=" in part)
+        return cookies.get(default.alias or name, default.default)
+
     def _resolve_param(
         self,
         name: str,
@@ -169,6 +178,8 @@ class InProcessASGIClient:
             )
         if annotation is Request or name == "request":
             return _DummyRequest(raw_body=raw_body, headers=headers)
+        if annotation is Response or isinstance(default, CookieParam):
+            return self._response_or_cookie(name, default, headers)
         if isinstance(annotation, type) and issubclass(annotation, BaseModel):
             return annotation.model_validate(body_dict or {})
         models = [a for a in get_args(annotation) if isinstance(a, type) and issubclass(a, BaseModel)]
