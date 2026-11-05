@@ -13,7 +13,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
   - Backend: catálogo con facetas y stock por sucursal, reseñas, carrito con stock y unión del de invitado, checkout con envío por código postal, pasarela de pruebas, pedidos con historial, devoluciones con foto, Mi cuenta completa, panel de administración y panel de sucursal.
   - Migración 0003 con imágenes, reseñas, lista de deseos, historial de pedidos, devoluciones y configuración.
   - Configuración de seguridad (intentos, bloqueo, sesión y reserva) editable por el admin y aplicada al momento.
-  - 50 pruebas nuevas del backend (64 en total, 94% de cobertura) y 24 de la traducción.
+  - 51 pruebas nuevas del backend (65 en total, 94% de cobertura) y 36 de la traducción, incluida cada una de las 50 rutas contra un backend falso.
+- Refresh token en cookie HttpOnly, SameSite=Strict y solo en `/api/v1/auth` (sec. 18.1); con el backend real el JavaScript de la página ya no puede leerlo. `COOKIE_SECURE=true` en producción.
+
+### Quitado
+
+- `docs/` sale del repositorio (plan, prototipos, checklist, contrato de API y QA); la documentación se guarda aparte.
 - Docker para producción:
   - El frontend se sirve con nginx: `/api/` va al backend y el resto de rutas a React Router.
   - El backend tiene revisión de salud y el frontend espera a que esté listo.
@@ -105,6 +110,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
   - La baja de cuenta pide la contraseña y no procede con pedidos en curso.
 - El checkout cobra el envío y lo calcula por código postal (antes eran $99 fijos y no se cobraban).
 - El total del listado contaba solo la página y el filtro por atributo se aplicaba después de paginar.
+- El pedido de prueba 10311 tenía fecha fija y su plazo para devolver venció el 1 nov; 4 pruebas e2e fallaban.
 - La imagen del backend y el CI instalan las dependencias con `backend/requirements.txt`; `pip install -e .` fallaba porque `pyproject.toml` no lista dependencias y encuentra `backend` y `frontend` como paquetes.
 
 - Vite actualizado a 8.3.5 por 2 vulnerabilidades altas (solo en desarrollo).
