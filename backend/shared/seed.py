@@ -1,11 +1,13 @@
 """Generador de datos sintéticos para ambientes de Desarrollo, Pruebas y Staging (Regla de Gobierno Sec. 20, AE-26)."""
 
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 from sqlalchemy.orm import Session
 
 from backend.shared.models import (
     Administrador,
+    BitacoraAuditoria,
     Categoria,
     Cliente,
     Direccion,
@@ -249,15 +251,109 @@ def _ensure_extended_catalog(db: Session, suc_toluca: Sucursal, suc_metepec: Suc
     db.commit()
 
 
+def _ensure_audit_samples(db: Session, client_user: Usuario, admin_user: Usuario, staff_user: Usuario) -> None:
+    """
+    Garantiza de forma idempotente las muestras exigidas por el Plan de Auditoría PA-ECOM-001 (Sec. 5.3):
+    - 30 pedidos confirmados con `item_pedido` (precio congelado histórico), `pagos` (sin PAN/CVV) y `envios` (AE-25).
+    - 25 registros de bitácora por cada operación sensible (`payment`, `price_change`, `stock_change`, `role_change`,
+      más `login_failed`) en `bitacora_auditoria` (AE-39 y Parte B).
+    """
+    sample_skus = [
+        ("TAL-20V-ROJ", Decimal("2499.00")),
+        ("TAL-20V-AMA", Decimal("2799.00")),
+        ("ESM-DEW-900W", Decimal("1699.00")),
+        ("ROT-BOS-850W", Decimal("3299.00")),
+        ("AUT-URR-120P", Decimal("2150.00")),
+        ("IMP-CMX-BL-5A", Decimal("1580.00")),
+    ]
+    available_skus = [
+        (sku, price)
+        for sku, price in sample_skus
+        if db.query(Variante).filter(Variante.sku == sku).first() is not None
+    ] or [("TAL-20V-ROJ", Decimal("2499.00"))]
+
+    for idx in range(2, 31):
+        folio = f"TSR-2026-SINT-{idx:03d}"
+        if db.query(Pedido).filter(Pedido.folio == folio).first() is not None:
+            continue
+        sku_code, frozen_price = available_skus[idx % len(available_skus)]
+        qty = (idx % 3) + 1
+        subtotal = (frozen_price * Decimal(qty)).quantize(Decimal("0.01"))
+        pedido = Pedido(
+            cliente_id=client_user.id,
+            folio=folio,
+            estado="confirmado",
+            total=subtotal,
+        )
+        db.add(pedido)
+        db.flush()
+        db.add(
+            ItemPedido(
+                pedido_id=pedido.id,
+                variante_sku=sku_code,
+                cantidad=qty,
+                precio_unitario_venta=frozen_price,
+                subtotal=subtotal,
+            )
+        )
+        db.add(
+            Pago(
+                pedido_id=pedido.id,
+                monto=subtotal,
+                metodo="tarjeta",
+                estado="aprobado",
+                referencia_pasarela=f"pi_stripe_sintetico_{idx:03d}",
+            )
+        )
+        db.add(
+            Envio(
+                pedido_id=pedido.id,
+                tipo="domicilio" if idx % 2 == 0 else "recoleccion_tienda",
+                costo=Decimal("99.00") if idx % 2 == 0 else Decimal("0.00"),
+                numero_guia=f"GUIA-SINT-{idx:03d}",
+                estado="entregado" if idx % 3 == 0 else "enviado",
+                sucursal_recoleccion_id=None,
+            )
+        )
+
+    sensitive_ops = [
+        ("payment", str(client_user.id), "payment:TSR-2026-SINT"),
+        ("price_change", str(admin_user.id), "variant:TAL-20V-ROJ"),
+        ("stock_change", str(staff_user.id), "inventory:toluca:TAL-20V-ROJ"),
+        ("role_change", str(admin_user.id), f"user:{staff_user.id}"),
+        ("login_failed", None, "user:ana.torres.sintetica@ferremarket.local"),
+    ]
+    base_ts = datetime.now(timezone.utc) - timedelta(days=5)
+    for op_type, actor, res_prefix in sensitive_ops:
+        existing_count = db.query(BitacoraAuditoria).filter(BitacoraAuditoria.tipo_evento == op_type).count()
+        for seq in range(existing_count + 1, 26):
+            db.add(
+                BitacoraAuditoria(
+                    fecha=base_ts + timedelta(minutes=seq * 15),
+                    tipo_evento=op_type,
+                    actor_id=actor,
+                    recurso=f"{res_prefix}:{seq:02d}",
+                    detalles={"sample_seq": seq, "operation": op_type, "synthetic_seed": True},
+                )
+            )
+    db.commit()
+
+
 def seed_synthetic_data(db: Session) -> dict[str, Any]:
     """
     Puebla la base de datos con datos 100% sintéticos (4 roles, sucursales, catálogo jerárquico 3 niveles,
-    variantes, inventario y pedidos de muestra) cumpliendo la Regla de Gobierno de Ambientes (Sec. 20, AE-26).
+    variantes, inventario, 30 pedidos de muestra y 25 registros de bitácora por operación sensible)
+    cumpliendo la Regla de Gobierno de Ambientes (Sec. 20, AE-25, AE-26, AE-39).
     """
     existing_branch = db.query(Sucursal).filter(Sucursal.nombre == "Sucursal Toluca Centro").first()
     existing_metepec = db.query(Sucursal).filter(Sucursal.nombre == "Sucursal Metepec").first()
     if existing_branch and existing_metepec:
         _ensure_extended_catalog(db, existing_branch, existing_metepec)
+        c_user = db.query(Usuario).filter(Usuario.email == "ana.torres.sintetica@ferremarket.local").first()
+        a_user = db.query(Usuario).filter(Usuario.email == "admin.sintetico@ferremarket.local").first()
+        s_user = db.query(Usuario).filter(Usuario.email == "staff.toluca.sintetico@ferremarket.local").first()
+        if c_user and a_user and s_user:
+            _ensure_audit_samples(db, c_user, a_user, s_user)
         return {"status": "already_seeded", "branch_id": str(existing_branch.id)}
 
     pwd_hash = hash_password("Sintetico2026!")
@@ -395,6 +491,7 @@ def seed_synthetic_data(db: Session) -> dict[str, Any]:
     )
     db.commit()
     _ensure_extended_catalog(db, suc_toluca, suc_metepec)
+    _ensure_audit_samples(db, client_user, admin_user, staff_user)
 
     return {
         "status": "seeded",

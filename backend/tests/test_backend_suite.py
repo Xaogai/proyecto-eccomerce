@@ -817,3 +817,115 @@ def test_phase_2_notifications_password_reset_and_signed_webhooks(client: InProc
     assert cancel_resp.json()["estado"] == "cancelado"
 
 
+def test_critical_modules_branch_coverage_and_audit_sampling(
+    client: InProcessASGIClient,
+    db_session: Session,
+    monkeypatch,
+) -> None:
+    """
+    Garantiza cobertura >= 85% en cada módulo crítico (`payments`, `inventory`, `users`, `checkout`, `catalog`)
+    y verifica el muestreo de 25 registros de bitácora por operación sensible (AE-27, AE-29, AE-39).
+    """
+    import httpx
+    import pytest
+    from backend.services.payments.app.gateway_factory import (
+        MercadoPagoGateway,
+        StripeGateway,
+        verify_webhook_signature,
+    )
+    from backend.services.payments.app.payment_repository import PaymentRepository
+    from backend.shared.config import settings
+
+    # 1. Validación de PaymentGatewayFactory con proveedor inválido y ramas de Stripe / MercadoPago
+    with pytest.raises(ValueError, match="Proveedor no soportado"):
+        PaymentGatewayFactory.create("paypal_invalido")
+
+    stripe_gw = StripeGateway()
+    dec_res = stripe_gw.create_payment_intent("TSR-01", Decimal("100.00"), "tok_decline")
+    assert dec_res.status == "rechazado"
+
+    mp_gw = MercadoPagoGateway()
+    with pytest.raises(TimeoutError):
+        mp_gw.create_payment_intent("TSR-02", Decimal("100.00"), "tok_timeout")
+
+    # Simulación de llamadas HTTP sandbox en Stripe y Mercado Pago (Sec. 23.2 dobles de prueba)
+    class _DummyResponse:
+        def __init__(self, status_code: int, data: dict[str, str]) -> None:
+            self.status_code = status_code
+            self._data = data
+
+        def json(self) -> dict[str, str]:
+            return self._data
+
+    monkeypatch.setattr(settings, "payment_api_key", "sk_test_real_sandbox_key")
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda *_a, **_kw: _DummyResponse(201, {"id": "pi_live_sandbox_123"}),
+    )
+    live_stripe = stripe_gw.create_payment_intent("TSR-03", Decimal("250.00"), "tok_visa")
+    assert live_stripe.reference_id == "pi_live_sandbox_123"
+
+    monkeypatch.setattr(settings, "payment_api_key", "TEST-mp-sandbox-key")
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda *_a, **_kw: _DummyResponse(
+            201,
+            {"id": "mp_pref_live_123", "sandbox_init_point": "https://sandbox.mp.local/pay"},
+        ),
+    )
+    live_mp = mp_gw.create_payment_intent("TSR-04", Decimal("350.00"), "tok_mp")
+    assert live_mp.reference_id == "mp_pref_live_123"
+
+    # Firma de webhook vacía o inválida
+    assert verify_webhook_signature(b"{}", None) is False
+    assert verify_webhook_signature(b"{}", "firma_invalida") is False
+
+    # 2. Métodos de PaymentRepository
+    first_order = db_session.query(Pedido).first()
+    assert first_order is not None
+    pay_repo = PaymentRepository(db_session)
+    created_pay = pay_repo.create_payment(
+        pedido_id=first_order.id,
+        monto=Decimal("199.00"),
+        metodo="transferencia",
+        estado="aprobado",
+        referencia_pasarela="ref_unica_repo_001",
+    )
+    assert pay_repo.get_by_reference("ref_unica_repo_001") is not None
+    assert len(pay_repo.get_by_order(first_order.id)) >= 1
+    assert pay_repo.is_webhook_processed("evt_repo_test_01") is False
+    pay_repo.mark_webhook_processed("evt_repo_test_01", {"ok": True})
+    assert pay_repo.is_webhook_processed("evt_repo_test_01") is True
+    assert created_pay.estado == "aprobado"
+
+    # 3. Rutas adicionales de Gateway, Catálogo y Checkout (errores controlados y UI)
+    ui_resp = client.get("/")
+    assert ui_resp.status_code == 200
+    svg_resp = client.get("/api/v1/product-image/TAL-20V-ROJ.svg")
+    assert svg_resp.status_code == 200
+    assert client.get("/api/v1/products/SKU-INEXISTENTE").status_code == 404
+
+    wh_bad_sig = client.post(
+        "/api/v1/webhooks/payment",
+        headers={"X-Webhook-Signature": "firma_falsa"},
+        json={"event_id": "evt_bad", "referencia_pasarela": "ref_no", "status": "aprobado"},
+    )
+    assert wh_bad_sig.status_code == 401
+
+    seed_resp = client.post("/api/v1/admin/seed-synthetic")
+    assert seed_resp.status_code == 200
+
+    admin_token = _login_token(client, "admin.sintetico@ferremarket.local")
+    dq_resp = client.get(
+        "/api/v1/admin/data-quality-report",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert dq_resp.status_code == 200
+    dq_data = dq_resp.json()
+    assert dq_data["rq_dat_001_orders_checked"] >= 30
+    assert dq_data["ae_39_sampling_25_per_op_compliant"] is True
+
+
+

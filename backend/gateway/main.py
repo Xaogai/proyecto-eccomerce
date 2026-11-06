@@ -9,6 +9,7 @@ from fastapi import Depends, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from sqlalchemy import inspect
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from backend.services.cart.app.router import router as cart_router
@@ -20,7 +21,7 @@ from backend.services.shipping.app.router import router as shipping_router
 from backend.services.users.app.router import router as users_router
 from backend.shared.database import SessionLocal, engine, get_db
 from backend.shared.migrations import upgrade_database
-from backend.shared.models import ItemCarrito, Pago, Pedido, Usuario
+from backend.shared.models import BitacoraAuditoria, ItemCarrito, Pago, Pedido, Usuario
 from backend.shared.security import get_audit_logs, require_roles
 from backend.shared.seed import seed_synthetic_data
 
@@ -137,16 +138,24 @@ def verify_data_quality(
     inspector = inspect(db.get_bind())
     deployed_tables = sorted(inspector.get_table_names())
 
+    sensitive_ops = ("payment", "price_change", "stock_change", "role_change")
+    op_counts = {
+        op: db.query(BitacoraAuditoria).filter(BitacoraAuditoria.tipo_evento == op).count()
+        for op in sensitive_ops
+    }
+
     return {
         "rq_dat_001_orders_checked": len(orders),
         "rq_dat_001_discrepancies_count": len(discrepancies),
-        "rq_dat_001_compliant": len(discrepancies) == 0,
+        "rq_dat_001_compliant": len(discrepancies) == 0 and len(orders) >= 30,
         "anexo_2_2fn_item_carrito_columns": item_carrito_cols,
         "anexo_2_2fn_compliant": "precio_unitario" not in item_carrito_cols,
         "rq_seg_002_pagos_columns": pagos_cols,
         "rq_seg_002_pci_dss_compliant": not any(
             col in pagos_cols for col in ("card_number", "cvv", "pan", "numero_tarjeta")
         ),
+        "ae_39_audit_log_counts_by_sensitive_op": op_counts,
+        "ae_39_sampling_25_per_op_compliant": all(c >= 25 for c in op_counts.values()),
         "deployed_tables_count": len(deployed_tables),
         "deployed_tables": deployed_tables,
     }
@@ -157,5 +166,7 @@ def trigger_synthetic_seed(
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Ejecuta migraciones de Alembic y genera datos sintéticos de prueba (Sec. 20, AE-26)."""
-    upgrade_database(engine)
+    bind = db.get_bind()
+    target_engine = bind if isinstance(bind, Engine) else bind.engine
+    upgrade_database(target_engine)
     return seed_synthetic_data(db)
