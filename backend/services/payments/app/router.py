@@ -52,6 +52,17 @@ def process_tokenized_payment(
     pedido = repo.db.query(Pedido).filter(Pedido.id == payload.pedido_id).first()
     if not pedido:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
+    if current_user.tipo_usuario != "admin" and pedido.cliente_id != current_user.id:
+        record_audit_event(
+            "idor_payment_attempt_blocked",
+            str(current_user.id),
+            f"order:{pedido.id}",
+            {"owner_id": str(pedido.cliente_id)},
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tiene autorización para procesar pagos de pedidos de otro usuario",
+        )
 
     try:
         gateway = PaymentGatewayFactory.create(payload.provider)

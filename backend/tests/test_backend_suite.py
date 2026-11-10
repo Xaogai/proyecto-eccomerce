@@ -928,4 +928,205 @@ def test_critical_modules_branch_coverage_and_audit_sampling(
     assert dq_data["ae_39_sampling_25_per_op_compliant"] is True
 
 
+def test_new_user_complete_commercial_journey(client: InProcessASGIClient) -> None:
+    """Simula el recorrido completo de un cliente nuevo desde registro hasta compra y cancelación."""
+    reg = client.post(
+        "/api/v1/auth/register",
+        json={
+            "nombre": "Mariana Cliente Nueva",
+            "email": "mariana.nueva@ferremarket.local",
+            "password": "MarianaSegura2026!#",
+            "acepta_aviso_privacidad": True,
+        },
+    )
+    assert reg.status_code == 201
+    token = _login_token(client, "mariana.nueva@ferremarket.local", "MarianaSegura2026!#")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Guardar dirección de entrega y cotizar envío por CP
+    addr = client.post(
+        "/api/v1/users/me/addresses",
+        headers=headers,
+        json={
+            "calle": "Av. Tecnológico 1200",
+            "ciudad": "Metepec",
+            "codigo_postal": "52140",
+            "es_predeterminada": True,
+        },
+    )
+    assert addr.status_code == 201
+    quote = client.get("/api/v1/shipping/quote", params={"zip": "52140", "sku": "IMP-CMX-BLA1"})
+    assert quote.status_code == 200
+    assert Decimal(str(quote.json()["costo_domicilio"])) > Decimal("0.00")
+
+    # 2. Agregar pintura de 8 colores al carrito, actualizar cantidad y realizar checkout
+    add_cart = client.post(
+        "/api/v1/cart/items",
+        headers=headers,
+        json={"variante_sku": "IMP-CMX-BLA1", "cantidad": 1},
+    )
+    assert add_cart.status_code == 201
+    cart_id = add_cart.json()["id"]
+
+    upd_cart = client.patch(
+        "/api/v1/cart/items/IMP-CMX-BLA1",
+        params={"cart_id": cart_id},
+        headers=headers,
+        json={"cantidad": 2},
+    )
+    assert upd_cart.status_code == 200
+    assert upd_cart.json()["items"][0]["cantidad"] == 2
+
+    branch_id = client.get("/api/v1/branches").json()[0]["id"]
+    chk = client.post(
+        "/api/v1/checkout",
+        headers=headers,
+        json={
+            "carrito_id": cart_id,
+            "sucursal_id": branch_id,
+            "tipo_envio": "domicilio",
+            "payment_provider": "stripe",
+            "payment_method": "tarjeta",
+            "payment_token": "tok_visa_mariana_ok",
+        },
+    )
+    assert chk.status_code == 201
+    order_id = chk.json()["id"]
+
+    # 3. Cancelar el pedido antes de entrega y verificar devolución de stock
+    cancel = client.post(f"/api/v1/orders/{order_id}/cancel", headers=headers)
+    assert cancel.status_code == 200
+    assert cancel.json()["estado"] == "cancelado"
+
+
+def test_auditor_security_controls_and_vulnerability_remediations(client: InProcessASGIClient) -> None:
+    """Verifica el bloqueo de escalación de privilegios, IDOR en carrito/checkout/pagos/envíos, XSS SVG y colisiones."""
+    # VULN-01: Bloqueo de escalación de privilegios en /api/v1/auth/register
+    esc_resp = client.post(
+        "/api/v1/auth/register",
+        json={
+            "nombre": "Atacante Admin",
+            "email": "atacante.admin@ferremarket.local",
+            "password": "PasswordFuerte2026!",
+            "tipo_usuario": "admin",
+            "acepta_aviso_privacidad": True,
+        },
+    )
+    assert esc_resp.status_code == 403
+
+    # Registrar un usuario intruso con rol normal de cliente
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "nombre": "Auditor Pentest",
+            "email": "auditor.pentest@ferremarket.local",
+            "password": "PasswordFuerte2026!",
+            "acepta_aviso_privacidad": True,
+        },
+    )
+    pentest_token = _login_token(client, "auditor.pentest@ferremarket.local", "PasswordFuerte2026!")
+    pentest_headers = {"Authorization": f"Bearer {pentest_token}"}
+
+    ana_token = _login_token(client, "ana.torres.sintetica@ferremarket.local")
+    ana_headers = {"Authorization": f"Bearer {ana_token}"}
+
+    # VULN-02: Bloqueo de IDOR sobre carrito y checkout de otro cliente (Ana)
+    ana_cart = client.post(
+        "/api/v1/cart/items",
+        headers=ana_headers,
+        json={"variante_sku": "TAL-20V-AMA", "cantidad": 1},
+    ).json()
+    ana_cart_id = ana_cart["id"]
+
+    assert client.get("/api/v1/cart", params={"cart_id": ana_cart_id}, headers=pentest_headers).status_code == 403
+    assert (
+        client.patch(
+            "/api/v1/cart/items/TAL-20V-AMA",
+            params={"cart_id": ana_cart_id},
+            headers=pentest_headers,
+            json={"cantidad": 5},
+        ).status_code
+        == 403
+    )
+    assert (
+        client.delete(
+            "/api/v1/cart/items/TAL-20V-AMA",
+            params={"cart_id": ana_cart_id},
+            headers=pentest_headers,
+        ).status_code
+        == 403
+    )
+    branch_id = client.get("/api/v1/branches").json()[0]["id"]
+    assert (
+        client.post(
+            "/api/v1/checkout",
+            headers=pentest_headers,
+            json={
+                "carrito_id": ana_cart_id,
+                "sucursal_id": branch_id,
+                "tipo_envio": "domicilio",
+                "payment_provider": "stripe",
+                "payment_method": "tarjeta",
+                "payment_token": "tok_test_idor",
+            },
+        ).status_code
+        == 403
+    )
+
+    # VULN-03: Bloqueo de IDOR en pagos y envíos de pedidos ajenos
+    ana_orders = client.get("/api/v1/orders", headers=ana_headers).json()
+    ana_order_id = ana_orders[0]["id"]
+    assert (
+        client.post(
+            "/api/v1/payments",
+            headers=pentest_headers,
+            json={
+                "pedido_id": ana_order_id,
+                "monto": "100.00",
+                "metodo": "tarjeta",
+                "provider": "stripe",
+                "payment_token": "tok_idor_pay",
+            },
+        ).status_code
+        == 403
+    )
+    assert client.get(f"/api/v1/shipments/{ana_order_id}", headers=pentest_headers).status_code == 403
+
+    # VULN-04: Bloqueo de secuestro de correo existente en rectificación ARCO
+    email_takeover = client.put(
+        "/api/v1/users/me",
+        headers=pentest_headers,
+        json={"email": "admin.sintetico@ferremarket.local"},
+    )
+    assert email_takeover.status_code == 409
+
+    # VULN-06: Neutralización de XSS en generador de ilustraciones SVG
+    svg_xss = client.get("/api/v1/product-image/<svg onload=alert(1)>.svg")
+    assert svg_xss.status_code == 200
+    assert "<svg onload=" not in svg_xss.text
+    assert "&lt;svg onload=alert(1)&gt;" in svg_xss.text
+
+    # VULN-07: Prevención de colisión de SKU duplicado (409 Conflict)
+    admin_token = _login_token(client, "admin.sintetico@ferremarket.local")
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    cats = client.get("/api/v1/categories").json()
+    dup_prod = client.post(
+        "/api/v1/products",
+        headers=admin_headers,
+        json={
+            "categoria_id": cats[0]["id"],
+            "nombre": "Producto SKU Duplicado",
+            "marca": "Truper",
+            "variantes": [{"sku": "TAL-20V-AMA", "precio": "500.00", "stock_inicial": 5, "atributos": {"color": "rojo"}}],
+        },
+    )
+    assert dup_prod.status_code == 409
+
+    # VULN-05: Revocación inmediata de sesión JWT tras cancelación ARCO
+    del_resp = client.delete("/api/v1/users/me", headers=pentest_headers)
+    assert del_resp.status_code == 200
+    assert client.get("/api/v1/users/me", headers=pentest_headers).status_code == 401
+
+
+
 

@@ -28,11 +28,30 @@ from fastapi.openapi.docs import get_swagger_ui_html  # noqa: E402
 
 from backend.gateway.main import UI_HTML_PATH, app  # noqa: E402
 from backend.shared.database import SessionLocal, engine  # noqa: E402
+from backend.shared.db_security_pgadmin import (  # noqa: E402
+    apply_postgresql_audit_and_security_controls,
+)
 from backend.shared.migrations import upgrade_database  # noqa: E402
 from backend.shared.seed import seed_synthetic_data  # noqa: E402
 from backend.tests.conftest import InProcessASGIClient  # noqa: E402
 
 _asgi_dispatcher = InProcessASGIClient(app)
+FRONTEND_DIST_DIR = Path(__file__).resolve().parent / "frontend" / "dist"
+
+
+def _serve_frontend_static(clean_path: str) -> tuple[str, bytes] | None:
+    """Sirve el bundle compilado de React (`frontend/dist`) si existe para la ruta solicitada."""
+    if clean_path in ("/", "/index.html"):
+        dist_index = FRONTEND_DIST_DIR / "index.html"
+        if dist_index.is_file():
+            return "text/html; charset=utf-8", dist_index.read_bytes()
+        return "text/html; charset=utf-8", UI_HTML_PATH.read_bytes()
+    if clean_path.startswith("/assets/"):
+        asset_file = (FRONTEND_DIST_DIR / clean_path.lstrip("/")).resolve()
+        if asset_file.is_file() and FRONTEND_DIST_DIR.resolve() in asset_file.parents:
+            ctype = "text/css; charset=utf-8" if asset_file.suffix == ".css" else "application/javascript; charset=utf-8"
+            return ctype, asset_file.read_bytes()
+    return None
 
 
 class FerremarketHTTPHandler(BaseHTTPRequestHandler):
@@ -59,10 +78,11 @@ class FerremarketHTTPHandler(BaseHTTPRequestHandler):
             self._send_bytes(204, "text/plain; charset=utf-8", b"")
             return
 
-        if method == "GET" and clean_path in ("/", "/index.html"):
-            html_bytes = UI_HTML_PATH.read_bytes()
-            self._send_bytes(200, "text/html; charset=utf-8", html_bytes)
-            return
+        if method == "GET":
+            static_hit = _serve_frontend_static(clean_path)
+            if static_hit is not None:
+                self._send_bytes(200, static_hit[0], static_hit[1])
+                return
 
         if method == "GET" and clean_path == "/docs":
             swagger_resp = get_swagger_ui_html(openapi_url="/openapi.json", title=app.title)
@@ -87,7 +107,8 @@ class FerremarketHTTPHandler(BaseHTTPRequestHandler):
             headers=req_headers,
         )
         body_bytes = resp.text.encode("utf-8")
-        self._send_bytes(resp.status_code, "application/json; charset=utf-8", body_bytes)
+        ctype = "image/svg+xml; charset=utf-8" if clean_path.endswith(".svg") else "application/json; charset=utf-8"
+        self._send_bytes(resp.status_code, ctype, body_bytes)
 
     def do_GET(self) -> None:  # noqa: N802
         self._handle_all("GET")
@@ -113,6 +134,7 @@ def main() -> None:
     upgrade_database(engine)
     with SessionLocal() as db:
         seed_info = seed_synthetic_data(db)
+    db_sec_info = apply_postgresql_audit_and_security_controls(engine)
 
     server = ThreadingHTTPServer(("127.0.0.1", 8000), FerremarketHTTPHandler)
     print("==================================================================", flush=True)
@@ -122,6 +144,7 @@ def main() -> None:
     print(" -> Documentacion OpenAPI / Docs : http://localhost:8000/docs", flush=True)
     print(" -> Health Check Gateway         : http://localhost:8000/health", flush=True)
     print(f" -> Semilla Sintetica (AE-26)    : {seed_info}", flush=True)
+    print(f" -> Seguridad BD / pgAdmin       : {db_sec_info.get('status')}", flush=True)
     print("==================================================================", flush=True)
     try:
         server.serve_forever()

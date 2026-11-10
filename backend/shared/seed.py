@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Any
 from sqlalchemy.orm import Session
 
+from backend.shared.catalog_seed_100 import PAINT_8_COLORS, build_100_catalog_specs
 from backend.shared.models import (
     Administrador,
     BitacoraAuditoria,
@@ -49,10 +50,17 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
             },
             {
                 "sku": "ESM-DEW-20V-MAX",
-                "atributos": {"voltaje": "20V", "color": "amarillo", "motor": "Brushless"},
+                "atributos": {"voltaje": "20V", "color": "negro", "motor": "Brushless"},
                 "precio": Decimal("2899.00"),
                 "img": _svg_data_uri("Esmeriladora 20V MAX", "DeWalt Brushless • Inalámbrica", "#78350f", "#fbbf24"),
                 "stock": (10, 8),
+            },
+            {
+                "sku": "ESM-DEW-1200W-GR",
+                "atributos": {"potencia": "1200W", "color": "gris", "disco": "5 pulg"},
+                "precio": Decimal("2199.00"),
+                "img": _svg_data_uri("Esmeriladora 5\"", "DeWalt 1200W • Gris Industrial", "#374151", "#f59e0b"),
+                "stock": (12, 9),
             },
         ],
     },
@@ -73,10 +81,17 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
             },
             {
                 "sku": "ROT-BOS-1100W",
-                "atributos": {"potencia": "1100W", "color": "azul", "energia_impacto": "4.0 J"},
+                "atributos": {"potencia": "1100W", "color": "negro", "energia_impacto": "4.0 J"},
                 "precio": Decimal("4199.00"),
                 "img": _svg_data_uri("Rotomartillo Industrial", "Bosch 1100W • Maletín L-BOXX", "#172554", "#60a5fa"),
                 "stock": (8, 6),
+            },
+            {
+                "sku": "ROT-BOS-1500W-ROJ",
+                "atributos": {"potencia": "1500W", "color": "rojo", "energia_impacto": "5.2 J"},
+                "precio": Decimal("5199.00"),
+                "img": _svg_data_uri("Rotomartillo Max", "Bosch 1500W • Edición Roja", "#7f1d1d", "#ef4444"),
+                "stock": (7, 5),
             },
         ],
     },
@@ -102,6 +117,13 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
                 "img": _svg_data_uri("Autocle 200 Piezas", "Urrea Master Mecánico • 3 Cuadros", "#1f2937", "#fb923c"),
                 "stock": (11, 7),
             },
+            {
+                "sku": "AUT-URR-250P-ROJ",
+                "atributos": {"piezas": "250 piezas", "color": "rojo", "cuadro": "1/4, 3/8 y 1/2 pulg"},
+                "precio": Decimal("4290.00"),
+                "img": _svg_data_uri("Autocle 250 Piezas", "Urrea Edición Roja Taller", "#7f1d1d", "#ef4444"),
+                "stock": (9, 6),
+            },
         ],
     },
     {
@@ -113,19 +135,13 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
         "marca": "Comex",
         "variantes": [
             {
-                "sku": "IMP-CMX-BL-5A",
-                "atributos": {"color": "blanco", "capacidad": "19 Litros", "garantia": "5 años"},
-                "precio": Decimal("1580.00"),
-                "img": _svg_data_uri("Impermeabilizante 19L", "Comex Top Fibratado • Blanco 5 Años", "#0f766e", "#2dd4bf"),
-                "stock": (30, 22),
-            },
-            {
-                "sku": "IMP-CMX-TC-10A",
-                "atributos": {"color": "terracota", "capacidad": "19 Litros", "garantia": "10 años"},
-                "precio": Decimal("2190.00"),
-                "img": _svg_data_uri("Impermeabilizante 10A", "Comex Terracota • 19 Litros", "#7c2d12", "#f97316"),
+                "sku": f"IMP-CMX-{c[:3].upper().replace(' ', '')}{i + 1}",
+                "atributos": {"color": c, "capacidad": "19 Litros", "garantia": "10 años"},
+                "precio": Decimal("1890.00") + Decimal(i * 30),
+                "img": _svg_data_uri("Impermeabilizante 19L", f"Comex Top Fibratado • {c.title()}", "#0f766e", "#2dd4bf"),
                 "stock": (24, 16),
-            },
+            }
+            for i, c in enumerate(PAINT_8_COLORS)
         ],
     },
     {
@@ -145,10 +161,17 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
             },
             {
                 "sku": "BOM-TRU-1-3HP",
-                "atributos": {"potencia": "1/3 HP", "color": "naranja", "servicios": "4 baños"},
+                "atributos": {"potencia": "1/3 HP", "color": "azul", "servicios": "4 baños"},
                 "precio": Decimal("1850.00"),
                 "img": _svg_data_uri("Presurizador 1/3 HP", "Truper Bronce • Hasta 4 Baños", "#7c2d12", "#f97316"),
                 "stock": (12, 9),
+            },
+            {
+                "sku": "BOM-TRU-1-2HP-ROJ",
+                "atributos": {"potencia": "1/2 HP", "color": "rojo", "servicios": "6 baños"},
+                "precio": Decimal("2390.00"),
+                "img": _svg_data_uri("Presurizador 1/2 HP", "Truper Alta Presión • 6 Baños", "#7f1d1d", "#ef4444"),
+                "stock": (10, 7),
             },
         ],
     },
@@ -169,10 +192,17 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
             },
             {
                 "sku": "MUL-FLU-87V",
-                "atributos": {"modelo": "87V Industrial", "color": "amarillo", "seguridad": "CAT IV 600V"},
+                "atributos": {"modelo": "87V Industrial", "color": "naranja", "seguridad": "CAT IV 600V"},
                 "precio": Decimal("8490.00"),
                 "img": _svg_data_uri("Multímetro Fluke 87V", "Industrial True-RMS • Termopar", "#713f12", "#eab308"),
                 "stock": (5, 4),
+            },
+            {
+                "sku": "MUL-FLU-289-ROJ",
+                "atributos": {"modelo": "289 DataLogger", "color": "rojo", "seguridad": "CAT IV 1000V"},
+                "precio": Decimal("11490.00"),
+                "img": _svg_data_uri("Multímetro Fluke 289", "True-RMS DataLogger Gráfico", "#7f1d1d", "#ef4444"),
+                "stock": (4, 3),
             },
         ],
     },
@@ -199,55 +229,79 @@ def _get_or_create_category_chain(db: Session, root_name: str, sub_name: str, le
     return leaf
 
 
+def _upsert_spec_variants(
+    db: Session,
+    prod: Producto,
+    variantes_spec: list[dict[str, Any]],
+    existing_skus: set[str],
+    suc_toluca: Sucursal,
+    suc_metepec: Sucursal,
+) -> None:
+    """Agrega las variantes e inventario faltantes de un producto sin duplicar SKUs."""
+    for v_spec in variantes_spec:
+        sku_code = v_spec["sku"]
+        if sku_code in existing_skus:
+            continue
+        existing_skus.add(sku_code)
+        db.add(
+            Variante(
+                sku=sku_code,
+                producto_id=prod.id,
+                atributos=v_spec["atributos"],
+                precio=v_spec["precio"],
+                imagen_url=f"http://localhost:8000/api/v1/product-image/{sku_code}.svg",
+            )
+        )
+        db.flush()
+        st_tol, st_met = v_spec["stock"]
+        db.add_all(
+            [
+                Inventario(
+                    sucursal_id=suc_toluca.id,
+                    variante_sku=sku_code,
+                    cantidad_disponible=st_tol,
+                    cantidad_reservada=0,
+                ),
+                Inventario(
+                    sucursal_id=suc_metepec.id,
+                    variante_sku=sku_code,
+                    cantidad_disponible=st_met,
+                    cantidad_reservada=0,
+                ),
+            ]
+        )
+
+
 def _ensure_extended_catalog(db: Session, suc_toluca: Sucursal, suc_metepec: Sucursal) -> None:
-    """Garantiza que el catálogo comercial extendido e ilustraciones SVG estén presentes de forma idempotente."""
+    """Garantiza que el catálogo comercial extendido (107 artículos y ~415 variantes) esté presente."""
     for base_sku in ("TAL-20V-ROJ", "TAL-20V-AMA"):
         v_base = db.query(Variante).filter(Variante.sku == base_sku).first()
         if v_base:
             v_base.imagen_url = f"http://localhost:8000/api/v1/product-image/{base_sku}.svg"
 
-    for spec in EXTENDED_CATALOG_SPECS:
-        first_sku = spec["variantes"][0]["sku"]
-        if db.query(Variante).filter(Variante.sku == first_sku).first() is not None:
-            continue
-        leaf = _get_or_create_category_chain(db, spec["root"], spec["sub"], spec["leaf"])
-        prod = Producto(
-            categoria_id=leaf.id,
-            nombre=spec["nombre"],
-            descripcion=spec["descripcion"],
-            marca=spec["marca"],
-        )
-        db.add(prod)
-        db.flush()
-        for v_spec in spec["variantes"]:
-            sku_code = v_spec["sku"]
-            db.add(
-                Variante(
-                    sku=sku_code,
-                    producto_id=prod.id,
-                    atributos=v_spec["atributos"],
-                    precio=v_spec["precio"],
-                    imagen_url=f"http://localhost:8000/api/v1/product-image/{sku_code}.svg",
-                )
+    existing_skus = {row[0] for row in db.query(Variante.sku).all()}
+    existing_prods = {p.nombre: p for p in db.query(Producto).all()}
+    cat_cache: dict[tuple[str, str, str], Categoria] = {}
+
+    all_specs = EXTENDED_CATALOG_SPECS + build_100_catalog_specs()
+    for spec in all_specs:
+        prod = existing_prods.get(spec["nombre"])
+        if prod is None:
+            cat_key = (spec["root"], spec["sub"], spec["leaf"])
+            leaf = cat_cache.get(cat_key)
+            if leaf is None:
+                leaf = _get_or_create_category_chain(db, spec["root"], spec["sub"], spec["leaf"])
+                cat_cache[cat_key] = leaf
+            prod = Producto(
+                categoria_id=leaf.id,
+                nombre=spec["nombre"],
+                descripcion=spec["descripcion"],
+                marca=spec["marca"],
             )
+            db.add(prod)
             db.flush()
-            st_tol, st_met = v_spec["stock"]
-            db.add_all(
-                [
-                    Inventario(
-                        sucursal_id=suc_toluca.id,
-                        variante_sku=v_spec["sku"],
-                        cantidad_disponible=st_tol,
-                        cantidad_reservada=0,
-                    ),
-                    Inventario(
-                        sucursal_id=suc_metepec.id,
-                        variante_sku=v_spec["sku"],
-                        cantidad_disponible=st_met,
-                        cantidad_reservada=0,
-                    ),
-                ]
-            )
+            existing_prods[prod.nombre] = prod
+        _upsert_spec_variants(db, prod, spec["variantes"], existing_skus, suc_toluca, suc_metepec)
     db.commit()
 
 

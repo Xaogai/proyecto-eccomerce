@@ -34,6 +34,7 @@ from backend.shared.security import (
     create_refresh_token,
     decode_token,
     get_current_user,
+    get_optional_user,
     hash_password,
     record_audit_event,
     register_failed_login,
@@ -78,6 +79,7 @@ def get_privacy_notice() -> dict[str, Any]:
 @router.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(
     payload: UserRegisterRequest,
+    current_user: Usuario | None = Depends(get_optional_user),
     repo: UserRepository = Depends(get_user_repository),
 ) -> Usuario:
     """
@@ -85,6 +87,7 @@ def register_user(
 
     Args:
         payload: Datos de registro validados.
+        current_user: Usuario autenticado opcional (requerido si se solicita rol distinto de cliente).
         repo: Repositorio de usuarios inyectado.
 
     Returns:
@@ -94,6 +97,17 @@ def register_user(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Debe aceptar el aviso de privacidad (LFPDPPP) para crear una cuenta",
+        )
+    if payload.tipo_usuario != "cliente" and (current_user is None or current_user.tipo_usuario != "admin"):
+        record_audit_event(
+            "privilege_escalation_blocked",
+            str(current_user.id) if current_user else None,
+            f"register:{payload.email}",
+            {"requested_role": payload.tipo_usuario},
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo un administrador autenticado puede registrar cuentas administrativas o de personal",
         )
     existing = repo.get_by_email(payload.email)
     if existing:
@@ -307,6 +321,13 @@ def update_my_profile(
     repo: UserRepository = Depends(get_user_repository),
 ) -> Usuario:
     """Derecho de Rectificación (ARCO - LFPDPPP): Permite corregir datos del usuario."""
+    if payload.email is not None:
+        collision = repo.get_by_email(payload.email)
+        if collision and collision.id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="El correo electrónico indicado ya está en uso por otra cuenta",
+            )
     updated = repo.update_user(current_user, nombre=payload.nombre, email=payload.email)
     record_audit_event("arco_rectificacion", str(current_user.id), f"user:{current_user.id}")
     return updated
@@ -315,11 +336,14 @@ def update_my_profile(
 @router.delete("/users/me")
 def cancel_my_account(
     current_user: Usuario = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     repo: UserRepository = Depends(get_user_repository),
 ) -> dict[str, str]:
-    """Derecho de Cancelación y Oposición (ARCO - LFPDPPP): Anonimiza datos y elimina direcciones."""
+    """Derecho de Cancelación y Oposición (ARCO - LFPDPPP): Anonimiza datos, elimina direcciones y revoca sesión."""
     user_id_str = str(current_user.id)
     repo.anonymize_user(current_user)
+    if credentials is not None:
+        revoke_token(credentials.credentials)
     record_audit_event("arco_cancelacion", user_id_str, f"user:{user_id_str}")
     return {"detail": "Sus datos personales han sido anonimizados y eliminados conforme a los derechos ARCO (LFPDPPP)"}
 

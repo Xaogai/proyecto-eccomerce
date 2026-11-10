@@ -14,7 +14,7 @@ from backend.services.shipping.app.shipping_repository import ShippingRepository
 from backend.shared.database import get_db
 from backend.shared.models import Pedido, Usuario
 from backend.shared.notifications import send_email_notification
-from backend.shared.security import record_audit_event, require_roles
+from backend.shared.security import get_optional_user, record_audit_event, require_roles
 
 router = APIRouter(prefix="/api/v1", tags=["Envíos y Logística"])
 
@@ -51,12 +51,21 @@ def list_shipments(
 @router.get("/shipments/{pedido_id}", response_model=ShipmentResponse)
 def get_shipment_by_order(
     pedido_id: uuid.UUID,
+    current_user: Usuario | None = Depends(get_optional_user),
     repo: ShippingRepository = Depends(get_shipping_repository),
 ) -> Any:
-    """Consulta la información logística y de seguimiento de un pedido."""
+    """Consulta la información logística y de seguimiento de un pedido protegiendo contra IDOR."""
     envio = repo.get_by_order(pedido_id)
     if not envio:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Envío no encontrado para este pedido")
+    if current_user is not None and current_user.tipo_usuario == "cliente":
+        pedido = repo.db.query(Pedido).filter(Pedido.id == pedido_id).first()
+        if pedido and pedido.cliente_id != current_user.id:
+            record_audit_event("idor_shipment_attempt_blocked", str(current_user.id), f"shipment:{pedido_id}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tiene autorización para consultar el envío de otro usuario",
+            )
     return envio
 
 

@@ -17,3 +17,8 @@ test-results/
 .vscode/
 .idea/
 .DS_Store
+auditoria_expediente/
+DOCUMENTO_DE_CALIDAD_V2.0.md
+DOCUMENTO_DE_CALIDAD_V2.0.pdf
+docs/
+backups_3_2_1/

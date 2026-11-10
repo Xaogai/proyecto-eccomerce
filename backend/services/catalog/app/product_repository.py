@@ -13,7 +13,7 @@ from backend.services.catalog.app.schemas import (
 )
 from backend.shared.models import Categoria, Inventario, Producto, Sucursal, Variante
 
-PAGE_SIZE_DEFAULT = 20
+PAGE_SIZE_DEFAULT = 150
 
 
 class ProductRepository:
@@ -64,15 +64,23 @@ class ProductRepository:
         self.db.refresh(cat)
         return cat
 
-    def _serialize_product(self, product: Producto) -> ProductDetailResponse:
+    def _serialize_product(
+        self,
+        product: Producto,
+        stock_map: dict[str, int] | None = None,
+    ) -> ProductDetailResponse:
         """Construye la respuesta de un producto incluyendo el stock total por variante."""
         variant_responses: list[VariantResponse] = []
         for var in product.variantes:
-            total_stock = (
-                self.db.query(func.coalesce(func.sum(Inventario.cantidad_disponible), 0))
-                .filter(Inventario.variante_sku == var.sku)
-                .scalar()
-            )
+            if stock_map is not None:
+                total_stock = stock_map.get(var.sku, 0)
+            else:
+                total_stock = int(
+                    self.db.query(func.coalesce(func.sum(Inventario.cantidad_disponible), 0))
+                    .filter(Inventario.variante_sku == var.sku)
+                    .scalar()
+                    or 0
+                )
             variant_responses.append(
                 VariantResponse(
                     sku=var.sku,
@@ -80,7 +88,7 @@ class ProductRepository:
                     atributos=var.atributos or {},
                     precio=Decimal(str(var.precio)),
                     imagen_url=var.imagen_url,
-                    stock_disponible=int(total_stock or 0),
+                    stock_disponible=int(total_stock),
                 )
             )
         return ProductDetailResponse(
@@ -91,6 +99,20 @@ class ProductRepository:
             marca=product.marca,
             variantes=variant_responses,
         )
+
+    def _get_descendant_category_ids(self, category_id: uuid.UUID) -> list[uuid.UUID]:
+        """Obtiene el UUID de la categoría seleccionada y todas sus subcategorías hijas y nietas (HU-01)."""
+        all_cats = self.db.query(Categoria.id, Categoria.categoria_padre_id).all()
+        children_map: dict[uuid.UUID | None, list[uuid.UUID]] = {}
+        for cid, pid in all_cats:
+            children_map.setdefault(pid, []).append(cid)
+        result: list[uuid.UUID] = []
+        stack = [category_id]
+        while stack:
+            curr = stack.pop()
+            result.append(curr)
+            stack.extend(children_map.get(curr, []))
+        return result
 
     def get_by_sku(self, sku: str) -> ProductDetailResponse | None:
         """
@@ -136,7 +158,8 @@ class ProductRepository:
         """
         query = self.db.query(Producto)
         if category_id is not None:
-            query = query.filter(Producto.categoria_id == category_id)
+            cat_ids = self._get_descendant_category_ids(category_id)
+            query = query.filter(Producto.categoria_id.in_(cat_ids))
         if marca:
             query = query.filter(Producto.marca.ilike(f"%{marca}%"))
         if q:
@@ -150,7 +173,13 @@ class ProductRepository:
             query = query.distinct()
 
         products = query.offset((page - 1) * PAGE_SIZE_DEFAULT).limit(PAGE_SIZE_DEFAULT).all()
-        results = [self._serialize_product(p) for p in products]
+        stock_rows = (
+            self.db.query(Inventario.variante_sku, func.coalesce(func.sum(Inventario.cantidad_disponible), 0))
+            .group_by(Inventario.variante_sku)
+            .all()
+        )
+        stock_map = {str(sku): int(tot or 0) for sku, tot in stock_rows}
+        results = [self._serialize_product(p, stock_map) for p in products]
         if atributo_clave and atributo_valor:
             results = [
                 r
@@ -169,6 +198,17 @@ class ProductRepository:
         Returns:
             ProductDetailResponse: Producto creado con variantes.
         """
+        requested_skus = [v.sku for v in payload.variantes]
+        if len(requested_skus) != len(set(requested_skus)):
+            raise ValueError("El producto contiene SKUs duplicados en la misma solicitud")
+        existing_sku = (
+            self.db.query(Variante.sku)
+            .filter(Variante.sku.in_(requested_skus))
+            .first()
+        )
+        if existing_sku is not None:
+            raise ValueError(f"El SKU '{existing_sku[0]}' ya se encuentra registrado en el catálogo")
+
         product = Producto(
             categoria_id=payload.categoria_id,
             nombre=payload.nombre,

@@ -106,6 +106,8 @@ class OrderRepository:
         cart = self.db.query(Carrito).filter(Carrito.id == payload.carrito_id).first()
         if not cart or not cart.items:
             raise ValueError("El carrito está vacío o no existe")
+        if cart.cliente_id is not None and cart.cliente_id != cliente_id:
+            raise PermissionError("No tiene autorización para procesar el carrito de otro cliente")
         if cart.estado == "convertido":
             raise ValueError("Este carrito ya fue convertido en un pedido")
 

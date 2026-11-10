@@ -12,7 +12,7 @@ from backend.services.cart.app.schemas import (
 )
 from backend.shared.database import get_db
 from backend.shared.models import Usuario
-from backend.shared.security import get_optional_user
+from backend.shared.security import get_optional_user, record_audit_event
 
 router = APIRouter(prefix="/api/v1", tags=["Carrito de Compras"])
 
@@ -41,6 +41,9 @@ def add_item_to_cart(
             carrito_id=effective_cart_id,
             cliente_id=cliente_id,
         )
+    except PermissionError as exc:
+        record_audit_event("idor_cart_attempt_blocked", str(cliente_id) if cliente_id else None, f"cart:{effective_cart_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
@@ -57,7 +60,11 @@ def get_cart_contents(
     """
     effective_cart_id = cart_id or x_cart_id
     cliente_id = current_user.id if current_user else None
-    cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
+    try:
+        cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
+    except PermissionError as exc:
+        record_audit_event("idor_cart_attempt_blocked", str(cliente_id) if cliente_id else None, f"cart:{effective_cart_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
     return repo.build_cart_response(cart)
 
 
@@ -73,9 +80,12 @@ def update_cart_item_quantity(
     """Actualiza la cantidad de un ítem en el carrito (`0` lo elimina) y recalcula el total (HU-04)."""
     effective_cart_id = payload.carrito_id or cart_id or x_cart_id
     cliente_id = current_user.id if current_user else None
-    cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
     try:
+        cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
         updated = repo.update_item_quantity(cart.id, sku, payload.cantidad)
+    except PermissionError as exc:
+        record_audit_event("idor_cart_attempt_blocked", str(cliente_id) if cliente_id else None, f"cart:{effective_cart_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     if not updated:
@@ -94,7 +104,11 @@ def remove_cart_item(
     """Elimina un producto del carrito y recalcula el total (HU-04)."""
     effective_cart_id = cart_id or x_cart_id
     cliente_id = current_user.id if current_user else None
-    cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
+    try:
+        cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
+    except PermissionError as exc:
+        record_audit_event("idor_cart_attempt_blocked", str(cliente_id) if cliente_id else None, f"cart:{effective_cart_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
     updated = repo.remove_item(cart.id, sku)
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Carrito no encontrado")

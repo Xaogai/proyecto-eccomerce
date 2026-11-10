@@ -20,6 +20,11 @@ from backend.services.payments.app.router import router as payments_router
 from backend.services.shipping.app.router import router as shipping_router
 from backend.services.users.app.router import router as users_router
 from backend.shared.database import SessionLocal, engine, get_db
+from backend.shared.db_security_pgadmin import (
+    apply_postgresql_audit_and_security_controls,
+    execute_321_encrypted_backup,
+    get_database_audit_controls_summary,
+)
 from backend.shared.migrations import upgrade_database
 from backend.shared.models import BitacoraAuditoria, ItemCarrito, Pago, Pedido, Usuario
 from backend.shared.security import get_audit_logs, require_roles
@@ -30,10 +35,11 @@ UI_HTML_PATH = Path(__file__).resolve().parent / "ui.html"
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Ejecuta las migraciones de Alembic y puebla los datos sintéticos al arrancar el servidor."""
+    """Ejecuta las migraciones de Alembic, datos sintéticos y controles de auditoría de BD."""
     upgrade_database(engine)
     with SessionLocal() as db:
         seed_synthetic_data(db)
+    apply_postgresql_audit_and_security_controls(engine)
     yield
 
 
@@ -143,6 +149,7 @@ def verify_data_quality(
         op: db.query(BitacoraAuditoria).filter(BitacoraAuditoria.tipo_evento == op).count()
         for op in sensitive_ops
     }
+    db_controls = get_database_audit_controls_summary(db.connection())
 
     return {
         "rq_dat_001_orders_checked": len(orders),
@@ -158,7 +165,19 @@ def verify_data_quality(
         "ae_39_sampling_25_per_op_compliant": all(c >= 25 for c in op_counts.values()),
         "deployed_tables_count": len(deployed_tables),
         "deployed_tables": deployed_tables,
+        "db_audit_controls": db_controls,
     }
+
+
+@app.post("/api/v1/admin/db-backup-321", tags=["Administración y Auditoría"])
+def trigger_321_backup(
+    _admin: Usuario = Depends(require_roles("admin")),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Ejecuta bajo demanda un respaldo cifrado AES-256 con la estrategia 3-2-1."""
+    bind = db.get_bind()
+    target_engine = bind if isinstance(bind, Engine) else bind.engine
+    return execute_321_encrypted_backup(target_engine)
 
 
 @app.post("/api/v1/admin/seed-synthetic", tags=["Administración y Auditoría"])
@@ -169,4 +188,6 @@ def trigger_synthetic_seed(
     bind = db.get_bind()
     target_engine = bind if isinstance(bind, Engine) else bind.engine
     upgrade_database(target_engine)
-    return seed_synthetic_data(db)
+    result = seed_synthetic_data(db)
+    apply_postgresql_audit_and_security_controls(target_engine)
+    return result
