@@ -24,9 +24,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Secret Scanning Gate (AE-19 - Cero credenciales o llaves privadas en código)
-        run: |
-          python -c "import pathlib, re, sys; pat = re.compile(r'(sk_live_[0-9a-zA-Z]{16,}|AKIA[0-9A-Z]{16}|BEGIN RSA PRIVATE KEY)'); hits = [str(p) for p in pathlib.Path('backend').rglob('*.py') if pat.search(p.read_text(encoding='utf-8'))]; sys.exit(f'Secret found: {hits}') if hits else print('AE-19 OK: 0 secretos expuestos en codigo')"
+      - name: Secret Scanning Gate (AE-19 - llaves, contraseñas y valores por defecto de secretos)
+        run: pytest backend/tests/test_respaldos_y_controles.py::test_sin_secretos_en_el_codigo -q -p no:cacheprovider
 
       - name: Verify PEP 8, Security Rules & McCabe Cyclomatic Complexity <= 10 (RQ-MANT-001, AE-16, AE-24 SAST)
         run: ruff check backend run_app.py
@@ -41,6 +40,49 @@ jobs:
         env:
           DATABASE_URL: sqlite:///./ci_ferremarket.db
         run: pytest --cov=backend --cov-fail-under=80 --junitxml=pytest_report.xml --cov-report=json:coverage.json
+
+  backend-postgresql:
+    name: Backend en PostgreSQL 16 (migraciones, controles, roles y respaldos)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r backend/requirements.txt
+      - name: Pruebas contra PostgreSQL
+        env:
+          DATABASE_URL: sqlite:///./ci_ferremarket.db
+          TEST_POSTGRES_URL: postgresql+psycopg://postgres:postgres@localhost:5432/postgres
+        run: pytest backend/tests/test_postgresql.py -v -p no:cacheprovider
+
+  backend-portabilidad:
+    name: Backend en ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r backend/requirements.txt
+      - name: Pruebas del backend
+        env:
+          DATABASE_URL: sqlite:///./ci_ferremarket.db
+        run: pytest -q -p no:cacheprovider
 
   frontend-build-gate:
     name: Frontend TypeScript, SCA & Vite Production Build
