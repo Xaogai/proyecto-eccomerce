@@ -32,5 +32,5 @@ auditoria_expediente/
 DOCUMENTO_DE_CALIDAD_V2.0.md
 DOCUMENTO_DE_CALIDAD_V2.0.pdf
 
-# Respaldos cifrados 3-2-1 que genera /admin/db-backup-321
-backups_3_2_1/
+# Respaldos cifrados (BACKUP_DIR por defecto); la copia fuera del equipo va en BACKUP_OFFSITE_DIR
+backups/

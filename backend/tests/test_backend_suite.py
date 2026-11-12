@@ -667,7 +667,7 @@ def test_upgrade_database_stamps_legacy_create_all_schema(tmp_path: Path) -> Non
         upgrade_database(legacy_engine)
         with legacy_engine.connect() as conn:
             version = conn.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one()
-        assert version == "0003_tienda_en_linea"
+        assert version == "0004_controles_bd"
     finally:
         legacy_engine.dispose()
 
@@ -944,7 +944,9 @@ def test_critical_modules_branch_coverage_and_audit_sampling(
     assert dq_resp.status_code == 200
     dq_data = dq_resp.json()
     assert dq_data["rq_dat_001_orders_checked"] >= 30
-    assert dq_data["ae_39_sampling_25_per_op_compliant"] is True
+    # Las muestras del generador sintético se cuentan aparte: no bastan para dar por cumplido el muestreo.
+    assert dq_data["ae_39_muestra_con_datos_sinteticos"] is True
+    assert dq_data["ae_39_sampling_25_per_op_compliant"] is False
 
 
 def test_new_user_complete_commercial_journey(client: InProcessASGIClient) -> None:

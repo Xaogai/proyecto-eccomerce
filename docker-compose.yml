@@ -37,9 +37,23 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-stripe}
-      PAYMENT_API_KEY: ${PAYMENT_API_KEY:-sandbox_key_default}
+      PAYMENT_API_KEY: ${PAYMENT_API_KEY:-}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:-}
+      PASARELA_SANDBOX: ${PASARELA_SANDBOX:-true}
+      SEED_SYNTHETIC_DATA: ${SEED_SYNTHETIC_DATA:-true}
+      BACKUP_ENCRYPTION_KEY: ${BACKUP_ENCRYPTION_KEY:-}
+      BACKUP_DIR: /app/backups/local
+      # La copia en otro medio se monta con docker-compose.override.yml (ver README, "Respaldos").
+      BACKUP_OFFSITE_DIR: ${BACKUP_OFFSITE_DIR:-}
+      DB_ROLE_AUDITOR_PASSWORD: ${DB_ROLE_AUDITOR_PASSWORD:-}
+      DB_ROLE_APP_PASSWORD: ${DB_ROLE_APP_PASSWORD:-}
+      DB_ROLE_SUCURSAL_PASSWORD: ${DB_ROLE_SUCURSAL_PASSWORD:-}
+      DB_ROLE_RESPALDO_PASSWORD: ${DB_ROLE_RESPALDO_PASSWORD:-}
+      DB_AUDIT_SERVER_SETTINGS: ${DB_AUDIT_SERVER_SETTINGS:-false}
     ports: ["8000:8000"]
-    volumes: [media:/app/media]
+    volumes:
+      - media:/app/media
+      - backups:/app/backups/local
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -63,3 +77,4 @@ services:
 volumes:
   pgdata:
   media:
+  backups:

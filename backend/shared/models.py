@@ -556,3 +556,23 @@ class Configuracion(Base):
 
     clave: Mapped[str] = mapped_column(String(60), primary_key=True)
     valor: Mapped[Any] = mapped_column(JSONVariant, nullable=False)
+
+
+class RespaldoBD(Base):
+    """Respaldo cifrado de la base de datos (estrategia 3-2-1) con el resultado de su prueba de restauración."""
+
+    __tablename__ = "respaldos_bd"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, index=True)
+    solicitado_por: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    motor: Mapped[str] = mapped_column(String(30), nullable=False)
+    algoritmo: Mapped[str] = mapped_column(String(40), nullable=False)
+    huella_llave: Mapped[str] = mapped_column(String(16), nullable=False)
+    tamano_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    tablas: Mapped[int] = mapped_column(Integer, nullable=False)
+    filas: Mapped[int] = mapped_column(Integer, nullable=False)
+    copias: Mapped[list[str]] = mapped_column(JSONVariant, nullable=False, default=list)
+    restauracion_verificada: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    detalle: Mapped[str | None] = mapped_column(Text, nullable=True)
