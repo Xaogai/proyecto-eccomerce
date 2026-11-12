@@ -18,7 +18,7 @@ export function HomePage() {
   const categories = useCategories()
   const featured = useProducts({
     page: 1,
-    page_size: 4,
+    page_size: 6,
     sort: 'calificacion',
     ...(store ? { store_id: store.id, pickup_today: 'true' } : {}),
   })
@@ -126,7 +126,7 @@ export function HomePage() {
           <ProductGrid
             products={featured.data?.items}
             loading={featured.isPending}
-            skeletons={4}
+            skeletons={6}
             cardVariant="simple"
             layout="inicio"
           />
