@@ -40,8 +40,13 @@ def test_registro_publico_siempre_crea_cliente(client: InProcessASGIClient, db_s
             "email": "intruso@correo.com",
             "password": "Contrasena123",
             "tipo_usuario": "admin",
-            "telefono": "7221234567",
         },
+    )
+    assert res.status_code == 403
+    assert db_session.query(Usuario).filter(Usuario.email == "intruso@correo.com").first() is None
+    res = client.post(
+        "/api/v1/auth/register",
+        json={"nombre": "Intruso", "email": "intruso@correo.com", "password": "Contrasena123", "telefono": "7221234567"},
     )
     assert res.status_code == 201
     assert res.json()["tipo_usuario"] == "cliente"
@@ -107,10 +112,8 @@ def test_perfil_del_staff_trae_su_sucursal(client: InProcessASGIClient) -> None:
 def test_carrito_ajeno_no_se_puede_leer_ni_modificar(client: InProcessASGIClient) -> None:
     ana_cart = _cart_with(client, _login(client))
     admin = _login(client, "admin.sintetico@ferremarket.local")
-    ajeno = client.get("/api/v1/cart", headers={**admin, "X-Cart-Id": ana_cart}).json()
-    assert ajeno["id"] != ana_cart
-    invitado = client.get("/api/v1/cart", headers={"X-Cart-Id": ana_cart}).json()
-    assert invitado["id"] != ana_cart and invitado["items"] == []
+    assert client.get("/api/v1/cart", headers={**admin, "X-Cart-Id": ana_cart}).status_code == 403
+    assert client.get("/api/v1/cart", headers={"X-Cart-Id": ana_cart}).status_code == 403
 
 
 def test_carrito_informa_stock_y_no_deja_pedir_de_mas(client: InProcessASGIClient, db_session: Session) -> None:
@@ -209,7 +212,7 @@ def test_no_se_puede_pagar_el_carrito_de_otro(client: InProcessASGIClient, db_se
         headers=admin,
         json={"carrito_id": ana_cart, "sucursal_id": _toluca(db_session), "tipo_envio": "recoleccion_tienda"},
     )
-    assert res.status_code == 400
+    assert res.status_code == 403
 
 
 def test_reintentar_pago_rechazado(client: InProcessASGIClient, db_session: Session) -> None:
@@ -244,7 +247,7 @@ def test_pagos_solo_del_dueno_y_por_el_monto_del_pedido(client: InProcessASGICli
     staff = _login(client, "staff.toluca.sintetico@ferremarket.local")
     payload = {"pedido_id": str(pedido.id), "monto": "1.00", "metodo": "tarjeta", "provider": "stripe",
                "payment_token": "tok_visa_sandbox"}
-    assert client.post("/api/v1/payments", headers=staff, json=payload).status_code == 404
+    assert client.post("/api/v1/payments", headers=staff, json=payload).status_code == 403
     caro = client.post("/api/v1/payments", headers=_login(client), json={**payload, "monto": "999999.00"})
     assert caro.status_code == 400
 

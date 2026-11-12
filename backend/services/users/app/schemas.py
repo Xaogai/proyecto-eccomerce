@@ -90,7 +90,7 @@ class AddressCreateRequest(BaseModel):
 
     calle: str = Field(..., min_length=3, max_length=200)
     ciudad: str = Field(..., min_length=2, max_length=100)
-    codigo_postal: str = Field(..., min_length=4, max_length=10)
+    codigo_postal: str = Field(..., min_length=5, max_length=10)
     es_predeterminada: bool = False
     alias: str | None = Field(default=None, max_length=50)
     nombre_recibe: str | None = Field(default=None, max_length=150)
@@ -186,6 +186,17 @@ class UserUpdateRequest(BaseModel):
     nombre: str | None = Field(default=None, min_length=2, max_length=150)
     email: str | None = Field(default=None, max_length=150)
     telefono: str | None = Field(default=None, max_length=20)
+
+    @field_validator("email")
+    @classmethod
+    def validate_optional_email(cls, value: str | None) -> str | None:
+        """Valida y normaliza el correo electrónico en rectificación ARCO."""
+        if value is None:
+            return None
+        cleaned = value.strip().lower()
+        if "@" not in cleaned or "." not in cleaned.split("@")[-1]:
+            raise ValueError("Formato de correo electrónico inválido")
+        return cleaned
 
 
 class RoleChangeRequest(BaseModel):

@@ -50,7 +50,7 @@ def test_solo_staff_y_admin_y_el_staff_ve_su_sucursal(client: InProcessASGIClien
 def test_inventario_con_busqueda_y_filtros(client: InProcessASGIClient) -> None:
     headers = _login(client)
     data = client.get("/api/v1/sucursal/inventario", headers=headers, params={"page_size": 100}).json()
-    roja = next(r for r in data["items"] if r["sku"] == "TAL-20V-ROJ")
+    roja = client.get("/api/v1/sucursal/inventario", headers=headers, params={"q": "TAL-20V-ROJ"}).json()["items"][0]
     assert roja["piezas"] == 25 and roja["estado"] == "ok" and roja["pasillo"] != "Sin asignar"
     assert data["conteos"]["todos"] == data["total"]
     busqueda = client.get("/api/v1/sucursal/inventario", headers=headers, params={"q": "tal-20v"}).json()

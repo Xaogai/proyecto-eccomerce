@@ -13,7 +13,7 @@ from backend.services.cart.app.schemas import (
 )
 from backend.shared.database import get_db
 from backend.shared.models import Usuario
-from backend.shared.security import get_current_user, get_optional_user
+from backend.shared.security import get_current_user, get_optional_user, record_audit_event
 
 router = APIRouter(prefix="/api/v1", tags=["Carrito de Compras"])
 
@@ -23,6 +23,12 @@ SUCURSAL_QUERY = Query(default=None, description="Sucursal para informar el stoc
 def get_cart_repository(db: Session = Depends(get_db)) -> CartRepository:
     """Inyección de dependencias para CartRepository (Sec. 14.2)."""
     return CartRepository(db)
+
+
+def _cart_forbidden(exc: PermissionError, cliente_id: uuid.UUID | None, cart_id: uuid.UUID | None) -> HTTPException:
+    """403 al tocar el carrito de otra persona; queda en la bitácora."""
+    record_audit_event("idor_cart_attempt_blocked", str(cliente_id) if cliente_id else None, f"cart:{cart_id}")
+    return HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 def _out_of_stock(exc: OutOfStockError) -> HTTPException:
@@ -55,6 +61,8 @@ def add_item_to_cart(
         )
     except OutOfStockError as exc:
         raise _out_of_stock(exc) from exc
+    except PermissionError as exc:
+        raise _cart_forbidden(exc, cliente_id, effective_cart_id) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     if sucursal_id is None:
@@ -75,7 +83,10 @@ def get_cart_contents(
     """
     effective_cart_id = cart_id or x_cart_id
     cliente_id = current_user.id if current_user else None
-    cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
+    try:
+        cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
+    except PermissionError as exc:
+        raise _cart_forbidden(exc, cliente_id, effective_cart_id) from exc
     return repo.build_cart_response(cart, sucursal_id)
 
 
@@ -102,11 +113,13 @@ def update_cart_item_quantity(
     """Actualiza la cantidad de un ítem en el carrito (`0` lo elimina) y recalcula el total (HU-04)."""
     effective_cart_id = payload.carrito_id or cart_id or x_cart_id
     cliente_id = current_user.id if current_user else None
-    cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
     try:
+        cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
         updated = repo.update_item_quantity(cart.id, sku, payload.cantidad)
     except OutOfStockError as exc:
         raise _out_of_stock(exc) from exc
+    except PermissionError as exc:
+        raise _cart_forbidden(exc, cliente_id, effective_cart_id) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     if not updated:
@@ -126,7 +139,10 @@ def remove_cart_item(
     """Elimina un producto del carrito y recalcula el total (HU-04)."""
     effective_cart_id = cart_id or x_cart_id
     cliente_id = current_user.id if current_user else None
-    cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
+    try:
+        cart = repo.get_or_create_cart(carrito_id=effective_cart_id, cliente_id=cliente_id)
+    except PermissionError as exc:
+        raise _cart_forbidden(exc, cliente_id, effective_cart_id) from exc
     updated = repo.remove_item(cart.id, sku)
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Carrito no encontrado")

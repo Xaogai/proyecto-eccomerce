@@ -51,8 +51,19 @@ def process_tokenized_payment(
             detail="Circuit breaker abierto: el proveedor de pagos se encuentra temporalmente degradado",
         )
     pedido = repo.db.query(Pedido).filter(Pedido.id == payload.pedido_id).first()
-    if not pedido or (current_user.tipo_usuario != "admin" and pedido.cliente_id != current_user.id):
+    if not pedido:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
+    if current_user.tipo_usuario != "admin" and pedido.cliente_id != current_user.id:
+        record_audit_event(
+            "idor_payment_attempt_blocked",
+            str(current_user.id),
+            f"order:{pedido.id}",
+            {"owner_id": str(pedido.cliente_id)},
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tiene autorización para procesar pagos de pedidos de otro usuario",
+        )
     if payload.monto > pedido.total + sum((e.costo for e in pedido.envios), Decimal("0.00")):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El monto no corresponde al pedido")
 

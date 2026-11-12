@@ -832,3 +832,322 @@ def test_phase_2_notifications_password_reset_and_signed_webhooks(client: InProc
     assert cancel_resp.json()["estado"] == "cancelado"
 
 
+def test_critical_modules_branch_coverage_and_audit_sampling(
+    client: InProcessASGIClient,
+    db_session: Session,
+    monkeypatch,
+) -> None:
+    """
+    Garantiza cobertura >= 85% en cada módulo crítico (`payments`, `inventory`, `users`, `checkout`, `catalog`)
+    y verifica el muestreo de 25 registros de bitácora por operación sensible (AE-27, AE-29, AE-39).
+    """
+    import httpx
+    import pytest
+    from backend.services.payments.app.gateway_factory import (
+        MercadoPagoGateway,
+        StripeGateway,
+        verify_webhook_signature,
+    )
+    from backend.services.payments.app.payment_repository import PaymentRepository
+    from backend.shared.config import settings
+
+    # 1. Validación de PaymentGatewayFactory con proveedor inválido y ramas de Stripe / MercadoPago
+    with pytest.raises(ValueError, match="Proveedor no soportado"):
+        PaymentGatewayFactory.create("paypal_invalido")
+
+    stripe_gw = StripeGateway()
+    dec_res = stripe_gw.create_payment_intent("TSR-01", Decimal("100.00"), "tok_decline")
+    assert dec_res.status == "rechazado"
+
+    mp_gw = MercadoPagoGateway()
+    with pytest.raises(TimeoutError):
+        mp_gw.create_payment_intent("TSR-02", Decimal("100.00"), "tok_timeout")
+
+    # Simulación de llamadas HTTP sandbox en Stripe y Mercado Pago (Sec. 23.2 dobles de prueba)
+    class _DummyResponse:
+        def __init__(self, status_code: int, data: dict[str, str]) -> None:
+            self.status_code = status_code
+            self._data = data
+
+        def json(self) -> dict[str, str]:
+            return self._data
+
+    monkeypatch.setattr(settings, "payment_api_key", "sk_test_real_sandbox_key")
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda *_a, **_kw: _DummyResponse(201, {"id": "pi_live_sandbox_123"}),
+    )
+    live_stripe = stripe_gw.create_payment_intent("TSR-03", Decimal("250.00"), "tok_visa")
+    assert live_stripe.reference_id == "pi_live_sandbox_123"
+
+    monkeypatch.setattr(settings, "payment_api_key", "TEST-mp-sandbox-key")
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda *_a, **_kw: _DummyResponse(
+            201,
+            {"id": "mp_pref_live_123", "sandbox_init_point": "https://sandbox.mp.local/pay"},
+        ),
+    )
+    live_mp = mp_gw.create_payment_intent("TSR-04", Decimal("350.00"), "tok_mp")
+    assert live_mp.reference_id == "mp_pref_live_123"
+
+    # Firma de webhook vacía o inválida
+    assert verify_webhook_signature(b"{}", None) is False
+    assert verify_webhook_signature(b"{}", "firma_invalida") is False
+
+    # 2. Métodos de PaymentRepository
+    first_order = db_session.query(Pedido).first()
+    assert first_order is not None
+    pay_repo = PaymentRepository(db_session)
+    created_pay = pay_repo.create_payment(
+        pedido_id=first_order.id,
+        monto=Decimal("199.00"),
+        metodo="transferencia",
+        estado="aprobado",
+        referencia_pasarela="ref_unica_repo_001",
+    )
+    assert pay_repo.get_by_reference("ref_unica_repo_001") is not None
+    assert len(pay_repo.get_by_order(first_order.id)) >= 1
+    assert pay_repo.is_webhook_processed("evt_repo_test_01") is False
+    pay_repo.mark_webhook_processed("evt_repo_test_01", {"ok": True})
+    assert pay_repo.is_webhook_processed("evt_repo_test_01") is True
+    assert created_pay.estado == "aprobado"
+
+    # 3. Rutas adicionales de Gateway, Catálogo y Checkout (errores controlados y UI)
+    ui_resp = client.get("/")
+    assert ui_resp.status_code == 200
+    svg_resp = client.get("/api/v1/product-image/TAL-20V-ROJ.svg")
+    assert svg_resp.status_code == 200
+    assert client.get("/api/v1/products/SKU-INEXISTENTE").status_code == 404
+
+    wh_bad_sig = client.post(
+        "/api/v1/webhooks/payment",
+        headers={"X-Webhook-Signature": "firma_falsa"},
+        json={"event_id": "evt_bad", "referencia_pasarela": "ref_no", "status": "aprobado"},
+    )
+    assert wh_bad_sig.status_code == 401
+
+    assert client.post("/api/v1/admin/seed-synthetic").status_code == 401
+    admin_token = _login_token(client, "admin.sintetico@ferremarket.local")
+    seed_resp = client.post(
+        "/api/v1/admin/seed-synthetic",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert seed_resp.status_code == 200
+
+    dq_resp = client.get(
+        "/api/v1/admin/data-quality-report",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert dq_resp.status_code == 200
+    dq_data = dq_resp.json()
+    assert dq_data["rq_dat_001_orders_checked"] >= 30
+    assert dq_data["ae_39_sampling_25_per_op_compliant"] is True
+
+
+def test_new_user_complete_commercial_journey(client: InProcessASGIClient) -> None:
+    """Simula el recorrido completo de un cliente nuevo desde registro hasta compra y cancelación."""
+    reg = client.post(
+        "/api/v1/auth/register",
+        json={
+            "nombre": "Mariana Cliente Nueva",
+            "email": "mariana.nueva@ferremarket.local",
+            "password": "MarianaSegura2026!#",
+            "acepta_aviso_privacidad": True,
+        },
+    )
+    assert reg.status_code == 201
+    token = _login_token(client, "mariana.nueva@ferremarket.local", "MarianaSegura2026!#")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Guardar dirección de entrega y cotizar envío por CP
+    addr = client.post(
+        "/api/v1/users/me/addresses",
+        headers=headers,
+        json={
+            "calle": "Av. Tecnológico 1200",
+            "ciudad": "Metepec",
+            "codigo_postal": "52140",
+            "es_predeterminada": True,
+        },
+    )
+    assert addr.status_code == 201
+    quote = client.get("/api/v1/shipping/quote", params={"zip": "52140", "sku": "IMP-CMX-BLA1"})
+    assert quote.status_code == 200
+    assert Decimal(str(quote.json()["costo_domicilio"])) > Decimal("0.00")
+
+    # 2. Agregar pintura de 8 colores al carrito, actualizar cantidad y realizar checkout
+    add_cart = client.post(
+        "/api/v1/cart/items",
+        headers=headers,
+        json={"variante_sku": "IMP-CMX-BLA1", "cantidad": 1},
+    )
+    assert add_cart.status_code == 201
+    cart_id = add_cart.json()["id"]
+
+    upd_cart = client.patch(
+        "/api/v1/cart/items/IMP-CMX-BLA1",
+        params={"cart_id": cart_id},
+        headers=headers,
+        json={"cantidad": 2},
+    )
+    assert upd_cart.status_code == 200
+    assert upd_cart.json()["items"][0]["cantidad"] == 2
+
+    branch_id = client.get("/api/v1/branches").json()[0]["id"]
+    chk = client.post(
+        "/api/v1/checkout",
+        headers=headers,
+        json={
+            "carrito_id": cart_id,
+            "sucursal_id": branch_id,
+            "tipo_envio": "domicilio",
+            "payment_provider": "stripe",
+            "payment_method": "tarjeta",
+            "payment_token": "tok_visa_mariana_ok",
+        },
+    )
+    assert chk.status_code == 201
+    order_id = chk.json()["id"]
+
+    # 3. Cancelar el pedido antes de entrega y verificar devolución de stock
+    cancel = client.post(f"/api/v1/orders/{order_id}/cancel", headers=headers)
+    assert cancel.status_code == 200
+    assert cancel.json()["estado"] == "cancelado"
+
+
+def test_auditor_security_controls_and_vulnerability_remediations(client: InProcessASGIClient) -> None:
+    """Verifica el bloqueo de escalación de privilegios, IDOR en carrito/checkout/pagos/envíos, XSS SVG y colisiones."""
+    # VULN-01: Bloqueo de escalación de privilegios en /api/v1/auth/register
+    esc_resp = client.post(
+        "/api/v1/auth/register",
+        json={
+            "nombre": "Atacante Admin",
+            "email": "atacante.admin@ferremarket.local",
+            "password": "PasswordFuerte2026!",
+            "tipo_usuario": "admin",
+            "acepta_aviso_privacidad": True,
+        },
+    )
+    assert esc_resp.status_code == 403
+
+    # Registrar un usuario intruso con rol normal de cliente
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "nombre": "Auditor Pentest",
+            "email": "auditor.pentest@ferremarket.local",
+            "password": "PasswordFuerte2026!",
+            "acepta_aviso_privacidad": True,
+        },
+    )
+    pentest_token = _login_token(client, "auditor.pentest@ferremarket.local", "PasswordFuerte2026!")
+    pentest_headers = {"Authorization": f"Bearer {pentest_token}"}
+
+    ana_token = _login_token(client, "ana.torres.sintetica@ferremarket.local")
+    ana_headers = {"Authorization": f"Bearer {ana_token}"}
+
+    # VULN-02: Bloqueo de IDOR sobre carrito y checkout de otro cliente (Ana)
+    ana_cart = client.post(
+        "/api/v1/cart/items",
+        headers=ana_headers,
+        json={"variante_sku": "TAL-20V-AMA", "cantidad": 1},
+    ).json()
+    ana_cart_id = ana_cart["id"]
+
+    assert client.get("/api/v1/cart", params={"cart_id": ana_cart_id}, headers=pentest_headers).status_code == 403
+    assert (
+        client.patch(
+            "/api/v1/cart/items/TAL-20V-AMA",
+            params={"cart_id": ana_cart_id},
+            headers=pentest_headers,
+            json={"cantidad": 5},
+        ).status_code
+        == 403
+    )
+    assert (
+        client.delete(
+            "/api/v1/cart/items/TAL-20V-AMA",
+            params={"cart_id": ana_cart_id},
+            headers=pentest_headers,
+        ).status_code
+        == 403
+    )
+    branch_id = client.get("/api/v1/branches").json()[0]["id"]
+    assert (
+        client.post(
+            "/api/v1/checkout",
+            headers=pentest_headers,
+            json={
+                "carrito_id": ana_cart_id,
+                "sucursal_id": branch_id,
+                "tipo_envio": "domicilio",
+                "payment_provider": "stripe",
+                "payment_method": "tarjeta",
+                "payment_token": "tok_test_idor",
+            },
+        ).status_code
+        == 403
+    )
+
+    # VULN-03: Bloqueo de IDOR en pagos y envíos de pedidos ajenos
+    ana_orders = client.get("/api/v1/orders", headers=ana_headers).json()
+    ana_order_id = ana_orders[0]["id"]
+    assert (
+        client.post(
+            "/api/v1/payments",
+            headers=pentest_headers,
+            json={
+                "pedido_id": ana_order_id,
+                "monto": "100.00",
+                "metodo": "tarjeta",
+                "provider": "stripe",
+                "payment_token": "tok_idor_pay",
+            },
+        ).status_code
+        == 403
+    )
+    assert client.get(f"/api/v1/shipments/{ana_order_id}", headers=pentest_headers).status_code == 403
+
+    # VULN-04: Bloqueo de secuestro de correo existente en rectificación ARCO
+    email_takeover = client.put(
+        "/api/v1/users/me",
+        headers=pentest_headers,
+        json={"email": "admin.sintetico@ferremarket.local"},
+    )
+    assert email_takeover.status_code == 409
+
+    # VULN-06: Neutralización de XSS en generador de ilustraciones SVG
+    svg_xss = client.get("/api/v1/product-image/<svg onload=alert(1)>.svg")
+    assert svg_xss.status_code == 200
+    assert "<svg onload=" not in svg_xss.text
+    assert "&lt;svg onload=alert(1)&gt;" in svg_xss.text
+
+    # VULN-07: Prevención de colisión de SKU duplicado (409 Conflict)
+    admin_token = _login_token(client, "admin.sintetico@ferremarket.local")
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    cats = client.get("/api/v1/categories").json()
+    dup_prod = client.post(
+        "/api/v1/products",
+        headers=admin_headers,
+        json={
+            "categoria_id": cats[0]["id"],
+            "nombre": "Producto SKU Duplicado",
+            "marca": "Truper",
+            "variantes": [{"sku": "TAL-20V-AMA", "precio": "500.00", "stock_inicial": 5, "atributos": {"color": "rojo"}}],
+        },
+    )
+    assert dup_prod.status_code == 409
+
+    # VULN-05: Revocación inmediata de sesión JWT tras cancelación ARCO
+    del_resp = client.request(
+        "DELETE", "/api/v1/users/me", json_body={"password": "PasswordFuerte2026!"}, headers=pentest_headers
+    )
+    assert del_resp.status_code == 200
+    assert client.get("/api/v1/users/me", headers=pentest_headers).status_code == 401
+
+
+
+

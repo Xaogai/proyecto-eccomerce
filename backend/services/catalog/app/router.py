@@ -1,6 +1,7 @@
 """Endpoints REST del microservicio de Catálogo (Sec. 13.1, HU-01, HU-02, HU-08, HU-09)."""
 
 from decimal import Decimal
+import html
 import uuid
 from typing import Any
 
@@ -166,17 +167,32 @@ def create_product_review(
 def get_product_svg_illustration(sku: str, db: Session = Depends(get_db)) -> Response:
     """Genera dinámicamente la ilustración vectorial comercial de una variante de producto."""
     variante = db.query(Variante).filter(Variante.sku == sku).first()
-    title = variante.producto.nombre[:28] if (variante and variante.producto) else sku
-    brand = (variante.producto.marca or "FERREMARKET PRO").upper() if (variante and variante.producto) else "PRO"
-    attrs = " • ".join(str(v) for v in (variante.atributos or {}).values())[:36] if variante else ""
+    raw_title = variante.producto.nombre[:28] if (variante and variante.producto) else sku[:28]
+    raw_brand = (variante.producto.marca or "FERREMARKET PRO").upper() if (variante and variante.producto) else "PRO"
+    raw_attrs = " • ".join(str(v) for v in (variante.atributos or {}).values())[:36] if variante else ""
+    title = html.escape(raw_title, quote=True)
+    brand = html.escape(raw_brand, quote=True)
+    safe_sku = html.escape(sku[:32], quote=True)
+    attrs = html.escape(raw_attrs, quote=True)
     color_name = str((variante.atributos or {}).get("color", "")).lower() if variante else ""
     palette = {
         "rojo": ("#7f1d1d", "#ef4444"),
+        "rojo oxido": ("#7c2d12", "#dc2626"),
         "amarillo": ("#713f12", "#facc15"),
+        "amarillo sol": ("#854d0e", "#fde047"),
         "azul": ("#1e3a8a", "#38bdf8"),
+        "azul cielo": ("#0369a1", "#7dd3fc"),
         "naranja": ("#7c2d12", "#f97316"),
         "terracota": ("#7c2d12", "#fb923c"),
-        "blanco": ("#0f766e", "#2dd4bf"),
+        "blanco": ("#0f766e", "#5eead4"),
+        "marfil": ("#78350f", "#fde68a"),
+        "gris": ("#334155", "#94a3b8"),
+        "gris perla": ("#475569", "#cbd5e1"),
+        "verde": ("#14532d", "#4ade80"),
+        "verde menta": ("#065f46", "#6ee7b7"),
+        "negro": ("#18181b", "#a1a1aa"),
+        "beige": ("#78350f", "#fcd34d"),
+        "cafe": ("#451a03", "#d97706"),
     }
     bg_hex, accent_hex = palette.get(color_name, ("#1e293b", "#f96302"))
     svg = (
@@ -192,11 +208,15 @@ def get_product_svg_illustration(sku: str, db: Session = Depends(get_db)) -> Res
         f'<text x="28" y="185" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="800" '
         f'fill="#ffffff">{title}</text>'
         f'<text x="28" y="218" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600" '
-        f'fill="#cbd5e1">{sku} — {attrs}</text>'
+        f'fill="#cbd5e1">{safe_sku} — {attrs}</text>'
         f'<rect x="28" y="248" width="96" height="6" rx="3" fill="{accent_hex}"/>'
         f'</svg>'
     )
-    return Response(content=svg, media_type="image/svg+xml")
+    return Response(
+        content=svg,
+        media_type="image/svg+xml",
+        headers={"Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'"},
+    )
 
 
 @router.post("/products", response_model=ProductDetailResponse, status_code=status.HTTP_201_CREATED)
@@ -211,7 +231,10 @@ def create_product(
     cat = repo.db.query(Categoria).filter(Categoria.id == payload.categoria_id).first()
     if not cat:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="La categoría especificada no existe")
-    product = repo.create_product(payload)
+    try:
+        product = repo.create_product(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     record_audit_event(
         "product_created",
         str(admin_user.id),

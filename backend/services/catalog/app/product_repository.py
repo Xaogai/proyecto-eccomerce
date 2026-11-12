@@ -382,6 +382,17 @@ class ProductRepository:
         Returns:
             ProductDetailResponse: Producto creado con variantes.
         """
+        requested_skus = [v.sku for v in payload.variantes]
+        if len(requested_skus) != len(set(requested_skus)):
+            raise ValueError("El producto contiene SKUs duplicados en la misma solicitud")
+        existing_sku = (
+            self.db.query(Variante.sku)
+            .filter(Variante.sku.in_(requested_skus))
+            .first()
+        )
+        if existing_sku is not None:
+            raise ValueError(f"El SKU '{existing_sku[0]}' ya se encuentra registrado en el catálogo")
+
         product = Producto(
             categoria_id=payload.categoria_id,
             nombre=payload.nombre,

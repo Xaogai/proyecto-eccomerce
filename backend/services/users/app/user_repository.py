@@ -121,7 +121,7 @@ class UserRepository:
 
     def anonymize_user(self, user: Usuario) -> None:
         """
-        Anonimiza los datos personales de un usuario (Derecho de Cancelación/Oposición ARCO).
+        Anonimiza los datos personales de un usuario e invalida su credencial (Derecho de Cancelación ARCO).
 
         Args:
             user: Usuario que solicita la cancelación de sus datos.
@@ -133,6 +133,7 @@ class UserRepository:
         user.acepta_marketing = False
         user.acepta_personalizacion = False
         self.db.query(ListaDeseos).filter(ListaDeseos.usuario_id == user.id).delete()
+        user.password_hash = f"!ARCO_CANCELED_{uuid.uuid4().hex}"
         self.db.query(Direccion).filter(Direccion.cliente_id == user.id).delete()
         self.db.commit()
 

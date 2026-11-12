@@ -1,0 +1,3854 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ferremarket E-commerce API Gateway",
+    "description": "API Gateway unificado (OpenAPI 3.1) que integra los microservicios de Catálogo, Usuarios/Auth, Inventario, Carrito, Checkout, Pagos y Envíos.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/privacy-notice": {
+      "get": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Get Privacy Notice",
+        "description": "Devuelve el Aviso de Privacidad oficial conforme a la LFPDPPP (Sec. 4.5, AE-45).\n\nReturns:\n    dict[str, Any]: Contenido normativo del aviso de privacidad y derechos ARCO.",
+        "operationId": "get_privacy_notice_api_v1_privacy_notice_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Privacy Notice Api V1 Privacy Notice Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Register User",
+        "description": "Registra un nuevo usuario en la plataforma con contraseña cifrada (HU-03, RQ-SEG-001).\n\nArgs:\n    payload: Datos de registro validados.\n    repo: Repositorio de usuarios inyectado.\n\nReturns:\n    Usuario: Perfil del usuario registrado.",
+        "operationId": "register_user_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Login User",
+        "description": "Autentica al usuario y emite tokens JWT access y refresh (Sec. 13.1, Sec. 18.1).\n\nArgs:\n    payload: Correo y contraseña.\n    repo: Repositorio de usuarios.\n\nReturns:\n    TokenResponse: Par de tokens access y refresh.",
+        "operationId": "login_user_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Refresh Access Token",
+        "description": "Renueva el access token y rota el refresh token (invalidando el anterior - Sec. 18.1).\n\nArgs:\n    payload: Refresh token vigente.\n    repo: Repositorio de usuarios.\n\nReturns:\n    TokenResponse: Nuevos tokens access y refresh.",
+        "operationId": "refresh_access_token_api_v1_auth_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Logout User",
+        "description": "Invalida el token actual en el cierre de sesión (Sec. 18.1, AE-22).\n\nArgs:\n    credentials: Bearer token actual.\n\nReturns:\n    dict[str, str]: Mensaje de confirmación.",
+        "operationId": "logout_user_api_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Logout User Api V1 Auth Logout Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset/request": {
+      "post": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Request Password Reset",
+        "description": "Solicita un token de recuperación de contraseña de un solo uso y lo envía por correo (HU-03).",
+        "operationId": "request_password_reset_api_v1_auth_password_reset_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Request Password Reset Api V1 Auth Password Reset Request Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password-reset/confirm": {
+      "post": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Confirm Password Reset",
+        "description": "Confirma el cambio de contraseña usando un token de recuperación de un solo uso (HU-03, RQ-SEG-001).",
+        "operationId": "confirm_password_reset_api_v1_auth_password_reset_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Confirm Password Reset Api V1 Auth Password Reset Confirm Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me/notifications": {
+      "get": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Get My Notifications",
+        "description": "Lista las notificaciones por correo enviadas al usuario autenticado (HU-10).",
+        "operationId": "get_my_notifications_api_v1_users_me_notifications_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Get My Notifications Api V1 Users Me Notifications Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Get My Profile",
+        "description": "Obtiene el perfil del usuario autenticado.",
+        "operationId": "get_my_profile_api_v1_users_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Update My Profile",
+        "description": "Derecho de Rectificación (ARCO - LFPDPPP): Permite corregir datos del usuario.",
+        "operationId": "update_my_profile_api_v1_users_me_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Cancel My Account",
+        "description": "Derecho de Cancelación y Oposición (ARCO - LFPDPPP): Anonimiza datos y elimina direcciones.",
+        "operationId": "cancel_my_account_api_v1_users_me_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Cancel My Account Api V1 Users Me Delete"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/arco": {
+      "get": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Export Personal Data Arco",
+        "description": "Derecho de Acceso (ARCO - LFPDPPP): Exporta todos los datos personales del titular.",
+        "operationId": "export_personal_data_arco_api_v1_users_me_arco_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Export Personal Data Arco Api V1 Users Me Arco Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/addresses": {
+      "get": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "List My Addresses",
+        "description": "Lista las direcciones guardadas del cliente autenticado.",
+        "operationId": "list_my_addresses_api_v1_users_me_addresses_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AddressResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List My Addresses Api V1 Users Me Addresses Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Add My Address",
+        "description": "Agrega una dirección de envío a la cuenta del cliente autenticado.",
+        "operationId": "add_my_address_api_v1_users_me_addresses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{user_id}/role": {
+      "patch": {
+        "tags": [
+          "Autenticación y Cuentas"
+        ],
+        "summary": "Change User Role",
+        "description": "Cambia el rol de un usuario (restringido a administradores con registro en bitácora).",
+        "operationId": "change_user_role_api_v1_users__user_id__role_patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleChangeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "tags": [
+          "Catálogo y Búsqueda"
+        ],
+        "summary": "List Categories",
+        "description": "Lista las categorías jerárquicas disponibles hasta 3 niveles (Sec. 13.1, HU-01).",
+        "operationId": "list_categories_api_v1_categories_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryTreeResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Categories Api V1 Categories Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Catálogo y Búsqueda"
+        ],
+        "summary": "Create Category",
+        "description": "Da de alta una nueva categoría en el catálogo (requiere rol admin).",
+        "operationId": "create_category_api_v1_categories_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryTreeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/products/{sku}": {
+      "get": {
+        "tags": [
+          "Catálogo y Búsqueda"
+        ],
+        "summary": "Get Product",
+        "description": "Obtiene el detalle de un producto y sus variantes por SKU (Sec. 13.1, Sec. 14.2, HU-02).",
+        "operationId": "get_product_api_v1_products__sku__get",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "tags": [
+          "Catálogo y Búsqueda"
+        ],
+        "summary": "List Products",
+        "description": "Lista productos paginados dentro de una categoría o combinando filtros (Sec. 13.1, HU-01, HU-09).",
+        "operationId": "list_products_api_v1_products_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID de categoría",
+              "title": "Category"
+            },
+            "description": "ID de categoría"
+          },
+          {
+            "name": "categoria_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Alias de ID de categoría",
+              "title": "Categoria Id"
+            },
+            "description": "Alias de ID de categoría"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Número de página",
+              "default": 1,
+              "title": "Page"
+            },
+            "description": "Número de página"
+          },
+          {
+            "name": "marca",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtro por marca (HU-09)",
+              "title": "Marca"
+            },
+            "description": "Filtro por marca (HU-09)"
+          },
+          {
+            "name": "min_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Price"
+            }
+          },
+          {
+            "name": "max_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Price"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Búsqueda por texto",
+              "title": "Q"
+            },
+            "description": "Búsqueda por texto"
+          },
+          {
+            "name": "atributo_clave",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Clave de atributo (ej. color)",
+              "title": "Atributo Clave"
+            },
+            "description": "Clave de atributo (ej. color)"
+          },
+          {
+            "name": "atributo_valor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Valor de atributo (ej. rojo)",
+              "title": "Atributo Valor"
+            },
+            "description": "Valor de atributo (ej. rojo)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedProductsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Catálogo y Búsqueda"
+        ],
+        "summary": "Create Product",
+        "description": "Da de alta un producto y sus variantes (HU-08, Sec. 19 Completitud).",
+        "operationId": "create_product_api_v1_products_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/variants/{sku}/price": {
+      "patch": {
+        "tags": [
+          "Catálogo y Búsqueda"
+        ],
+        "summary": "Update Variant Price",
+        "description": "Actualiza el precio de una variante y deja constancia en la bitácora de auditoría.",
+        "operationId": "update_variant_price_api_v1_variants__sku__price_patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VariantPriceUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Variant Price Api V1 Variants  Sku  Price Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/branches": {
+      "get": {
+        "tags": [
+          "Inventario y Sucursales"
+        ],
+        "summary": "List Branches",
+        "description": "Lista las sucursales disponibles para consulta de stock o recolección en tienda.",
+        "operationId": "list_branches_api_v1_branches_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BranchResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Branches Api V1 Branches Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Inventario y Sucursales"
+        ],
+        "summary": "Create Branch",
+        "description": "Crea una nueva sucursal física (restringido a administradores).",
+        "operationId": "create_branch_api_v1_branches_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BranchCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/inventory/{sku}": {
+      "get": {
+        "tags": [
+          "Inventario y Sucursales"
+        ],
+        "summary": "Get Inventory For Sku",
+        "description": "Consulta las existencias disponibles y reservadas de un SKU por sucursal.",
+        "operationId": "get_inventory_for_sku_api_v1_inventory__sku__get",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BranchStockResponse"
+                  },
+                  "title": "Response Get Inventory For Sku Api V1 Inventory  Sku  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/stock": {
+      "put": {
+        "tags": [
+          "Inventario y Sucursales"
+        ],
+        "summary": "Update Branch Stock",
+        "description": "Actualiza el stock disponible de un SKU en una sucursal y registra el cambio en bitácora.",
+        "operationId": "update_branch_stock_api_v1_inventory_stock_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchStockResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/inventory/reserve": {
+      "post": {
+        "tags": [
+          "Inventario y Sucursales"
+        ],
+        "summary": "Reserve Inventory Stock",
+        "description": "Reserva temporalmente stock para un SKU y sucursal (Sec. 13.1, HU-05, RQ-DISP-001).\nLa reserva expira automáticamente a los 15 minutos si no se confirma el checkout.",
+        "operationId": "reserve_inventory_stock_api_v1_inventory_reserve_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockReservationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/release": {
+      "post": {
+        "tags": [
+          "Inventario y Sucursales"
+        ],
+        "summary": "Release Inventory Reservation",
+        "description": "Libera explícitamente una reserva temporal de inventario (ej. rechazo de pago o abandono).",
+        "operationId": "release_inventory_reservation_api_v1_inventory_release_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockReleaseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/expire-reservations": {
+      "post": {
+        "tags": [
+          "Inventario y Sucursales"
+        ],
+        "summary": "Expire Reservations",
+        "description": "Ejecuta la liberación automática de reservas temporales vencidas (>15 min, HU-05).",
+        "operationId": "expire_reservations_api_v1_inventory_expire_reservations_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "type": "object",
+                  "title": "Response Expire Reservations Api V1 Inventory Expire Reservations Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cart/items": {
+      "post": {
+        "tags": [
+          "Carrito de Compras"
+        ],
+        "summary": "Add Item To Cart",
+        "description": "Agrega un producto al carrito de compras para usuarios autenticados o invitados (Sec. 13.1, HU-04).",
+        "operationId": "add_item_to_cart_api_v1_cart_items_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-cart-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cart-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemAddRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cart": {
+      "get": {
+        "tags": [
+          "Carrito de Compras"
+        ],
+        "summary": "Get Cart Contents",
+        "description": "Obtiene el contenido actual del carrito con el total recalculado en tiempo real (Sec. 13.1, HU-04).",
+        "operationId": "get_cart_contents_api_v1_cart_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cart_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID del carrito para cliente invitado",
+              "title": "Cart Id"
+            },
+            "description": "ID del carrito para cliente invitado"
+          },
+          {
+            "name": "x-cart-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cart-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cart/items/{sku}": {
+      "patch": {
+        "tags": [
+          "Carrito de Compras"
+        ],
+        "summary": "Update Cart Item Quantity",
+        "description": "Actualiza la cantidad de un ítem en el carrito (`0` lo elimina) y recalcula el total (HU-04).",
+        "operationId": "update_cart_item_quantity_api_v1_cart_items__sku__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku"
+            }
+          },
+          {
+            "name": "cart_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cart Id"
+            }
+          },
+          {
+            "name": "x-cart-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cart-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Carrito de Compras"
+        ],
+        "summary": "Remove Cart Item",
+        "description": "Elimina un producto del carrito y recalcula el total (HU-04).",
+        "operationId": "remove_cart_item_api_v1_cart_items__sku__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku"
+            }
+          },
+          {
+            "name": "cart_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cart Id"
+            }
+          },
+          {
+            "name": "x-cart-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Cart-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checkout": {
+      "post": {
+        "tags": [
+          "Checkout y Pedidos"
+        ],
+        "summary": "Process Checkout",
+        "description": "Inicia el proceso de pago, reserva stock temporalmente y genera el pedido (Sec. 13.1, HU-06, RQ-DAT-001).",
+        "operationId": "process_checkout_api_v1_checkout_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/webhooks/payment": {
+      "post": {
+        "tags": [
+          "Checkout y Pedidos"
+        ],
+        "summary": "Payment Webhook",
+        "description": "Recibe la confirmación asíncrona de la pasarela de pago con idempotencia (Sec. 13.1, Anexo 1.5, AE-29).",
+        "operationId": "payment_webhook_api_v1_webhooks_payment_post",
+        "parameters": [
+          {
+            "name": "x-webhook-signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Webhook-Signature"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentWebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Payment Webhook Api V1 Webhooks Payment Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders": {
+      "get": {
+        "tags": [
+          "Checkout y Pedidos"
+        ],
+        "summary": "List Orders",
+        "description": "Lista el historial de pedidos del cliente autenticado (o todos si es administrador).",
+        "operationId": "list_orders_api_v1_orders_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Orders Api V1 Orders Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "Checkout y Pedidos"
+        ],
+        "summary": "Get Order Detail",
+        "description": "Obtiene el detalle de un pedido protegiendo contra acceso no autorizado a pedidos ajenos (IDOR - Sec. 25.1, AE-31).",
+        "operationId": "get_order_detail_api_v1_orders__order_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/cancel": {
+      "post": {
+        "tags": [
+          "Checkout y Pedidos"
+        ],
+        "summary": "Cancel User Order",
+        "description": "Permite al cliente propietario o a un administrador cancelar un pedido antes de su entrega (HU-06).",
+        "operationId": "cancel_user_order_api_v1_orders__order_id__cancel_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/webhook-sign": {
+      "post": {
+        "tags": [
+          "Pagos"
+        ],
+        "summary": "Sign Sandbox Webhook Payload",
+        "description": "Genera la firma HMAC-SHA256 (`X-Webhook-Signature`) para el simulador Sandbox de pasarela (Sec. 14.2, AE-29).",
+        "operationId": "sign_sandbox_webhook_payload_api_v1_payments_webhook_sign_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Sign Sandbox Webhook Payload Api V1 Payments Webhook Sign Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/payments": {
+      "post": {
+        "tags": [
+          "Pagos"
+        ],
+        "summary": "Process Tokenized Payment",
+        "description": "Inicia un pago tokenizado mediante `PaymentGatewayFactory` (Sec. 14.2, RQ-SEG-002).",
+        "operationId": "process_tokenized_payment_api_v1_payments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/shipping/quote": {
+      "get": {
+        "tags": [
+          "Envíos y Logística"
+        ],
+        "summary": "Get Shipping Quote",
+        "description": "Calcula el costo de envío según código postal y lista sucursales con stock disponible (Sec. 13.1, HU-07).",
+        "operationId": "get_shipping_quote_api_v1_shipping_quote_get",
+        "parameters": [
+          {
+            "name": "zip",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Código postal de 5 dígitos",
+              "title": "Zip"
+            },
+            "description": "Código postal de 5 dígitos"
+          },
+          {
+            "name": "sku",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "SKU opcional para verificar stock en tienda",
+              "title": "Sku"
+            },
+            "description": "SKU opcional para verificar stock en tienda"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingQuoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments": {
+      "get": {
+        "tags": [
+          "Envíos y Logística"
+        ],
+        "summary": "List Shipments",
+        "description": "Lista todos los envíos registrados para seguimiento operativo (staff y admin).",
+        "operationId": "list_shipments_api_v1_shipments_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Shipments Api V1 Shipments Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/shipments/{pedido_id}": {
+      "get": {
+        "tags": [
+          "Envíos y Logística"
+        ],
+        "summary": "Get Shipment By Order",
+        "description": "Consulta la información logística y de seguimiento de un pedido.",
+        "operationId": "get_shipment_by_order_api_v1_shipments__pedido_id__get",
+        "parameters": [
+          {
+            "name": "pedido_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pedido Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments/{shipment_id}/status": {
+      "patch": {
+        "tags": [
+          "Envíos y Logística"
+        ],
+        "summary": "Update Shipment Status",
+        "description": "Actualiza el estado de un envío o recolección en tienda y notifica al cliente (HU-07, HU-10).",
+        "operationId": "update_shipment_status_api_v1_shipments__shipment_id__status_patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "shipment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Shipment Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentStatusUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Monitoreo y Salud"
+        ],
+        "summary": "Gateway Health",
+        "description": "Endpoint de monitoreo de disponibilidad (Sec. 35, Compromiso 1 Uptime).",
+        "operationId": "gateway_health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Gateway Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "tags": [
+          "Administración y Auditoría"
+        ],
+        "summary": "Read Audit Logs",
+        "description": "Consulta la bitácora de operaciones sensibles: pagos, cambios de precio, stock, rol y accesos (Sec. 29.6, AE-39).",
+        "operationId": "read_audit_logs_api_v1_admin_audit_logs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por tipo de evento sensible",
+              "title": "Event Type"
+            },
+            "description": "Filtrar por tipo de evento sensible"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Read Audit Logs Api V1 Admin Audit Logs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/data-quality-report": {
+      "get": {
+        "tags": [
+          "Administración y Auditoría"
+        ],
+        "summary": "Verify Data Quality",
+        "description": "Ejecuta la verificación automatizada de Calidad de Datos y Seguridad de Esquema (Sec. 19, RQ-DAT-001, RQ-SEG-002, AE-14, AE-25):\n- Conciliación del 100% de pedidos: `total == sum(item.subtotal)` y `subtotal == cantidad * precio_unitario_venta`.\n- Verificación de 2FN en `item_carrito` (ausencia de columna `precio_unitario`).\n- Verificación PCI-DSS en `pagos` (ausencia de columnas de tarjeta/CVV).",
+        "operationId": "verify_data_quality_api_v1_admin_data_quality_report_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Verify Data Quality Api V1 Admin Data Quality Report Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/seed-synthetic": {
+      "post": {
+        "tags": [
+          "Administración y Auditoría"
+        ],
+        "summary": "Trigger Synthetic Seed",
+        "description": "Ejecuta migraciones de Alembic y genera datos sintéticos de prueba (Sec. 20, AE-26).",
+        "operationId": "trigger_synthetic_seed_api_v1_admin_seed_synthetic_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Trigger Synthetic Seed Api V1 Admin Seed Synthetic Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddressCreateRequest": {
+        "properties": {
+          "calle": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Calle"
+          },
+          "ciudad": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Ciudad"
+          },
+          "codigo_postal": {
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 4,
+            "title": "Codigo Postal"
+          },
+          "es_predeterminada": {
+            "type": "boolean",
+            "title": "Es Predeterminada",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "calle",
+          "ciudad",
+          "codigo_postal"
+        ],
+        "title": "AddressCreateRequest",
+        "description": "Datos para registrar una dirección de cliente."
+      },
+      "AddressResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "cliente_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cliente Id"
+          },
+          "calle": {
+            "type": "string",
+            "title": "Calle"
+          },
+          "ciudad": {
+            "type": "string",
+            "title": "Ciudad"
+          },
+          "codigo_postal": {
+            "type": "string",
+            "title": "Codigo Postal"
+          },
+          "es_predeterminada": {
+            "type": "boolean",
+            "title": "Es Predeterminada"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "cliente_id",
+          "calle",
+          "ciudad",
+          "codigo_postal",
+          "es_predeterminada"
+        ],
+        "title": "AddressResponse",
+        "description": "Representación de una dirección de entrega."
+      },
+      "BranchAvailabilityItem": {
+        "properties": {
+          "sucursal_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Sucursal Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "stock_disponible": {
+            "type": "integer",
+            "title": "Stock Disponible"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sucursal_id",
+          "nombre",
+          "stock_disponible"
+        ],
+        "title": "BranchAvailabilityItem",
+        "description": "Sucursal disponible para recolección en tienda (HU-07)."
+      },
+      "BranchCreateRequest": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "direccion_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direccion Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre"
+        ],
+        "title": "BranchCreateRequest",
+        "description": "Solicitud para dar de alta una sucursal física."
+      },
+      "BranchResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "direccion_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direccion Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nombre"
+        ],
+        "title": "BranchResponse",
+        "description": "Respuesta con información de sucursal."
+      },
+      "BranchStockResponse": {
+        "properties": {
+          "sucursal_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Sucursal Id"
+          },
+          "sucursal_nombre": {
+            "type": "string",
+            "title": "Sucursal Nombre"
+          },
+          "variante_sku": {
+            "type": "string",
+            "title": "Variante Sku"
+          },
+          "cantidad_disponible": {
+            "type": "integer",
+            "title": "Cantidad Disponible"
+          },
+          "cantidad_reservada": {
+            "type": "integer",
+            "title": "Cantidad Reservada"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sucursal_id",
+          "sucursal_nombre",
+          "variante_sku",
+          "cantidad_disponible",
+          "cantidad_reservada"
+        ],
+        "title": "BranchStockResponse",
+        "description": "Existencias de un SKU en una sucursal determinada."
+      },
+      "CartItemAddRequest": {
+        "properties": {
+          "carrito_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carrito Id"
+          },
+          "variante_sku": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Variante Sku"
+          },
+          "cantidad": {
+            "type": "integer",
+            "maximum": 50.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Cantidad"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variante_sku",
+          "cantidad"
+        ],
+        "title": "CartItemAddRequest",
+        "description": "Solicitud para agregar o actualizar una variante en el carrito (Sec. 13.1, HU-04)."
+      },
+      "CartItemDetailResponse": {
+        "properties": {
+          "variante_sku": {
+            "type": "string",
+            "title": "Variante Sku"
+          },
+          "nombre_producto": {
+            "type": "string",
+            "title": "Nombre Producto"
+          },
+          "cantidad": {
+            "type": "integer",
+            "title": "Cantidad"
+          },
+          "precio_unitario_vigente": {
+            "type": "string",
+            "title": "Precio Unitario Vigente"
+          },
+          "subtotal": {
+            "type": "string",
+            "title": "Subtotal"
+          },
+          "imagen_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imagen Url"
+          },
+          "atributos": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Atributos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variante_sku",
+          "nombre_producto",
+          "cantidad",
+          "precio_unitario_vigente",
+          "subtotal"
+        ],
+        "title": "CartItemDetailResponse",
+        "description": "Detalle de ítem en carrito con precio vigente calculado en tiempo real (2FN - Anexo 2.2.2)."
+      },
+      "CartItemUpdateRequest": {
+        "properties": {
+          "carrito_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carrito Id"
+          },
+          "cantidad": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Cantidad"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cantidad"
+        ],
+        "title": "CartItemUpdateRequest",
+        "description": "Solicitud para fijar la cantidad exacta de un ítem en el carrito (0 elimina el ítem)."
+      },
+      "CartResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "cliente_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cliente Id"
+          },
+          "fecha_creacion": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Creacion"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CartItemDetailResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "string",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "fecha_creacion",
+          "estado",
+          "items",
+          "total"
+        ],
+        "title": "CartResponse",
+        "description": "Contenido actual del carrito y su total calculado en tiempo real (Sec. 13.1, HU-04)."
+      },
+      "CategoryCreateRequest": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "categoria_padre_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoria Padre Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre"
+        ],
+        "title": "CategoryCreateRequest",
+        "description": "Solicitud para crear una categoría (soporta jerarquía con categoria_padre_id)."
+      },
+      "CategoryTreeResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "categoria_padre_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoria Padre Id"
+          },
+          "subcategorias": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryTreeResponse"
+            },
+            "type": "array",
+            "title": "Subcategorias"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nombre"
+        ],
+        "title": "CategoryTreeResponse",
+        "description": "Representación jerárquica de una categoría y sus subcategorías (HU-01)."
+      },
+      "CheckoutRequest": {
+        "properties": {
+          "carrito_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Carrito Id"
+          },
+          "sucursal_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Sucursal Id"
+          },
+          "tipo_envio": {
+            "type": "string",
+            "pattern": "^(domicilio|recoleccion_tienda)$",
+            "title": "Tipo Envio",
+            "default": "domicilio"
+          },
+          "codigo_postal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Codigo Postal",
+            "default": "50000"
+          },
+          "payment_provider": {
+            "type": "string",
+            "title": "Payment Provider",
+            "default": "stripe"
+          },
+          "payment_method": {
+            "type": "string",
+            "title": "Payment Method",
+            "default": "tarjeta"
+          },
+          "payment_token": {
+            "type": "string",
+            "title": "Payment Token",
+            "default": "tok_visa_sandbox"
+          },
+          "card_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Number"
+          },
+          "cvv": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cvv"
+          }
+        },
+        "type": "object",
+        "required": [
+          "carrito_id",
+          "sucursal_id"
+        ],
+        "title": "CheckoutRequest",
+        "description": "Solicitud de inicio de checkout y generación de pedido (Sec. 13.1, Anexo 1.5)."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "OrderItemResponse": {
+        "properties": {
+          "variante_sku": {
+            "type": "string",
+            "title": "Variante Sku"
+          },
+          "cantidad": {
+            "type": "integer",
+            "title": "Cantidad"
+          },
+          "precio_unitario_venta": {
+            "type": "string",
+            "title": "Precio Unitario Venta"
+          },
+          "subtotal": {
+            "type": "string",
+            "title": "Subtotal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variante_sku",
+          "cantidad",
+          "precio_unitario_venta",
+          "subtotal"
+        ],
+        "title": "OrderItemResponse",
+        "description": "Ítem de pedido con precio congelado al momento de la compra (Anexo 2.2.3, Sec. 19 Exactitud)."
+      },
+      "OrderResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "cliente_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cliente Id"
+          },
+          "folio": {
+            "type": "string",
+            "title": "Folio"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "total": {
+            "type": "string",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "referencia_pasarela": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referencia Pasarela"
+          },
+          "checkout_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkout Url"
+          },
+          "tipo_envio": {
+            "type": "string",
+            "title": "Tipo Envio",
+            "default": "domicilio"
+          },
+          "costo_envio": {
+            "type": "string",
+            "title": "Costo Envio",
+            "default": "0.00"
+          },
+          "estado_envio": {
+            "type": "string",
+            "title": "Estado Envio",
+            "default": "pendiente"
+          },
+          "numero_guia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Numero Guia"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "cliente_id",
+          "folio",
+          "fecha",
+          "estado",
+          "total",
+          "items"
+        ],
+        "title": "OrderResponse",
+        "description": "Respuesta completa de un pedido generado tras el checkout."
+      },
+      "PaginatedProductsResponse": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductDetailResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page",
+          "page_size",
+          "total",
+          "items"
+        ],
+        "title": "PaginatedProductsResponse",
+        "description": "Respuesta paginada del listado/búsqueda de productos."
+      },
+      "PasswordResetConfirmRequest": {
+        "properties": {
+          "reset_token": {
+            "type": "string",
+            "title": "Reset Token"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reset_token",
+          "new_password"
+        ],
+        "title": "PasswordResetConfirmRequest",
+        "description": "Confirmación de cambio de contraseña mediante token de recuperación (HU-03)."
+      },
+      "PasswordResetRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "PasswordResetRequest",
+        "description": "Solicitud de recuperación de contraseña por correo (HU-03)."
+      },
+      "PaymentCreateRequest": {
+        "properties": {
+          "pedido_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Pedido Id"
+          },
+          "monto": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Monto"
+          },
+          "metodo": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Metodo",
+            "default": "tarjeta"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "default": "stripe"
+          },
+          "payment_token": {
+            "type": "string",
+            "title": "Payment Token",
+            "default": "tok_visa_sandbox"
+          },
+          "card_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Number"
+          },
+          "cvv": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cvv"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pedido_id",
+          "monto"
+        ],
+        "title": "PaymentCreateRequest",
+        "description": "Solicitud para procesar un pago tokenizado (prohíbe almacenar PAN/CVV conforme a RQ-SEG-002)."
+      },
+      "PaymentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "pedido_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Pedido Id"
+          },
+          "monto": {
+            "type": "string",
+            "title": "Monto"
+          },
+          "metodo": {
+            "type": "string",
+            "title": "Metodo"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "referencia_pasarela": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referencia Pasarela"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "pedido_id",
+          "monto",
+          "metodo",
+          "estado"
+        ],
+        "title": "PaymentResponse",
+        "description": "Respuesta con el estado de un registro en la tabla `pagos`."
+      },
+      "PaymentWebhookRequest": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 3,
+            "title": "Event Id"
+          },
+          "referencia_pasarela": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 3,
+            "title": "Referencia Pasarela"
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^(aprobado|rechazado|reembolsado)$",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "referencia_pasarela",
+          "status"
+        ],
+        "title": "PaymentWebhookRequest",
+        "description": "Payload de confirmación asíncrona de la pasarela de pago (Sec. 13.1, Anexo 1.5, AE-29)."
+      },
+      "ProductCreateRequest": {
+        "properties": {
+          "categoria_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Categoria Id"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          },
+          "marca": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marca"
+          },
+          "variantes": {
+            "items": {
+              "$ref": "#/components/schemas/VariantCreateInput"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Variantes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "categoria_id",
+          "nombre",
+          "variantes"
+        ],
+        "title": "ProductCreateRequest",
+        "description": "Solicitud para dar de alta un producto con al menos una variante (Sec. 19 Completitud, HU-08)."
+      },
+      "ProductDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "categoria_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Categoria Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          },
+          "marca": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marca"
+          },
+          "variantes": {
+            "items": {
+              "$ref": "#/components/schemas/VariantResponse"
+            },
+            "type": "array",
+            "title": "Variantes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "categoria_id",
+          "nombre",
+          "variantes"
+        ],
+        "title": "ProductDetailResponse",
+        "description": "Detalle completo de un producto y todas sus variantes (HU-01, HU-02)."
+      },
+      "ReservationResponse": {
+        "properties": {
+          "reservation_id": {
+            "type": "string",
+            "title": "Reservation Id"
+          },
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "branch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Branch Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reservation_id",
+          "sku",
+          "branch_id",
+          "quantity",
+          "status",
+          "expires_at"
+        ],
+        "title": "ReservationResponse",
+        "description": "Respuesta de reserva temporal con expiración de 15 minutos (HU-05)."
+      },
+      "RoleChangeRequest": {
+        "properties": {
+          "tipo_usuario": {
+            "type": "string",
+            "pattern": "^(cliente|admin|staff)$",
+            "title": "Tipo Usuario"
+          },
+          "rol_admin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rol Admin"
+          },
+          "sucursal_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sucursal Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo_usuario"
+        ],
+        "title": "RoleChangeRequest",
+        "description": "Solicitud administrativa para cambio de rol de usuario."
+      },
+      "ShipmentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "pedido_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Pedido Id"
+          },
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "costo": {
+            "type": "string",
+            "title": "Costo"
+          },
+          "numero_guia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Numero Guia"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "sucursal_recoleccion_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sucursal Recoleccion Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "pedido_id",
+          "tipo",
+          "costo",
+          "estado"
+        ],
+        "title": "ShipmentResponse",
+        "description": "Representación de un registro de la tabla `envios` (Anexo 3.16)."
+      },
+      "ShipmentStatusUpdateRequest": {
+        "properties": {
+          "estado": {
+            "type": "string",
+            "pattern": "^(pendiente|listo_para_envio|enviado|listo_para_recoleccion|entregado|incidencia)$",
+            "title": "Estado"
+          },
+          "numero_guia": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Numero Guia"
+          }
+        },
+        "type": "object",
+        "required": [
+          "estado"
+        ],
+        "title": "ShipmentStatusUpdateRequest",
+        "description": "Solicitud para actualizar el estado logístico de un envío (Anexo 1.3)."
+      },
+      "ShippingQuoteResponse": {
+        "properties": {
+          "codigo_postal": {
+            "type": "string",
+            "title": "Codigo Postal"
+          },
+          "costo_domicilio": {
+            "type": "string",
+            "title": "Costo Domicilio"
+          },
+          "costo_recoleccion_tienda": {
+            "type": "string",
+            "title": "Costo Recoleccion Tienda",
+            "default": "0.00"
+          },
+          "dias_estimados_entrega": {
+            "type": "integer",
+            "title": "Dias Estimados Entrega"
+          },
+          "sucursales_disponibles": {
+            "items": {
+              "$ref": "#/components/schemas/BranchAvailabilityItem"
+            },
+            "type": "array",
+            "title": "Sucursales Disponibles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo_postal",
+          "costo_domicilio",
+          "dias_estimados_entrega",
+          "sucursales_disponibles"
+        ],
+        "title": "ShippingQuoteResponse",
+        "description": "Respuesta de cotización de envío por código postal y opciones de recolección (Sec. 13.1, HU-07)."
+      },
+      "StockReleaseRequest": {
+        "properties": {
+          "reservation_id": {
+            "type": "string",
+            "title": "Reservation Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reservation_id"
+        ],
+        "title": "StockReleaseRequest",
+        "description": "Solicitud para liberar una reserva temporal de inventario."
+      },
+      "StockReservationRequest": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Sku"
+          },
+          "branch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Branch Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "branch_id",
+          "quantity"
+        ],
+        "title": "StockReservationRequest",
+        "description": "Solicitud de reserva temporal de inventario (Sec. 13.1, HU-05, RQ-DISP-001)."
+      },
+      "StockUpdateRequest": {
+        "properties": {
+          "sucursal_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Sucursal Id"
+          },
+          "variante_sku": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Variante Sku"
+          },
+          "cantidad_disponible": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cantidad Disponible"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sucursal_id",
+          "variante_sku",
+          "cantidad_disponible"
+        ],
+        "title": "StockUpdateRequest",
+        "description": "Solicitud de ajuste de inventario por personal de sucursal o administrador."
+      },
+      "TokenRefreshRequest": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "title": "TokenRefreshRequest",
+        "description": "Solicitud de renovación de access token mediante refresh token."
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "expires_in_minutes": {
+            "type": "integer",
+            "title": "Expires In Minutes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "expires_in_minutes"
+        ],
+        "title": "TokenResponse",
+        "description": "Respuesta con par de tokens JWT (access y refresh)."
+      },
+      "UserLoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserLoginRequest",
+        "description": "Credenciales para inicio de sesión."
+      },
+      "UserRegisterRequest": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 150,
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
+          },
+          "tipo_usuario": {
+            "type": "string",
+            "title": "Tipo Usuario",
+            "default": "cliente"
+          },
+          "rol_admin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rol Admin"
+          },
+          "sucursal_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sucursal Id"
+          },
+          "acepta_aviso_privacidad": {
+            "type": "boolean",
+            "title": "Acepta Aviso Privacidad",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "email",
+          "password"
+        ],
+        "title": "UserRegisterRequest",
+        "description": "Datos requeridos para registrar un usuario (HU-03, LFPDPPP)."
+      },
+      "UserResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "fecha_registro": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Registro"
+          },
+          "tipo_usuario": {
+            "type": "string",
+            "title": "Tipo Usuario"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "email",
+          "fecha_registro",
+          "tipo_usuario"
+        ],
+        "title": "UserResponse",
+        "description": "Respuesta pública del perfil de usuario (sin exponer password_hash)."
+      },
+      "UserUpdateRequest": {
+        "properties": {
+          "nombre": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nombre"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdateRequest",
+        "description": "Solicitud de rectificación de datos personales (Derechos ARCO - LFPDPPP)."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VariantCreateInput": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 2,
+            "title": "Sku"
+          },
+          "atributos": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Atributos"
+          },
+          "precio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Precio"
+          },
+          "imagen_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imagen Url"
+          },
+          "stock_inicial": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Stock Inicial",
+            "default": 0
+          },
+          "sucursal_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sucursal Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "precio"
+        ],
+        "title": "VariantCreateInput",
+        "description": "Datos de una variante al dar de alta un producto (HU-02, HU-08)."
+      },
+      "VariantPriceUpdateRequest": {
+        "properties": {
+          "precio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Precio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "precio"
+        ],
+        "title": "VariantPriceUpdateRequest",
+        "description": "Solicitud para actualizar el precio de una variante (registra auditoría)."
+      },
+      "VariantResponse": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "producto_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Producto Id"
+          },
+          "atributos": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Atributos"
+          },
+          "precio": {
+            "type": "string",
+            "title": "Precio"
+          },
+          "imagen_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imagen Url"
+          },
+          "stock_disponible": {
+            "type": "integer",
+            "title": "Stock Disponible",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "producto_id",
+          "atributos",
+          "precio"
+        ],
+        "title": "VariantResponse",
+        "description": "Detalle de variante con SKU, atributos, precio y stock disponible (HU-02)."
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

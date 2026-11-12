@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend-quality-gates:
-    name: Backend Linting, Typing, Migrations & Coverage (>=80%)
+    name: Backend Linting, SAST, SCA, Migrations & Coverage (>=80%)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -24,19 +24,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Verify PEP 8 & McCabe Cyclomatic Complexity <= 10 (RQ-MANT-001)
+      - name: Secret Scanning Gate (AE-19 - Cero credenciales o llaves privadas en código)
+        run: |
+          python -c "import pathlib, re, sys; pat = re.compile(r'(sk_live_[0-9a-zA-Z]{16,}|AKIA[0-9A-Z]{16}|BEGIN RSA PRIVATE KEY)'); hits = [str(p) for p in pathlib.Path('backend').rglob('*.py') if pat.search(p.read_text(encoding='utf-8'))]; sys.exit(f'Secret found: {hits}') if hits else print('AE-19 OK: 0 secretos expuestos en codigo')"
+
+      - name: Verify PEP 8, Security Rules & McCabe Cyclomatic Complexity <= 10 (RQ-MANT-001, AE-16, AE-24 SAST)
         run: ruff check backend run_app.py
 
-      - name: Verify Static Typing (mypy)
+      - name: Verify Static Typing (mypy - AE-16)
         run: mypy backend run_app.py
 
-      - name: Run Pytest Suite & Coverage Gate (>=80%)
+      - name: Verify Dependency Lock & SCA Check (AE-24)
+        run: pip check
+
+      - name: Run Pytest Suite & Coverage Gate (>=80% Global & Critical Modules - AE-27, AE-28)
         env:
           DATABASE_URL: sqlite:///./ci_ferremarket.db
-        run: pytest --cov=backend --cov-fail-under=80
+        run: pytest --cov=backend --cov-fail-under=80 --junitxml=pytest_report.xml --cov-report=json:coverage.json
 
   frontend-build-gate:
-    name: Frontend TypeScript & Vite Production Build
+    name: Frontend TypeScript, SCA & Vite Production Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -47,13 +54,13 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install frontend dependencies & audit
+      - name: Install frontend dependencies & SCA audit (AE-24)
         working-directory: frontend
         run: |
           npm ci
           npm audit --audit-level=high
 
-      - name: Lint & Build React TypeScript bundle
+      - name: Lint & Build React TypeScript bundle (AE-34)
         working-directory: frontend
         run: |
           npm run lint

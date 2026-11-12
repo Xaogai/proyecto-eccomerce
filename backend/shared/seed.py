@@ -1,11 +1,14 @@
 """Generador de datos sintéticos para ambientes de Desarrollo, Pruebas y Staging (Regla de Gobierno Sec. 20, AE-26)."""
 
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 from sqlalchemy.orm import Session
 
+from backend.shared.catalog_seed_100 import PAINT_8_COLORS, build_100_catalog_specs
 from backend.shared.models import (
     Administrador,
+    BitacoraAuditoria,
     Categoria,
     Cliente,
     Direccion,
@@ -48,10 +51,17 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
             },
             {
                 "sku": "ESM-DEW-20V-MAX",
-                "atributos": {"voltaje": "20V", "color": "amarillo", "motor": "Brushless"},
+                "atributos": {"voltaje": "20V", "color": "negro", "motor": "Brushless"},
                 "precio": Decimal("2899.00"),
                 "img": _svg_data_uri("Esmeriladora 20V MAX", "DeWalt Brushless • Inalámbrica", "#78350f", "#fbbf24"),
                 "stock": (10, 8),
+            },
+            {
+                "sku": "ESM-DEW-1200W-GR",
+                "atributos": {"potencia": "1200W", "color": "gris", "disco": "5 pulg"},
+                "precio": Decimal("2199.00"),
+                "img": _svg_data_uri("Esmeriladora 5\"", "DeWalt 1200W • Gris Industrial", "#374151", "#f59e0b"),
+                "stock": (12, 9),
             },
         ],
     },
@@ -72,10 +82,17 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
             },
             {
                 "sku": "ROT-BOS-1100W",
-                "atributos": {"potencia": "1100W", "color": "azul", "energia_impacto": "4.0 J"},
+                "atributos": {"potencia": "1100W", "color": "negro", "energia_impacto": "4.0 J"},
                 "precio": Decimal("4199.00"),
                 "img": _svg_data_uri("Rotomartillo Industrial", "Bosch 1100W • Maletín L-BOXX", "#172554", "#60a5fa"),
                 "stock": (8, 6),
+            },
+            {
+                "sku": "ROT-BOS-1500W-ROJ",
+                "atributos": {"potencia": "1500W", "color": "rojo", "energia_impacto": "5.2 J"},
+                "precio": Decimal("5199.00"),
+                "img": _svg_data_uri("Rotomartillo Max", "Bosch 1500W • Edición Roja", "#7f1d1d", "#ef4444"),
+                "stock": (7, 5),
             },
         ],
     },
@@ -101,6 +118,13 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
                 "img": _svg_data_uri("Autocle 200 Piezas", "Urrea Master Mecánico • 3 Cuadros", "#1f2937", "#fb923c"),
                 "stock": (11, 7),
             },
+            {
+                "sku": "AUT-URR-250P-ROJ",
+                "atributos": {"piezas": "250 piezas", "color": "rojo", "cuadro": "1/4, 3/8 y 1/2 pulg"},
+                "precio": Decimal("4290.00"),
+                "img": _svg_data_uri("Autocle 250 Piezas", "Urrea Edición Roja Taller", "#7f1d1d", "#ef4444"),
+                "stock": (9, 6),
+            },
         ],
     },
     {
@@ -112,19 +136,13 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
         "marca": "Comex",
         "variantes": [
             {
-                "sku": "IMP-CMX-BL-5A",
-                "atributos": {"color": "blanco", "capacidad": "19 Litros", "garantia": "5 años"},
-                "precio": Decimal("1580.00"),
-                "img": _svg_data_uri("Impermeabilizante 19L", "Comex Top Fibratado • Blanco 5 Años", "#0f766e", "#2dd4bf"),
-                "stock": (30, 22),
-            },
-            {
-                "sku": "IMP-CMX-TC-10A",
-                "atributos": {"color": "terracota", "capacidad": "19 Litros", "garantia": "10 años"},
-                "precio": Decimal("2190.00"),
-                "img": _svg_data_uri("Impermeabilizante 10A", "Comex Terracota • 19 Litros", "#7c2d12", "#f97316"),
+                "sku": f"IMP-CMX-{c[:3].upper().replace(' ', '')}{i + 1}",
+                "atributos": {"color": c, "capacidad": "19 Litros", "garantia": "10 años"},
+                "precio": Decimal("1890.00") + Decimal(i * 30),
+                "img": _svg_data_uri("Impermeabilizante 19L", f"Comex Top Fibratado • {c.title()}", "#0f766e", "#2dd4bf"),
                 "stock": (24, 16),
-            },
+            }
+            for i, c in enumerate(PAINT_8_COLORS)
         ],
     },
     {
@@ -144,10 +162,17 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
             },
             {
                 "sku": "BOM-TRU-1-3HP",
-                "atributos": {"potencia": "1/3 HP", "color": "naranja", "servicios": "4 baños"},
+                "atributos": {"potencia": "1/3 HP", "color": "azul", "servicios": "4 baños"},
                 "precio": Decimal("1850.00"),
                 "img": _svg_data_uri("Presurizador 1/3 HP", "Truper Bronce • Hasta 4 Baños", "#7c2d12", "#f97316"),
                 "stock": (12, 9),
+            },
+            {
+                "sku": "BOM-TRU-1-2HP-ROJ",
+                "atributos": {"potencia": "1/2 HP", "color": "rojo", "servicios": "6 baños"},
+                "precio": Decimal("2390.00"),
+                "img": _svg_data_uri("Presurizador 1/2 HP", "Truper Alta Presión • 6 Baños", "#7f1d1d", "#ef4444"),
+                "stock": (10, 7),
             },
         ],
     },
@@ -168,10 +193,17 @@ EXTENDED_CATALOG_SPECS: list[dict[str, Any]] = [
             },
             {
                 "sku": "MUL-FLU-87V",
-                "atributos": {"modelo": "87V Industrial", "color": "amarillo", "seguridad": "CAT IV 600V"},
+                "atributos": {"modelo": "87V Industrial", "color": "naranja", "seguridad": "CAT IV 600V"},
                 "precio": Decimal("8490.00"),
                 "img": _svg_data_uri("Multímetro Fluke 87V", "Industrial True-RMS • Termopar", "#713f12", "#eab308"),
                 "stock": (5, 4),
+            },
+            {
+                "sku": "MUL-FLU-289-ROJ",
+                "atributos": {"modelo": "289 DataLogger", "color": "rojo", "seguridad": "CAT IV 1000V"},
+                "precio": Decimal("11490.00"),
+                "img": _svg_data_uri("Multímetro Fluke 289", "True-RMS DataLogger Gráfico", "#7f1d1d", "#ef4444"),
+                "stock": (4, 3),
             },
         ],
     },
@@ -198,54 +230,166 @@ def _get_or_create_category_chain(db: Session, root_name: str, sub_name: str, le
     return leaf
 
 
+def _upsert_spec_variants(
+    db: Session,
+    prod: Producto,
+    variantes_spec: list[dict[str, Any]],
+    existing_skus: set[str],
+    suc_toluca: Sucursal,
+    suc_metepec: Sucursal,
+) -> None:
+    """Agrega las variantes e inventario faltantes de un producto sin duplicar SKUs."""
+    for v_spec in variantes_spec:
+        sku_code = v_spec["sku"]
+        if sku_code in existing_skus:
+            continue
+        existing_skus.add(sku_code)
+        db.add(
+            Variante(
+                sku=sku_code,
+                producto_id=prod.id,
+                atributos=v_spec["atributos"],
+                precio=v_spec["precio"],
+                imagen_url=f"http://localhost:8000/api/v1/product-image/{sku_code}.svg",
+            )
+        )
+        db.flush()
+        st_tol, st_met = v_spec["stock"]
+        db.add_all(
+            [
+                Inventario(
+                    sucursal_id=suc_toluca.id,
+                    variante_sku=sku_code,
+                    cantidad_disponible=st_tol,
+                    cantidad_reservada=0,
+                ),
+                Inventario(
+                    sucursal_id=suc_metepec.id,
+                    variante_sku=sku_code,
+                    cantidad_disponible=st_met,
+                    cantidad_reservada=0,
+                ),
+            ]
+        )
+
+
 def _ensure_extended_catalog(db: Session, suc_toluca: Sucursal, suc_metepec: Sucursal) -> None:
-    """Garantiza que el catálogo comercial extendido e ilustraciones SVG estén presentes de forma idempotente."""
+    """Garantiza que el catálogo comercial extendido (107 artículos y ~415 variantes) esté presente."""
     for base_sku in ("TAL-20V-ROJ", "TAL-20V-AMA"):
         v_base = db.query(Variante).filter(Variante.sku == base_sku).first()
         if v_base:
             v_base.imagen_url = f"/api/v1/product-image/{base_sku}.svg"
 
-    for spec in EXTENDED_CATALOG_SPECS:
-        first_sku = spec["variantes"][0]["sku"]
-        if db.query(Variante).filter(Variante.sku == first_sku).first() is not None:
-            continue
-        leaf = _get_or_create_category_chain(db, spec["root"], spec["sub"], spec["leaf"])
-        prod = Producto(
-            categoria_id=leaf.id,
-            nombre=spec["nombre"],
-            descripcion=spec["descripcion"],
-            marca=spec["marca"],
-        )
-        db.add(prod)
-        db.flush()
-        for v_spec in spec["variantes"]:
-            sku_code = v_spec["sku"]
-            db.add(
-                Variante(
-                    sku=sku_code,
-                    producto_id=prod.id,
-                    atributos=v_spec["atributos"],
-                    precio=v_spec["precio"],
-                    imagen_url=f"/api/v1/product-image/{sku_code}.svg",
-                )
+    existing_skus = {row[0] for row in db.query(Variante.sku).all()}
+    existing_prods = {p.nombre: p for p in db.query(Producto).all()}
+    cat_cache: dict[tuple[str, str, str], Categoria] = {}
+
+    all_specs = EXTENDED_CATALOG_SPECS + build_100_catalog_specs()
+    for spec in all_specs:
+        prod = existing_prods.get(spec["nombre"])
+        if prod is None:
+            cat_key = (spec["root"], spec["sub"], spec["leaf"])
+            leaf = cat_cache.get(cat_key)
+            if leaf is None:
+                leaf = _get_or_create_category_chain(db, spec["root"], spec["sub"], spec["leaf"])
+                cat_cache[cat_key] = leaf
+            prod = Producto(
+                categoria_id=leaf.id,
+                nombre=spec["nombre"],
+                descripcion=spec["descripcion"],
+                marca=spec["marca"],
             )
+            db.add(prod)
             db.flush()
-            st_tol, st_met = v_spec["stock"]
-            db.add_all(
-                [
-                    Inventario(
-                        sucursal_id=suc_toluca.id,
-                        variante_sku=v_spec["sku"],
-                        cantidad_disponible=st_tol,
-                        cantidad_reservada=0,
-                    ),
-                    Inventario(
-                        sucursal_id=suc_metepec.id,
-                        variante_sku=v_spec["sku"],
-                        cantidad_disponible=st_met,
-                        cantidad_reservada=0,
-                    ),
-                ]
+            existing_prods[prod.nombre] = prod
+        _upsert_spec_variants(db, prod, spec["variantes"], existing_skus, suc_toluca, suc_metepec)
+    db.commit()
+
+
+def _ensure_audit_samples(db: Session, client_user: Usuario, admin_user: Usuario, staff_user: Usuario) -> None:
+    """
+    Garantiza de forma idempotente las muestras exigidas por el Plan de Auditoría PA-ECOM-001 (Sec. 5.3):
+    - 30 pedidos confirmados con `item_pedido` (precio congelado histórico), `pagos` (sin PAN/CVV) y `envios` (AE-25).
+    - 25 registros de bitácora por cada operación sensible (`payment`, `price_change`, `stock_change`, `role_change`,
+      más `login_failed`) en `bitacora_auditoria` (AE-39 y Parte B).
+    """
+    sample_skus = [
+        ("TAL-20V-ROJ", Decimal("2499.00")),
+        ("TAL-20V-AMA", Decimal("2799.00")),
+        ("ESM-DEW-900W", Decimal("1699.00")),
+        ("ROT-BOS-850W", Decimal("3299.00")),
+        ("AUT-URR-120P", Decimal("2150.00")),
+        ("IMP-CMX-BL-5A", Decimal("1580.00")),
+    ]
+    available_skus = [
+        (sku, price)
+        for sku, price in sample_skus
+        if db.query(Variante).filter(Variante.sku == sku).first() is not None
+    ] or [("TAL-20V-ROJ", Decimal("2499.00"))]
+
+    for idx in range(2, 31):
+        folio = f"TSR-2026-SINT-{idx:03d}"
+        if db.query(Pedido).filter(Pedido.folio == folio).first() is not None:
+            continue
+        sku_code, frozen_price = available_skus[idx % len(available_skus)]
+        qty = (idx % 3) + 1
+        subtotal = (frozen_price * Decimal(qty)).quantize(Decimal("0.01"))
+        pedido = Pedido(
+            cliente_id=client_user.id,
+            folio=folio,
+            estado="confirmado",
+            total=subtotal,
+        )
+        db.add(pedido)
+        db.flush()
+        db.add(
+            ItemPedido(
+                pedido_id=pedido.id,
+                variante_sku=sku_code,
+                cantidad=qty,
+                precio_unitario_venta=frozen_price,
+                subtotal=subtotal,
+            )
+        )
+        db.add(
+            Pago(
+                pedido_id=pedido.id,
+                monto=subtotal,
+                metodo="tarjeta",
+                estado="aprobado",
+                referencia_pasarela=f"pi_stripe_sintetico_{idx:03d}",
+            )
+        )
+        db.add(
+            Envio(
+                pedido_id=pedido.id,
+                tipo="domicilio" if idx % 2 == 0 else "recoleccion_tienda",
+                costo=Decimal("99.00") if idx % 2 == 0 else Decimal("0.00"),
+                numero_guia=f"GUIA-SINT-{idx:03d}",
+                estado="entregado" if idx % 3 == 0 else "enviado",
+                sucursal_recoleccion_id=None,
+            )
+        )
+
+    sensitive_ops = [
+        ("payment", str(client_user.id), "payment:TSR-2026-SINT"),
+        ("price_change", str(admin_user.id), "variant:TAL-20V-ROJ"),
+        ("stock_change", str(staff_user.id), "inventory:toluca:TAL-20V-ROJ"),
+        ("role_change", str(admin_user.id), f"user:{staff_user.id}"),
+        ("login_failed", None, "user:ana.torres.sintetica@ferremarket.local"),
+    ]
+    base_ts = datetime.now(timezone.utc) - timedelta(days=5)
+    for op_type, actor, res_prefix in sensitive_ops:
+        existing_count = db.query(BitacoraAuditoria).filter(BitacoraAuditoria.tipo_evento == op_type).count()
+        for seq in range(existing_count + 1, 26):
+            db.add(
+                BitacoraAuditoria(
+                    fecha=base_ts + timedelta(minutes=seq * 15),
+                    tipo_evento=op_type,
+                    actor_id=actor,
+                    recurso=f"{res_prefix}:{seq:02d}",
+                    detalles={"sample_seq": seq, "operation": op_type, "synthetic_seed": True},
+                )
             )
     db.commit()
 
@@ -378,7 +522,8 @@ def _ensure_reviews(db: Session) -> None:
 def seed_synthetic_data(db: Session) -> dict[str, Any]:
     """
     Puebla la base de datos con datos 100% sintéticos (4 roles, sucursales, catálogo jerárquico 3 niveles,
-    variantes, inventario y pedidos de muestra) cumpliendo la Regla de Gobierno de Ambientes (Sec. 20, AE-26).
+    variantes, inventario, 30 pedidos de muestra y 25 registros de bitácora por operación sensible)
+    cumpliendo la Regla de Gobierno de Ambientes (Sec. 20, AE-25, AE-26, AE-39).
     """
     existing_branch = db.query(Sucursal).filter(Sucursal.nombre == "Sucursal Toluca Centro").first()
     existing_metepec = db.query(Sucursal).filter(Sucursal.nombre == "Sucursal Metepec").first()
@@ -386,6 +531,11 @@ def seed_synthetic_data(db: Session) -> dict[str, Any]:
         _ensure_extended_catalog(db, existing_branch, existing_metepec)
         _ensure_store_details(db)
         _ensure_product_details(db)
+        c_user = db.query(Usuario).filter(Usuario.email == "ana.torres.sintetica@ferremarket.local").first()
+        a_user = db.query(Usuario).filter(Usuario.email == "admin.sintetico@ferremarket.local").first()
+        s_user = db.query(Usuario).filter(Usuario.email == "staff.toluca.sintetico@ferremarket.local").first()
+        if c_user and a_user and s_user:
+            _ensure_audit_samples(db, c_user, a_user, s_user)
         return {"status": "already_seeded", "branch_id": str(existing_branch.id)}
 
     pwd_hash = hash_password("Sintetico2026!")
@@ -525,6 +675,7 @@ def seed_synthetic_data(db: Session) -> dict[str, Any]:
     _ensure_extended_catalog(db, suc_toluca, suc_metepec)
     _ensure_store_details(db)
     _ensure_product_details(db)
+    _ensure_audit_samples(db, client_user, admin_user, staff_user)
 
     return {
         "status": "seeded",

@@ -106,7 +106,7 @@ def test_baja_de_cuenta_pide_contrasena_y_sin_pedidos_en_curso(client: InProcess
     assert mala.status_code == 400 and mala.json()["detail"]["code"] == "wrong_password"
     en_curso = client.request("DELETE", "/api/v1/users/me", json_body={"password": PASSWORD}, headers=headers)
     assert en_curso.status_code == 409
-    assert en_curso.json()["detail"]["pedidos"][0]["folio"] == "TSR-2026-5521"
+    assert "TSR-2026-5521" in {p["folio"] for p in en_curso.json()["detail"]["pedidos"]}
 
     for pedido in db_session.query(Pedido).filter(Pedido.cliente_id == _ana(db_session).id):
         pedido.estado = "entregado"

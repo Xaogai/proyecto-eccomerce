@@ -37,6 +37,9 @@ def process_checkout(
     """
     try:
         return repo.create_checkout_order(cliente_id=current_user.id, payload=payload)
+    except PermissionError as exc:
+        record_audit_event("idor_checkout_attempt_blocked", str(current_user.id), f"cart:{payload.carrito_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
     except InsufficientStockError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

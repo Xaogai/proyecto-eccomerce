@@ -48,17 +48,15 @@ class CartRepository:
         """
         if carrito_id is not None:
             cart = self.db.query(Carrito).filter(Carrito.id == carrito_id).first()
-            # Solo el dueño usa su carrito (el de invitado no tiene dueño); conocer el id no basta.
+            if cart and cart.cliente_id is not None and cart.cliente_id != cliente_id:
+                raise PermissionError("No tiene autorización para acceder o modificar el carrito de otro usuario")
+            # El carrito de invitado no tiene dueño: pasa a la cuenta con /cart/merge al iniciar sesión.
             if cart and cart.estado == "activo" and cart.cliente_id == cliente_id:
                 return cart
             carrito_id = None
 
         if cliente_id is not None:
-            cliente = self.db.query(Cliente).filter(Cliente.usuario_id == cliente_id).first()
-            if not cliente:
-                cliente = Cliente(usuario_id=cliente_id)
-                self.db.add(cliente)
-                self.db.flush()
+            self._ensure_cliente_exists(cliente_id)
             cart = (
                 self.db.query(Carrito)
                 .filter(Carrito.cliente_id == cliente_id, Carrito.estado == "activo")
@@ -76,6 +74,13 @@ class CartRepository:
         self.db.commit()
         self.db.refresh(new_cart)
         return new_cart
+
+    def _ensure_cliente_exists(self, cliente_id: uuid.UUID) -> None:
+        """Garantiza que exista el registro en `clientes` para el usuario autenticado."""
+        cliente = self.db.query(Cliente).filter(Cliente.usuario_id == cliente_id).first()
+        if not cliente:
+            self.db.add(Cliente(usuario_id=cliente_id))
+            self.db.flush()
 
     def add_item(
         self,

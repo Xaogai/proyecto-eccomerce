@@ -96,9 +96,10 @@ class InProcessASGIClient:
         self,
         path: str,
         json: dict[str, Any] | None = None,
-        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
     ) -> ClientResponse:
-        return self.request("PATCH", path, json_body=json, headers=headers)
+        return self.request("PATCH", path, json_body=json, params=params, headers=headers)
 
     def delete(
         self,
@@ -295,6 +296,9 @@ class InProcessASGIClient:
                 body_text = bytes(result.body).decode("utf-8", errors="replace")
                 return ClientResponse(status_code=result.status_code, _data=body_text, text=body_text)
             status_code = route.status_code or 200
+            if hasattr(result, "body") and isinstance(result.body, bytes):
+                raw_text = result.body.decode("utf-8")
+                return ClientResponse(status_code=status_code, _data=raw_text, text=raw_text)
             serialized = self._serialize(result)
             return ClientResponse(status_code=status_code, _data=serialized, text=json.dumps(serialized))
         except ValidationError as exc:

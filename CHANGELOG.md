@@ -8,6 +8,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Desde la rama `backend`:
+  - 100 productos más en los datos sintéticos (`catalog_seed_100.py`), y 30 pedidos y 25 registros de bitácora por operación sensible para el muestreo del plan de auditoría (AE-39).
+  - Controles de PostgreSQL (`db_security_pgadmin.py`): roles con privilegio mínimo, vistas, triggers de auditoría por sentencia y respaldo cifrado 3-2-1 (`POST /api/v1/admin/db-backup-321`). En SQLite no hacen nada.
+  - CI del backend: búsqueda de secretos, `pip check` y reportes JUnit y de cobertura.
+  - `run_app.py` sirve el build de React (`frontend/dist`) si existe.
 - Integración del frontend con el backend real (EP-01 a EP-53):
   - Capa de traducción en `frontend/src/api/backend/`: las pantallas siguen usando el contrato y los datos simulados no cambian.
   - Backend: catálogo con facetas y stock por sucursal, reseñas, carrito con stock y unión del de invitado, checkout con envío por código postal, pasarela de pruebas, pedidos con historial, devoluciones con foto, Mi cuenta completa, panel de administración y panel de sucursal.
@@ -101,6 +106,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ### Corregido
 
 - Seguridad del backend:
+  - El carrito, el checkout, los pagos y el envío de otra persona responden 403 y quedan en la bitácora.
+  - Dar de baja la cuenta también revoca la sesión y deja inservible la contraseña.
+  - Cambiar el correo por uno que ya usa otra cuenta responde 409.
+  - La imagen SVG de producto escapa el texto (XSS) y crear un producto con un SKU repetido responde 409.
   - El registro público ya no acepta `tipo_usuario: admin` ni `staff`.
   - El token para restablecer la contraseña ya no se regresa en la respuesta; solo viaja por correo.
   - Un carrito ya no se puede leer, modificar ni pagar con solo conocer su id.
@@ -124,13 +133,27 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [1.0.0] - 2026-10-26
 
+### Referencia de Esquema de Base de Datos (Alembic — Sec. 32 / AE-36)
+- **Migraciones aplicadas:** `0001_initial_schema_2fn` → `0002_operational_tables` (reversibles vía `alembic downgrade`).
+- **Versión de contrato API pública:** `/api/v1` (OpenAPI 3.1.0).
+
 ### Agregado
-- **Modelo de Datos Normalizado en 2FN (Anexos 2 y 3, AE-14):** Implementación de las 16 tablas en SQLAlchemy 2.0 (`usuarios`, `clientes`, `administradores`, `staff_sucursal`, `direcciones`, `sucursales`, `categorias`, `productos`, `variantes`, `inventario`, `carritos`, `item_carrito` sin `precio_unitario`, `pedidos`, `item_pedido` con `precio_unitario_venta` congelado, `pagos` sin datos de tarjeta PCI-DSS y `envios`).
-- **Migraciones Reversibles en Alembic (`0001_initial_schema_2fn`):** Configuración de `alembic/env.py` y script de migración con `upgrade()` y `downgrade()` en los 7 microservicios.
-- **Microservicio `users` (HU-03, RQ-SEG-001, Sec. 18.1, LFPDPPP / AE-45):** Registro con validación de email y contraseña, hash bcrypt, login con bloqueo por fuerza bruta tras 5 intentos fallidos, JWT access (15 min) y refresh (7 días) con rotación y revocación en logout, RBAC (`cliente`, `staff`, `admin`), aviso de privacidad y flujo completo de derechos ARCO.
+- **Modelo de Datos Normalizado en 2FN (Anexos 2 y 3, AE-14):** Implementación de las 16 tablas de negocio en SQLAlchemy 2.0 (`usuarios`, `clientes`, `administradores`, `staff_sucursal`, `direcciones`, `sucursales`, `categorias`, `productos`, `variantes`, `inventario`, `carritos`, `item_carrito` sin `precio_unitario`, `pedidos`, `item_pedido` con `precio_unitario_venta` congelado, `pagos` sin datos de tarjeta PCI-DSS y `envios`).
+- **Persistencia Operativa (`0002_operational_tables`):** 5 tablas operativas de soporte (`bitacora_auditoria`, `tokens_revocados`, `intentos_login_fallidos`, `reservas_inventario` y `eventos_webhook`) para garantizar persistencia transaccional y trazabilidad auditable.
+- **Microservicio `users` (HU-03, RQ-SEG-001, Sec. 18.1, LFPDPPP / AE-22, AE-45):** Registro con validación de email y contraseña, hash bcrypt, login con bloqueo por fuerza bruta tras 5 intentos fallidos, JWT access (15 min) y refresh (7 días) con rotación y revocación en logout, recuperación de contraseña de un solo uso, RBAC (`cliente`, `staff`, `admin`), aviso de privacidad (`GET /api/v1/privacy-notice`) y flujo completo de derechos ARCO (`GET /api/v1/users/me/arco`, `PUT /api/v1/users/me`, `DELETE /api/v1/users/me`).
 - **Microservicio `catalog` (HU-01, HU-02, HU-08, HU-09):** Árbol de categorías hasta 3 niveles, productos con variantes por SKU, búsqueda paginada y filtros combinados, alta administrativa con validación de completitud y bitácora de cambios de precio.
-- **Microservicio `inventory` (HU-05, RQ-DISP-001):** Control de existencias por sucursal, reserva temporal con bloqueo transaccional/concurrencia y expiración automática a los 15 minutos.
+- **Microservicio `inventory` (HU-05, RQ-DISP-001, AE-25):** Control de existencias por sucursal, reserva temporal con bloqueo transaccional/concurrencia, idempotencia por llave y expiración automática a los 15 minutos.
 - **Microservicio `cart` (HU-04, Anexo 2.2.2):** Carrito para clientes registrados e invitados con cálculo de precios y totales en tiempo real haciendo join con `variantes.precio`.
-- **Microservicios `checkout` y `payments` (HU-06, RQ-SEG-002, RQ-DAT-001, AE-29, AE-31):** `PaymentGatewayFactory` (`StripeGateway` y `MercadoPagoGateway`), circuit breaker, rechazo de PAN/CVV (PCI-DSS SAQ-A), congelamiento de precio de venta, webhook firmado e idempotente, liberación automática de stock ante rechazo de pago y protección contra IDOR en consulta de pedidos.
-- **Microservicio `shipping` (HU-07, Anexo 1.3):** Cotizador de envío por código postal, disponibilidad de recolección por sucursal y gestión de estados logísticos (incluyendo incidencias).
-- **API Gateway Unificado (`backend/gateway/main.py`):** Punto de entrada `/api/v1/...`, generador de datos sintéticos (`seed_synthetic_data`, Sec. 20 / AE-26), bitácora de auditoría y reporte automatizado de calidad y conciliación de datos (`RQ-DAT-001`).
+- **Microservicios `checkout` y `payments` (HU-06, RQ-SEG-002, RQ-DAT-001, AE-29, AE-31):** `PaymentGatewayFactory` (`StripeGateway` y `MercadoPagoGateway`), circuit breaker con cola de eventos pendientes, rechazo 422 de PAN/CVV (PCI-DSS SAQ-A), congelamiento de precio de venta en `item_pedido`, webhook firmado HMAC-SHA256 e idempotente (`eventos_webhook`), liberación automática de stock ante rechazo o cancelación y protección contra IDOR en consulta de pedidos.
+- **Microservicio `shipping` (HU-07, HU-10, Anexo 1.3):** Cotizador de envío por código postal, disponibilidad de recolección por sucursal, gestión de estados logísticos y notificaciones automáticas por correo.
+- **API Gateway Unificado (`backend/gateway/main.py`) y Frontend React 19 + TypeScript (`frontend/`):** Punto de entrada `/api/v1/...`, generador de datos sintéticos (`seed_synthetic_data`, Sec. 20 / AE-26 con 30 pedidos conciliables y 25 registros de bitácora por operación sensible) y reporte automatizado de calidad de datos (`GET /api/v1/admin/data-quality-report`).
+
+---
+
+## [0.1.0] - 2026-09-20
+
+### Referencia de Esquema de Base de Datos (Alembic — Sec. 32 / AE-36)
+- **Migración inicial:** Estructura base de configuración de microservicios y `docker-compose.yml` (PostgreSQL 16, Redis 7, MinIO S3).
+
+### Added
+- Estructura inicial del repositorio con los 7 servicios (`users`, `catalog`, `inventory`, `cart`, `checkout`, `payments`, `shipping`), configuración de entorno `.env.example` y base de proyecto Frontend en React + TypeScript + Vite.

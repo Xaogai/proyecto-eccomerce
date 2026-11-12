@@ -117,6 +117,17 @@ def register_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Debe aceptar el aviso de privacidad (LFPDPPP) para crear una cuenta",
         )
+    if payload.tipo_usuario != "cliente":
+        record_audit_event(
+            "privilege_escalation_blocked",
+            None,
+            f"register:{payload.email}",
+            {"requested_role": payload.tipo_usuario},
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El registro público solo crea cuentas de cliente; un administrador asigna los roles de staff y admin",
+        )
     existing = repo.get_by_email(payload.email)
     if existing:
         raise HTTPException(
@@ -404,6 +415,13 @@ def update_my_profile(
     repo: UserRepository = Depends(get_user_repository),
 ) -> UserResponse:
     """Derecho de Rectificación (ARCO - LFPDPPP): Permite corregir datos del usuario."""
+    if payload.email is not None:
+        collision = repo.get_by_email(payload.email)
+        if collision and collision.id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="El correo electrónico indicado ya está en uso por otra cuenta",
+            )
     updated = repo.update_user(current_user, nombre=payload.nombre, email=payload.email)
     if payload.telefono is not None:
         updated.telefono = payload.telefono.strip() or None
@@ -419,10 +437,11 @@ ESTADOS_EN_CURSO = ("pendiente_pago", "confirmado", "en_preparacion", "listo_par
 def cancel_my_account(
     payload: AccountDeleteRequest,
     current_user: Usuario = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     repo: UserRepository = Depends(get_user_repository),
 ) -> dict[str, str]:
     """
-    Derecho de Cancelación y Oposición (ARCO - LFPDPPP): Anonimiza datos y elimina direcciones.
+    Derecho de Cancelación y Oposición (ARCO - LFPDPPP): Anonimiza datos, elimina direcciones y revoca la sesión.
 
     Pide la contraseña y no procede con pedidos en curso (hay que entregarlos o cancelarlos antes).
     """
@@ -448,6 +467,8 @@ def cancel_my_account(
         )
     user_id_str = str(current_user.id)
     repo.anonymize_user(current_user)
+    if credentials is not None:
+        revoke_token(credentials.credentials)
     record_audit_event("arco_cancelacion", user_id_str, f"user:{user_id_str}")
     return {
         "detail": "Sus datos personales han sido anonimizados y eliminados conforme a los derechos ARCO (LFPDPPP)",

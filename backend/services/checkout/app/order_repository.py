@@ -194,7 +194,9 @@ class OrderRepository:
         5. Registra el envío (`domicilio` con su dirección o `recoleccion_tienda` con código de entrega).
         """
         cart = self.db.query(Carrito).filter(Carrito.id == payload.carrito_id).first()
-        if not cart or not cart.items or cart.cliente_id not in (None, cliente_id):
+        if cart and cart.cliente_id is not None and cart.cliente_id != cliente_id:
+            raise PermissionError("No tiene autorización para procesar el carrito de otro cliente")
+        if not cart or not cart.items:
             raise ValueError("El carrito está vacío o no existe")
         if cart.estado == "convertido":
             raise ValueError("Este carrito ya fue convertido en un pedido")
