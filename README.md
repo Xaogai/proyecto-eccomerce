@@ -17,6 +17,7 @@ Plataforma de comercio electrónico basada en una arquitectura de **microservici
 - [Variables de entorno](#-variables-de-entorno)
 - [Uso](#-uso)
 - [Migraciones de base de datos](#-migraciones-de-base-de-datos)
+- [Respaldos y controles de la base de datos](#-respaldos-y-controles-de-la-base-de-datos)
 - [Pruebas y calidad de código](#-pruebas-y-calidad-de-código)
 - [Contribuir](#-contribuir)
 - [Licencia](#-licencia)
@@ -161,15 +162,22 @@ npm install
 
 | Variable                   | Descripción                                   | Ejemplo                                                         |
 | -------------------------- | --------------------------------------------- | --------------------------------------------------------------- |
-| `DATABASE_URL`             | Cadena de conexión a PostgreSQL               | `postgresql+psycopg://ecommerce:ecommerce@localhost:5432/ecommerce` |
-| `REDIS_URL`                | URL de Redis                                  | `redis://localhost:6379/0`                                      |
-| `JWT_SECRET_KEY`           | Clave para firmar los tokens JWT              | `cambiar_esto`                                                  |
-| `JWT_ACCESS_EXPIRES_MIN`   | Duración del access token (minutos)           | `15`                                                            |
-| `JWT_REFRESH_EXPIRES_DAYS` | Duración del refresh token (días)             | `7`                                                             |
-| `S3_ENDPOINT`              | Endpoint de S3 / MinIO                        | `http://localhost:9000`                                         |
-| `S3_BUCKET`                | Bucket para imágenes de productos             | `product-images`                                                |
-| `PAYMENT_PROVIDER`         | Proveedor de pagos                            | —                                                               |
-| `PAYMENT_API_KEY`          | API key del proveedor de pagos                | —                                                               |
+| Variable | Descripción | Valor por defecto |
+| -------- | ----------- | ----------------- |
+| `DATABASE_URL` | PostgreSQL o SQLite (`sqlite:///./ferremarket.db`) | PostgreSQL en `localhost:5432` |
+| `JWT_SECRET_KEY` | Llave de los JWT, 32 caracteres o más | Aleatoria en cada arranque (las sesiones se cierran al reiniciar) |
+| `JWT_ACCESS_EXPIRES_MIN` / `JWT_REFRESH_EXPIRES_DAYS` | Duración de los tokens | `15` / `7` |
+| `FRONTEND_URL` / `CORS_ORIGINS` | Dirección de la tienda y otros orígenes permitidos | `http://localhost:5173` / ninguno |
+| `COOKIE_SECURE` / `PASARELA_SANDBOX` / `SEED_SYNTHETIC_DATA` | En producción: `true` / `false` / `false` | `false` / `true` / `true` |
+| `PAYMENT_PROVIDER` / `PAYMENT_API_KEY` | Proveedor y llave (vacía: pasarela simulada) | `stripe` / vacía |
+| `PAYMENT_WEBHOOK_SECRET` | Firma de los webhooks de pago | Aleatoria en cada arranque |
+| `BACKUP_ENCRYPTION_KEY` | Llave de los respaldos (sin ella no se generan) | — |
+| `BACKUP_DIR` / `BACKUP_OFFSITE_DIR` | Copias 2 y 3 del respaldo | `backups/local` / ninguna |
+| `DB_ROLE_*_PASSWORD` | Contraseñas de los 4 roles de PostgreSQL | — (el rol no puede iniciar sesión) |
+| `DB_AUDIT_SERVER_SETTINGS` | Ajustar `postgresql.conf` (requiere superusuario) | `false` |
+| `REDIS_URL`, `S3_ENDPOINT`, `S3_BUCKET`, `SMTP_*` | Servicios de apoyo | ver `.env.example` |
+
+`.env.example` explica cada una. Genera llaves con `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
 
 > 🔒 Nunca subas el archivo `.env` al repositorio. Ya está incluido en `.gitignore`.
 
@@ -191,7 +199,7 @@ npm run lint       # Análisis estático con Oxlint
 docker compose up -d --build
 ```
 
-Requiere `JWT_SECRET_KEY` en `.env`. Al arrancar, el backend aplica las migraciones y carga los datos sintéticos.
+Requiere `JWT_SECRET_KEY` (32 caracteres o más) en `.env`; para respaldos, también `BACKUP_ENCRYPTION_KEY`. Al arrancar, el backend aplica las migraciones y carga los datos sintéticos.
 
 | Servicio | URL |
 | -------- | --- |
@@ -199,6 +207,16 @@ Requiere `JWT_SECRET_KEY` en `.env`. Al arrancar, el backend aplica las migracio
 | API Gateway y documentación | http://localhost:8000/docs |
 
 nginx manda `/api/` al backend, así que el frontend y la API comparten origen.
+
+### Sin Docker, en un solo puerto
+
+```bash
+cd frontend && npm install && npm run build && cd ..
+python run_app.py            # http://127.0.0.1:8000: tienda, API y /docs
+```
+
+Funciona en Windows, macOS y Linux. Si existe `.venv`, `run_app.py` lo usa aunque lo lances con otro Python.
+Con `DATABASE_URL=sqlite:///./ferremarket.db` no hace falta PostgreSQL. `HOST` y `PORT` cambian la dirección.
 
 ### Sin Docker (desarrollo)
 
@@ -244,26 +262,72 @@ docker compose down
 
 ## 🗄 Migraciones de base de datos
 
-Cada servicio administra sus propias migraciones con Alembic. Desde la carpeta del servicio:
+El backend aplica las migraciones al arrancar, desde `backend/services/users/alembic`. Los otros 6 servicios
+tienen una copia idéntica de cada migración: al agregar una, cópiala a las 7 carpetas.
+
+| Migración | Contenido |
+| --------- | --------- |
+| `0001_initial_schema_2fn` | Las 16 tablas en 2FN |
+| `0002_operational_tables` | Bitácora, tokens revocados, intentos de login, reservas y webhooks |
+| `0003_tienda_en_linea` | Imágenes, reseñas, deseos, historial, devoluciones y configuración |
+| `0004_controles_bd` | Bitácora de respaldos y, en PostgreSQL, CHECK, DEFAULT, triggers de auditoría y vistas |
 
 ```bash
-cd backend/services/<servicio>
-
-alembic revision --autogenerate -m "descripcion del cambio"   # Crear migración
-alembic upgrade head                                           # Aplicar migraciones
-alembic downgrade -1                                           # Revertir la última
+cd backend/services/users
+alembic revision -m "descripcion del cambio"   # Crear migración
+alembic upgrade head                          # Aplicar
+alembic downgrade -1                          # Revertir la última
 ```
+
+## 🛡 Respaldos y controles de la base de datos
+
+**Respaldos 3-2-1.** Copia 1: la base en uso. Copia 2: `BACKUP_DIR`. Copia 3: `BACKUP_OFFSITE_DIR`, en otro disco,
+una unidad de red o una carpeta que se sincronice con la nube. Si las dos carpetas están en el mismo disco, el respaldo
+se hace igual, pero se registra que no cumple el 3-2-1.
+
+```bash
+python -m backend.shared.backups crear                          # o POST /api/v1/admin/db-backup-321 (admin)
+python -m backend.shared.backups restaurar ARCHIVO.fmbak         # en una base con las migraciones y sin datos
+python -m backend.shared.backups restaurar ARCHIVO.fmbak --reemplazar
+```
+
+- Se cifra con AES-256-GCM a partir de `BACKUP_ENCRYPTION_KEY`. Guarda la llave fuera del servidor: sin ella no hay forma de restaurar.
+- Cada respaldo se descifra y se restaura en una base de prueba antes de registrarse; `GET /api/v1/admin/db-backups` muestra el resultado.
+- Para programarlo: `cron` en Linux y macOS (`0 3 * * * cd /ruta && .venv/bin/python -m backend.shared.backups crear`) o el Programador de tareas en Windows.
+- En Docker, la copia 2 queda en el volumen `backups`. Para la copia 3, crea `docker-compose.override.yml`:
+
+  ```yaml
+  services:
+    backend:
+      environment:
+        BACKUP_OFFSITE_DIR: /app/backups/offsite
+      volumes:
+        - /ruta/del/otro/disco:/app/backups/offsite
+  ```
+
+**Controles de PostgreSQL** (en SQLite no aplican):
+
+- Migración 0004: restricciones CHECK y DEFAULT, clasificación de la información, cuotas, tablas para registrar cambios de emergencia y revisiones de bitácora, trigger que guarda cada cambio de las tablas sensibles (sin contraseñas) y 5 vistas. No necesita extensiones ni superusuario.
+- Al arrancar se crean 4 roles con privilegio mínimo: `rol_ferremarket_auditor` y `rol_ferremarket_respaldo` (solo lectura), `rol_ferremarket_app` y `rol_ferremarket_operador_sucursal` (inventario y envíos). Solo pueden iniciar sesión si su `DB_ROLE_*_PASSWORD` cumple la política.
+- Con `DB_AUDIT_SERVER_SETTINGS=true` y superusuario, también se ajustan `log_statement=mod`, `log_connections`, `log_disconnections` y `password_encryption`.
+- Si al usuario de la aplicación le falta algún permiso, el backend arranca igual y `GET /api/v1/admin/data-quality-report` muestra qué control falta.
 
 ## 🧪 Pruebas y calidad de código
 
 ### Backend
 
 ```bash
-pytest                                   # Ejecutar pruebas
-pytest --cov=app --cov-report=html       # Cobertura (reporte en htmlcov/)
-ruff check .                             # Linter
-ruff format .                            # Formateo
-mypy .                                   # Verificación de tipos
+pytest                                        # Pruebas (SQLite en memoria)
+pytest --cov=backend --cov-fail-under=80      # Cobertura con el mínimo de 80%
+ruff check backend run_app.py                 # Linter
+mypy backend run_app.py                       # Verificación de tipos
+python -m backend.gateway.export_openapi      # Regenera openapi.json si cambian los endpoints
+```
+
+Las pruebas de `backend/tests/test_postgresql.py` necesitan un PostgreSQL donde se puedan crear bases y roles:
+
+```bash
+TEST_POSTGRES_URL=postgresql+psycopg://postgres:postgres@localhost:5432/postgres pytest backend/tests/test_postgresql.py
 ```
 
 ### Frontend

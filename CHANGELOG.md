@@ -10,20 +10,24 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 - Desde la rama `backend`:
   - 100 productos más en los datos sintéticos (`catalog_seed_100.py`), y 30 pedidos y 25 registros de bitácora por operación sensible para el muestreo del plan de auditoría (AE-39).
-  - Controles de PostgreSQL (`db_security_pgadmin.py`): roles con privilegio mínimo, vistas, triggers de auditoría por sentencia y respaldo cifrado 3-2-1 (`POST /api/v1/admin/db-backup-321`). En SQLite no hacen nada.
+  - Controles de PostgreSQL: roles con privilegio mínimo, restricciones CHECK y DEFAULT, clasificación de la información, triggers de auditoría por sentencia y 5 vistas.
   - CI del backend: búsqueda de secretos, `pip check` y reportes JUnit y de cobertura.
-  - `run_app.py` sirve el build de React (`frontend/dist`) si existe.
+- Respaldos cifrados 3-2-1 (`POST /api/v1/admin/db-backup-321`, `GET /api/v1/admin/db-backups` y `python -m backend.shared.backups crear|restaurar`):
+  - Volcado de todas las tablas, en SQLite o PostgreSQL, cifrado con AES-256-GCM. Sin `BACKUP_ENCRYPTION_KEY` no se genera.
+  - Copia en `BACKUP_DIR` y en `BACKUP_OFFSITE_DIR`; solo cuenta como 3-2-1 si la segunda está en otro disco.
+  - Cada respaldo se descifra y se restaura en una base de prueba antes de registrarlo en `respaldos_bd`. Restaurar sobre una base con datos pide `--reemplazar`.
+- Migración 0004: bitácora de respaldos y, en PostgreSQL, los controles de auditoría (sin extensiones ni superusuario; reversible).
+- Las contraseñas de los roles de PostgreSQL vienen de `DB_ROLE_*_PASSWORD` y se validan con la política (12 caracteres, mayúscula, minúscula, dígito y símbolo); sin ella el rol no puede iniciar sesión.
+- CI: pruebas contra PostgreSQL 16 y del backend en Windows y macOS.
+- `openapi.json` al día con los 76 endpoints, `python -m backend.gateway.export_openapi` para regenerarlo y una prueba que falla si queda atrasado.
 - Integración del frontend con el backend real (EP-01 a EP-53):
   - Capa de traducción en `frontend/src/api/backend/`: las pantallas siguen usando el contrato y los datos simulados no cambian.
   - Backend: catálogo con facetas y stock por sucursal, reseñas, carrito con stock y unión del de invitado, checkout con envío por código postal, pasarela de pruebas, pedidos con historial, devoluciones con foto, Mi cuenta completa, panel de administración y panel de sucursal.
   - Migración 0003 con imágenes, reseñas, lista de deseos, historial de pedidos, devoluciones y configuración.
   - Configuración de seguridad (intentos, bloqueo, sesión y reserva) editable por el admin y aplicada al momento.
-  - 51 pruebas nuevas del backend (65 en total, 94% de cobertura) y 36 de la traducción, incluida cada una de las 50 rutas contra un backend falso.
+  - Pruebas: 82 del backend (95% de cobertura, 4 de ellas contra PostgreSQL) y 36 de la traducción, incluida cada una de las 50 rutas contra un backend falso.
 - Refresh token en cookie HttpOnly, SameSite=Strict y solo en `/api/v1/auth` (sec. 18.1); con el backend real el JavaScript de la página ya no puede leerlo. `COOKIE_SECURE=true` en producción.
 
-### Quitado
-
-- `docs/` sale del repositorio (plan, prototipos, checklist, contrato de API y QA); la documentación se guarda aparte.
 - Docker para producción:
   - El frontend se sirve con nginx: `/api/` va al backend y el resto de rutas a React Router.
   - El backend tiene revisión de salud y el frontend espera a que esté listo.
@@ -99,12 +103,28 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Cambiado
 
+- Los endpoints de auditoría (bitácora, calidad de datos, respaldos y datos sintéticos) pasan del gateway al servicio admin; el cálculo del reporte queda en `data_quality.py` (MVC).
+- `run_app.py` levanta la API con uvicorn y sirve el build de React en el mismo puerto, en Windows, macOS o Linux; usa `.venv` si existe.
+- CORS solo acepta `FRONTEND_URL` y los orígenes de `CORS_ORIGINS` (antes `*` con credenciales).
+- `SEED_SYNTHETIC_DATA=false` evita cargar los datos sintéticos en producción.
+- El reporte de calidad de datos separa la bitácora real de las muestras sintéticas: el muestreo AE-39 solo se cumple con registros reales.
+- Vitest usa la mitad de los núcleos: con todos, jsdom saturaba el equipo y fallaban pruebas al azar (172 de 172 estables, 80 s).
 - Checkout y confirmación se cargan bajo demanda: el paquete público baja de 213 KB a 193 KB gzip.
 - Los esqueletos de carga ocupan el mismo lugar que el contenido final y el pie de página ya no aparece arriba mientras carga: el CLS en móvil baja de 0.16–0.23 a menos de 0.05.
 - Tokens de diseño estandarizados: cada color de los prototipos tiene nombre por uso, se ajustó el contraste de los estados deshabilitado y borde oscuro, y se fijó un tono por estado de pedido.
 
 ### Corregido
 
+- Controles de la base de datos que llegaron de la rama `backend`:
+  - Contraseñas en el código: las de 4 roles, `Qwerty1234` como contraseña de PostgreSQL y la llave de los respaldos. También la llave JWT y el secreto de webhooks tenían valor por defecto; ahora, sin variable, se genera una llave aleatoria.
+  - El respaldo se registraba como "AES-256-CBC" y era un cifrado hecho a mano; la "prueba de restauración" solo comparaba el hash de lo que se acababa de escribir.
+  - El dictamen de revisión de bitácora ("conforme, sin incidentes"), los cambios de emergencia y el `UPDATE` que generaba actividad estaban fijos en el código.
+  - La copia "offsite" era otra carpeta del mismo disco y `pg_dump` apuntaba a una ruta de Windows.
+  - Los controles fallaban si el servidor no tenía `pgcrypto`, y como corrían al arrancar, la aplicación no levantaba. Además, cada arranque hacía un respaldo y cambiaba `postgresql.conf`.
+  - El trigger de auditoría guardaba el hash de las contraseñas, y su función `SECURITY DEFINER` no fijaba `search_path`.
+- `JWT_SECRET_KEY` exige 32 caracteres (HS256); `.env.example` traía `cambiar_esto` y `PAYMENT_PROVIDER` vacío.
+- `run_app.py` buscaba `.venv` solo en Windows, mandaba todo como JSON (las imágenes no se veían) y no pasaba las cookies, así que la sesión no se guardaba.
+- `openapi.json` documentaba 40 de los 76 endpoints.
 - Seguridad del backend:
   - El carrito, el checkout, los pagos y el envío de otra persona responden 403 y quedan en la bitácora.
   - Dar de baja la cuenta también revoca la sesión y deja inservible la contraseña.
@@ -121,7 +141,6 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - El total del listado contaba solo la página y el filtro por atributo se aplicaba después de paginar.
 - El pedido de prueba 10311 tenía fecha fija y su plazo para devolver venció el 1 nov; 4 pruebas e2e fallaban.
 - La imagen del backend y el CI instalan las dependencias con `backend/requirements.txt`; `pip install -e .` fallaba porque `pyproject.toml` no lista dependencias y encuentra `backend` y `frontend` como paquetes.
-
 - Vite actualizado a 8.3.5 por 2 vulnerabilidades altas (solo en desarrollo).
 - Las pruebas con espera ya no fallan cuando la cobertura las hace más lentas.
 - En Safari de iPhone, las páginas con tablas y Editar producto se podían desplazar a lo ancho.
@@ -129,6 +148,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - La prueba "apagar el comparador lo quita de la tienda" abría una página inexistente y pasaba sin probar nada.
 - Orden de encabezados en el listado móvil (las tarjetas usaban h3 sin un h2 antes).
 - Al cambiar de página, si la página nueva aún mostraba su esqueleto de carga, el foco caía en el contenido y no en el título; ahora espera a que aparezca el título.
+
+### Quitado
+
+- `docs/` sale del repositorio (plan, prototipos, checklist, contrato de API y QA); la documentación se guarda aparte.
+- `db_security_pgadmin.py`, con sus tablas de llaves y de respaldos (las reemplaza `respaldos_bd`) y los registros precargados de cambios de emergencia y de revisión de bitácora.
 
 
 ## [1.0.0] - 2026-10-26
