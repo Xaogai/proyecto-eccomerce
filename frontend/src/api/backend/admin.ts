@@ -9,6 +9,7 @@ import type {
   Report,
   Settings,
 } from '../schemas/admin'
+import type { StaffInput } from '../schemas/admin'
 import type { OrderStatus } from '@/lib/orderStatus'
 import { ApiError, toApiError } from '../errors'
 import { bget, bsend } from './http'
@@ -268,6 +269,15 @@ export function toAdminOrder(o: BAdminOrder): AdminOrder {
 }
 
 // Usuarios
+
+interface BStaffCreated {
+  id: string
+  nombre: string
+  email: string
+  tipo_usuario: 'staff' | 'admin'
+  sucursal_id: string | null
+  password_temporal: string
+}
 
 interface BAdminUser {
   id: string
@@ -576,6 +586,27 @@ export const adminRoutes: Route[] = [
         },
       )
       return page(data, data.items.map(toAdminUser))
+    },
+  },
+  {
+    method: 'post',
+    path: '/admin/users',
+    handle: async ({ body }) => {
+      const { name, email, role, branch_id } = body as StaffInput
+      const created = await bsend<BStaffCreated>('post', '/admin/users', {
+        nombre: name,
+        email,
+        tipo_usuario: role,
+        sucursal_id: branch_id,
+      }).catch(fieldError({ nombre: 'name', tipo_usuario: 'role', sucursal_id: 'branch_id' }))
+      return {
+        id: created.id,
+        name: created.nombre,
+        email: created.email,
+        role: created.tipo_usuario,
+        branch_id: created.sucursal_id,
+        temporary_password: created.password_temporal,
+      }
     },
   },
   {

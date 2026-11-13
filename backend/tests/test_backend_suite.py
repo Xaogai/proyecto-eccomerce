@@ -667,7 +667,7 @@ def test_upgrade_database_stamps_legacy_create_all_schema(tmp_path: Path) -> Non
         upgrade_database(legacy_engine)
         with legacy_engine.connect() as conn:
             version = conn.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one()
-        assert version == "0004_controles_bd"
+        assert version == "0005_password_temporal"
     finally:
         legacy_engine.dispose()
 

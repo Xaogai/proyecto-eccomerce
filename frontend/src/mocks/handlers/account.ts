@@ -211,6 +211,7 @@ export const accountHandlers = [
       return validationError({ current: 'La contraseña actual no es correcta.' })
     if (!password || password.length < 8) return validationError({ password: 'Usa al menos 8 caracteres.' })
     auth.user.password = password
+    auth.user.must_change_password = false
     return new HttpResponse(null, { status: 204 })
   }),
 

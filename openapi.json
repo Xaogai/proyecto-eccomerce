@@ -1801,6 +1801,53 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Administración y Auditoría"
+        ],
+        "summary": "Create Staff",
+        "description": "Da de alta a una persona del personal (staff con sucursal, o admin) con contraseña temporal.\n\nLa contraseña se regresa solo en esta respuesta y no queda en la bitácora; al entrar por primera vez\nla persona debe cambiarla (`debe_cambiar_password`).\n\nRaises:\n    HTTPException 409: el correo ya tiene cuenta (para darle otro rol, se cambia en la tabla).\n    HTTPException 422: staff sin sucursal válida.",
+        "operationId": "create_staff_api_v1_admin_users_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Staff Api V1 Admin Users Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/admin/users/{user_id}": {
@@ -7695,6 +7742,46 @@
         "title": "ShippingQuoteResponse",
         "description": "Respuesta de cotización de envío por código postal y opciones de recolección (Sec. 13.1, HU-07)."
       },
+      "StaffCreate": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 150,
+            "title": "Email"
+          },
+          "tipo_usuario": {
+            "type": "string",
+            "pattern": "^(staff|admin)$",
+            "title": "Tipo Usuario"
+          },
+          "sucursal_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sucursal Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "email",
+          "tipo_usuario"
+        ],
+        "title": "StaffCreate",
+        "description": "Alta de personal por un admin: la cuenta nace con contraseña temporal."
+      },
       "StatusChange": {
         "properties": {
           "estado": {
@@ -8062,6 +8149,11 @@
               }
             ],
             "title": "Sucursal Nombre"
+          },
+          "debe_cambiar_password": {
+            "type": "boolean",
+            "title": "Debe Cambiar Password",
+            "default": false
           }
         },
         "type": "object",

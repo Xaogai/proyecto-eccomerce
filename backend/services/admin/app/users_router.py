@@ -2,11 +2,13 @@
 
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+import secrets
+import string
 import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
 from backend.shared.config import settings
@@ -21,7 +23,7 @@ from backend.shared.models import (
     Sucursal,
     Usuario,
 )
-from backend.shared.security import clear_failed_logins, record_audit_event, require_roles
+from backend.shared.security import clear_failed_logins, hash_password, record_audit_event, require_roles
 
 router = APIRouter(prefix="/api/v1/admin", tags=["Administración y Auditoría"])
 
@@ -39,6 +41,38 @@ class UserChange(BaseModel):
 
     tipo_usuario: str = Field(..., pattern="^(cliente|staff|admin)$")
     sucursal_id: uuid.UUID | None = None
+
+
+class StaffCreate(BaseModel):
+    """Alta de personal por un admin: la cuenta nace con contraseña temporal."""
+
+    nombre: str = Field(..., min_length=2, max_length=150)
+    email: str = Field(..., max_length=150)
+    tipo_usuario: str = Field(..., pattern="^(staff|admin)$")
+    sucursal_id: uuid.UUID | None = None
+
+    @field_validator("email")
+    @classmethod
+    def _email(cls, value: str) -> str:
+        cleaned = value.strip().lower()
+        if "@" not in cleaned or "." not in cleaned.split("@")[-1]:
+            raise ValueError("Formato de correo electrónico inválido")
+        return cleaned
+
+
+# Sin caracteres que se confunden al dictarla o copiarla (0/O, 1/l/I).
+_TEMP_ALPHABET = "".join(c for c in string.ascii_letters + string.digits if c not in "0O1lI")
+_TEMP_SYMBOLS = "-_*#"
+
+
+def temporary_password(length: int = 14) -> str:
+    """Contraseña aleatoria con mayúscula, minúscula, dígito y símbolo, para entregarla una sola vez."""
+    while True:
+        chars = [secrets.choice(_TEMP_ALPHABET) for _ in range(length - 1)] + [secrets.choice(_TEMP_SYMBOLS)]
+        secrets.SystemRandom().shuffle(chars)
+        value = "".join(chars)
+        if any(c.isupper() for c in value) and any(c.islower() for c in value) and any(c.isdigit() for c in value):
+            return value
 
 
 class SettingsChange(BaseModel):
@@ -101,6 +135,92 @@ def list_users(
     return {"page": page, "page_size": page_size, "total": len(usuarios), "items": items}
 
 
+def _require_branch(db: Session, role: str, sucursal_id: uuid.UUID | None) -> None:
+    """El staff necesita una sucursal que exista (422 con el campo, como las validaciones del formulario)."""
+    if role == "staff" and (sucursal_id is None or db.get(Sucursal, sucursal_id) is None):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=[{"loc": ["body", "sucursal_id"], "msg": "El staff necesita una sucursal.", "type": "value_error"}],
+        )
+
+
+def _assign_role(db: Session, usuario: Usuario, role: str, sucursal_id: uuid.UUID | None) -> uuid.UUID | None:
+    """
+    Deja al usuario con el rol y sus tablas (staff con sucursal, admin, cliente). No hace commit.
+
+    Returns:
+        La sucursal del staff, o `None` para otros roles.
+
+    Raises:
+        HTTPException 422: staff sin sucursal o con una sucursal que no existe.
+    """
+    sucursal_id = sucursal_id or (usuario.staff_sucursal.sucursal_id if usuario.staff_sucursal else None)
+    _require_branch(db, role, sucursal_id)
+    usuario.tipo_usuario = role
+    if usuario.staff_sucursal is not None and role != "staff":
+        db.delete(usuario.staff_sucursal)
+    if role == "staff" and sucursal_id is not None:
+        if usuario.staff_sucursal is None:
+            db.add(StaffSucursal(usuario_id=usuario.id, sucursal_id=sucursal_id))
+        else:
+            usuario.staff_sucursal.sucursal_id = sucursal_id
+    if role == "admin" and usuario.administrador is None:
+        db.add(Administrador(usuario_id=usuario.id, rol="superadmin"))
+    if usuario.administrador is not None and role != "admin":
+        db.delete(usuario.administrador)
+    if usuario.cliente is None:
+        db.add(Cliente(usuario_id=usuario.id))
+    return sucursal_id if role == "staff" else None
+
+
+@router.post("/users", status_code=status.HTTP_201_CREATED)
+def create_staff(
+    payload: StaffCreate,
+    admin: Usuario = Depends(require_roles("admin")),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """
+    Da de alta a una persona del personal (staff con sucursal, o admin) con contraseña temporal.
+
+    La contraseña se regresa solo en esta respuesta y no queda en la bitácora; al entrar por primera vez
+    la persona debe cambiarla (`debe_cambiar_password`).
+
+    Raises:
+        HTTPException 409: el correo ya tiene cuenta (para darle otro rol, se cambia en la tabla).
+        HTTPException 422: staff sin sucursal válida.
+    """
+    _require_branch(db, payload.tipo_usuario, payload.sucursal_id)
+    if db.query(Usuario).filter(Usuario.email == payload.email).first() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"code": "email_taken", "message": "Ya existe una cuenta con ese correo. Cámbiale el rol en la tabla."},
+        )
+    password = temporary_password()
+    usuario = Usuario(
+        nombre=payload.nombre.strip(),
+        email=payload.email,
+        password_hash=hash_password(password),
+        tipo_usuario=payload.tipo_usuario,
+        debe_cambiar_password=True,
+    )
+    db.add(usuario)
+    db.flush()
+    sucursal_id = _assign_role(db, usuario, payload.tipo_usuario, payload.sucursal_id)
+    db.commit()
+    record_audit_event(
+        "user_created", str(admin.id), f"user:{usuario.id}",
+        {"role": payload.tipo_usuario, "sucursal_id": str(sucursal_id or "")},
+    )
+    return {
+        "id": usuario.id,
+        "nombre": usuario.nombre,
+        "email": usuario.email,
+        "tipo_usuario": usuario.tipo_usuario,
+        "sucursal_id": sucursal_id,
+        "password_temporal": password,
+    }
+
+
 @router.patch("/users/{user_id}")
 def change_user(
     user_id: uuid.UUID,
@@ -116,27 +236,8 @@ def change_user(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail={"code": "self_change", "message": "No puedes cambiar tu propio rol."}
         )
-    sucursal_id = payload.sucursal_id or (usuario.staff_sucursal.sucursal_id if usuario.staff_sucursal else None)
-    if payload.tipo_usuario == "staff" and (sucursal_id is None or db.get(Sucursal, sucursal_id) is None):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=[{"loc": ["body", "sucursal_id"], "msg": "El staff necesita una sucursal.", "type": "value_error"}],
-        )
     anterior = usuario.tipo_usuario
-    usuario.tipo_usuario = payload.tipo_usuario
-    if usuario.staff_sucursal is not None and payload.tipo_usuario != "staff":
-        db.delete(usuario.staff_sucursal)
-    if payload.tipo_usuario == "staff" and sucursal_id is not None:
-        if usuario.staff_sucursal is None:
-            db.add(StaffSucursal(usuario_id=usuario.id, sucursal_id=sucursal_id))
-        else:
-            usuario.staff_sucursal.sucursal_id = sucursal_id
-    if payload.tipo_usuario == "admin" and usuario.administrador is None:
-        db.add(Administrador(usuario_id=usuario.id, rol="superadmin"))
-    if usuario.administrador is not None and payload.tipo_usuario != "admin":
-        db.delete(usuario.administrador)
-    if usuario.cliente is None:
-        db.add(Cliente(usuario_id=usuario.id))
+    sucursal_id = _assign_role(db, usuario, payload.tipo_usuario, payload.sucursal_id)
     db.commit()
     record_audit_event(
         "role_change", str(admin.id), f"user:{usuario.id}",

@@ -13,6 +13,7 @@ import { useUrlFilters } from '@/hooks/useUrlFilters'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { formatDateTime, plural } from '@/lib/format'
 import styles from './admin.module.css'
+import { InviteStaffDialog } from './InviteStaffDialog'
 
 const ROLES = { cliente: 'Cliente', staff: 'Staff de sucursal', admin: 'Administrador' } as const
 type Role = keyof typeof ROLES
@@ -24,7 +25,7 @@ const FILTERS = [
   { value: 'admin', label: 'Administradores' },
 ] as const
 
-/** Usuarios y roles (pantalla 54): cambiar rol y sucursal (no el propio) y desbloquear cuentas. */
+/** Usuarios y roles (pantalla 54): invitar personal, cambiar rol y sucursal (no el propio) y desbloquear cuentas. */
 export function UsersPage() {
   usePageTitle('Usuarios y roles · Administración')
   const filters = useUrlFilters()
@@ -38,6 +39,7 @@ export function UsersPage() {
   const stores = useAllStores()
   const { update, unlock } = useUserActions()
   const [message, setMessage] = useState('')
+  const [inviting, setInviting] = useState(false)
 
   const changeRole = async (u: AdminUser, next: Role, branch?: string) => {
     const branch_id = next === 'staff' ? (branch ?? u.branch_id ?? stores.data?.[0]?.id ?? null) : null
@@ -54,7 +56,20 @@ export function UsersPage() {
 
   return (
     <>
-      <h1>Usuarios y roles</h1>
+      <div className={styles.titleRow}>
+        <h1>Usuarios y roles</h1>
+        <Button onClick={() => setInviting(true)} aria-haspopup="dialog">
+          Invitar personal
+        </Button>
+      </div>
+      <InviteStaffDialog
+        open={inviting}
+        onClose={(created) => {
+          setInviting(false)
+          if (created)
+            setMessage(`Creamos la cuenta de ${created.name}. El alta queda en el registro de auditoría.`)
+        }}
+      />
       <ul role="list" className={styles.roles}>
         <li className={styles.role}>
           <strong>Cliente</strong>

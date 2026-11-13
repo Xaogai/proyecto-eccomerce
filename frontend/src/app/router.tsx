@@ -94,6 +94,17 @@ const authRoutes: RouteObject[] = [
     ],
   },
   {
+    path: 'cuenta/cambiar-contrasena',
+    element: (
+      <RequireAuth allowTemporaryPassword>
+        <Outlet />
+      </RequireAuth>
+    ),
+    children: [
+      { index: true, lazy: page(() => import('@/pages/account/ChangePasswordPage'), 'ChangePasswordPage') },
+    ],
+  },
+  {
     path: 'cuenta/restablecer/:token?',
     lazy: page(() => import('@/pages/account/ResetPasswordPage'), 'ResetPasswordPage'),
   },

@@ -136,6 +136,18 @@ export const adminUserSchema = z.object({
   is_self: z.boolean(),
 })
 export type AdminUser = z.infer<typeof adminUserSchema>
+
+/** Alta de personal: la contraseña temporal solo viene en esta respuesta. */
+export const staffCreatedSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  role: z.enum(['staff', 'admin']),
+  branch_id: z.string().nullable(),
+  temporary_password: z.string(),
+})
+export type StaffCreated = z.infer<typeof staffCreatedSchema>
+export type StaffInput = { name: string; email: string; role: 'staff' | 'admin'; branch_id: string | null }
 export const adminUserPageSchema = page(adminUserSchema)
 
 // ---------- EP-46 ----------

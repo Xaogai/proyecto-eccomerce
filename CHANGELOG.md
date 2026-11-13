@@ -8,6 +8,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Agregado
 
+- Alta de personal desde Usuarios y roles ("Invitar personal", pantalla 54): el admin crea staff (con sucursal) o admin, y la cuenta nace con una contraseña temporal que se ve una sola vez y no queda en la bitácora (`POST /api/v1/admin/users`).
+- Cambio obligatorio de la contraseña temporal: al entrar, la persona va a "Crea tu contraseña" y el backend responde 403 `password_change_required` en todo lo demás hasta que la cambie (migración 0005).
 - Desde la rama `backend`:
   - 100 productos más en los datos sintéticos (`catalog_seed_100.py`), y 30 pedidos y 25 registros de bitácora por operación sensible para el muestreo del plan de auditoría (AE-39).
   - Controles de PostgreSQL: roles con privilegio mínimo, restricciones CHECK y DEFAULT, clasificación de la información, triggers de auditoría por sentencia y 5 vistas.
@@ -115,6 +117,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Corregido
 
+- Con una sesión guardada ("Mantener mi sesión"), abrir Iniciar sesión mandaba en silencio al panel de esa cuenta: parecía que el login de otra persona llevaba a la vista de cliente. Ahora avisa qué cuenta está abierta y deja cerrarla para entrar con otra.
 - Controles de la base de datos que llegaron de la rama `backend`:
   - Contraseñas en el código: las de 4 roles, `Qwerty1234` como contraseña de PostgreSQL y la llave de los respaldos. También la llave JWT y el secreto de webhooks tenían valor por defecto; ahora, sin variable, se genera una llave aleatoria.
   - El respaldo se registraba como "AES-256-CBC" y era un cifrado hecho a mano; la "prueba de restauración" solo comparaba el hash de lo que se acababa de escribir.

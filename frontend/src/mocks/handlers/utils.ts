@@ -53,6 +53,7 @@ export function toPublicUser(u: DbUser): User {
     role: u.role,
     branch_id: u.branch_id,
     branch_name: branch?.name ?? null,
+    must_change_password: u.must_change_password ?? false,
   }
 }
 

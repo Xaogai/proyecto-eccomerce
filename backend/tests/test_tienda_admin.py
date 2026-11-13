@@ -173,6 +173,57 @@ def test_usuarios_cambio_de_rol_y_desbloqueo(client: InProcessASGIClient, db_ses
     assert me["tipo_usuario"] == "staff" and me["sucursal_nombre"] == "Sucursal Metepec"
 
 
+def test_alta_de_staff_con_contrasena_temporal(client: InProcessASGIClient, db_session: Session) -> None:
+    headers = _login(client)
+    metepec = db_session.query(Sucursal).filter(Sucursal.nombre == "Sucursal Metepec").one()
+    alta = {"nombre": "Sofía Treviño", "email": " Sofia.T@Ferremarket.local ", "tipo_usuario": "staff"}
+
+    assert client.post("/api/v1/admin/users", headers=headers, json=alta).status_code == 422, "staff sin sucursal"
+    assert client.post("/api/v1/admin/users", json={**alta, "sucursal_id": str(metepec.id)}).status_code == 401
+    cliente = _login(client, "ana.torres.sintetica@ferremarket.local")
+    assert client.post("/api/v1/admin/users", headers=cliente, json={**alta, "sucursal_id": str(metepec.id)}).status_code == 403
+
+    res = client.post("/api/v1/admin/users", headers=headers, json={**alta, "sucursal_id": str(metepec.id)})
+    assert res.status_code == 201, res.text
+    temporal = res.json()["password_temporal"]
+    assert len(temporal) == 14 and res.json()["email"] == "sofia.t@ferremarket.local"
+    repetido = client.post("/api/v1/admin/users", headers=headers, json={**alta, "sucursal_id": str(metepec.id)})
+    assert repetido.status_code == 409 and repetido.json()["detail"]["code"] == "email_taken"
+
+    login = client.post("/api/v1/auth/login", json={"email": "sofia.t@ferremarket.local", "password": temporal})
+    assert login.status_code == 200
+    sofia = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    perfil = client.get("/api/v1/users/me", headers=sofia).json()
+    assert perfil["tipo_usuario"] == "staff" and perfil["sucursal_nombre"] == "Sucursal Metepec"
+    assert perfil["debe_cambiar_password"] is True
+    bloqueado = client.get("/api/v1/sucursal/inventario", headers=sofia)
+    assert bloqueado.status_code == 403 and bloqueado.json()["detail"]["code"] == "password_change_required"
+    cambio = client.post(
+        "/api/v1/users/me/password", headers=sofia, json={"password_actual": temporal, "password_nueva": "Sofia-Nueva-2026"}
+    )
+    assert cambio.status_code == 200
+    assert client.get("/api/v1/users/me", headers=sofia).json()["debe_cambiar_password"] is False
+    assert client.get("/api/v1/sucursal/inventario", headers=sofia).status_code == 200
+
+    logs = client.get("/api/v1/admin/audit-logs", headers=headers, params={"event_type": "user_created"}).json()
+    assert logs and temporal not in str(logs), "la contraseña temporal no queda en la bitácora"
+
+
+def test_alta_de_admin_no_necesita_sucursal(client: InProcessASGIClient) -> None:
+    res = client.post(
+        "/api/v1/admin/users",
+        headers=_login(client),
+        json={"nombre": "Luis Ramírez", "email": "luis.r@ferremarket.local", "tipo_usuario": "admin"},
+    )
+    assert res.status_code == 201 and res.json()["sucursal_id"] is None
+    rechazo = client.post(
+        "/api/v1/admin/users",
+        headers=_login(client),
+        json={"nombre": "Cliente", "email": "c@ferremarket.local", "tipo_usuario": "cliente"},
+    )
+    assert rechazo.status_code == 422, "los clientes se registran solos"
+
+
 def test_reporte_y_csv(client: InProcessASGIClient) -> None:
     headers = _login(client)
     data = client.get("/api/v1/admin/reports", headers=headers, params={"periodo": "30d"}).json()

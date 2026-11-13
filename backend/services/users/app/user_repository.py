@@ -113,8 +113,9 @@ class UserRepository:
         return user
 
     def update_password(self, user: Usuario, new_password_hash: str) -> Usuario:
-        """Actualiza el hash de contraseña de un usuario tras recuperación verificada (HU-03, RQ-SEG-001)."""
+        """Actualiza el hash de contraseña (recuperación o cambio) y quita la marca de contraseña temporal."""
         user.password_hash = new_password_hash
+        user.debe_cambiar_password = False
         self.db.commit()
         self.db.refresh(user)
         return user

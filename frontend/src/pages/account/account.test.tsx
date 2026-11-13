@@ -35,6 +35,38 @@ describe('iniciar sesión (B1, B4)', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/cuenta'))
   })
 
+  it('con una sesión abierta, avisa y deja cerrarla para entrar con otra cuenta', async () => {
+    asAna()
+    const { router } = renderRoute('/cuenta/login')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Ya iniciaste sesión' })).toBeInTheDocument()
+    expect(screen.getByText(/Ana López/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Continuar como Ana' })).toHaveAttribute('href', '/cuenta')
+    expect(router.state.location.pathname).toBe('/cuenta/login')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar sesión y entrar con otra cuenta' }))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeInTheDocument()
+    await fillLogin('admin@ejemplo.com', 'Taller123')
+    await waitFor(() => expect(router.state.location.pathname).toBe('/admin'))
+  })
+
+  it('una cuenta con contraseña temporal la cambia antes de llegar a su panel', async () => {
+    const staff = db.users.find((u) => u.role === 'staff')!
+    staff.must_change_password = true
+    const { router } = renderRoute('/cuenta/login?next=%2Fsucursal%2Finventario')
+    await fillLogin(staff.email, staff.password)
+    await waitFor(() => expect(router.state.location.pathname).toBe('/cuenta/cambiar-contrasena'))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Crea tu contraseña' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Contraseña temporal'), { target: { value: staff.password } })
+    fireEvent.change(screen.getByLabelText('Contraseña nueva'), { target: { value: 'MiClave-2026' } })
+    fireEvent.change(screen.getByLabelText('Confirma la contraseña nueva'), {
+      target: { value: 'MiClave-2026' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar y continuar' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/sucursal/inventario'))
+    expect(staff.must_change_password).toBe(false)
+  })
+
   it('contraseña incorrecta avisa cuántos intentos quedan', async () => {
     renderRoute('/cuenta/login')
     await fillLogin('cliente@ejemplo.com', 'mal')

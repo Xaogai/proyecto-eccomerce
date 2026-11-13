@@ -56,6 +56,7 @@ describe('sesión', () => {
         acepta_personalizacion: false,
         sucursal_id: 's1',
         sucursal_nombre: 'Sucursal Toluca Centro',
+        debe_cambiar_password: true,
       }),
     ).toEqual({
       id: 'u1',
@@ -64,6 +65,7 @@ describe('sesión', () => {
       role: 'staff',
       branch_id: 's1',
       branch_name: 'Sucursal Toluca Centro',
+      must_change_password: true,
     })
     expect(
       toRefreshResponse({ access_token: 'a', refresh_token: 'r', expires_in_minutes: 15 }).expires_in,

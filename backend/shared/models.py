@@ -43,6 +43,8 @@ class Usuario(Base):
     telefono: Mapped[str | None] = mapped_column(String(20), nullable=True)
     acepta_marketing: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     acepta_personalizacion: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Cuenta creada por un admin con contraseña temporal: debe cambiarla al entrar.
+    debe_cambiar_password: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     cliente: Mapped["Cliente | None"] = relationship("Cliente", back_populates="usuario", uselist=False, cascade="all, delete-orphan")
     administrador: Mapped["Administrador | None"] = relationship("Administrador", back_populates="usuario", uselist=False, cascade="all, delete-orphan")

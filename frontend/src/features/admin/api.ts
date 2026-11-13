@@ -14,6 +14,8 @@ import {
   reportSchema,
   type Settings,
   settingsSchema,
+  type StaffInput,
+  staffCreatedSchema,
 } from '@/api/schemas/admin'
 import { imageSchema } from '@/api/schemas/common'
 import { storeSchema } from '@/api/schemas/store'
@@ -233,6 +235,10 @@ export function useUserActions() {
     }),
     unlock: useMutation({
       mutationFn: (id: string) => send('post', endpoints.adminUserUnlock(id), ok),
+      onSuccess,
+    }),
+    create: useMutation({
+      mutationFn: (input: StaffInput) => send('post', endpoints.adminUsers, staffCreatedSchema, input),
       onSuccess,
     }),
   }

@@ -20,6 +20,7 @@ export interface BUser {
   acepta_personalizacion: boolean
   sucursal_id: string | null
   sucursal_nombre: string | null
+  debe_cambiar_password?: boolean
 }
 
 export function toUser(u: BUser): User {
@@ -30,6 +31,7 @@ export function toUser(u: BUser): User {
     role: u.tipo_usuario,
     branch_id: u.sucursal_id,
     branch_name: u.sucursal_nombre,
+    must_change_password: u.debe_cambiar_password ?? false,
   }
 }
 

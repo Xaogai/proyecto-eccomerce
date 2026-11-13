@@ -11,6 +11,8 @@ export const userSchema = z.object({
   role: roleSchema,
   branch_id: z.string().nullable().optional(),
   branch_name: z.string().nullable().optional(),
+  /** Cuenta dada de alta por un admin con contraseña temporal: debe cambiarla antes de seguir. */
+  must_change_password: z.boolean().optional(),
 })
 export type User = z.infer<typeof userSchema>
 

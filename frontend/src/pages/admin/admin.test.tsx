@@ -102,6 +102,49 @@ describe('Usuarios y Configuración (pantallas 54 y 56)', () => {
     expect(screen.getByLabelText('Rol de Ana López')).toBeEnabled()
   })
 
+  it('invitar personal crea la cuenta y muestra la contraseña temporal una sola vez', async () => {
+    asAdmin()
+    renderRoute('/admin/usuarios')
+    fireEvent.click(await screen.findByRole('button', { name: 'Invitar personal' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Invitar personal' })
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Crear cuenta' }))
+    expect(await within(dialog).findByText('Escribe el nombre completo.')).toBeInTheDocument()
+    expect(within(dialog).getByText('Elige su sucursal.')).toBeInTheDocument()
+
+    fireEvent.change(within(dialog).getByLabelText('Nombre completo'), { target: { value: 'Sofía Treviño' } })
+    fireEvent.change(within(dialog).getByLabelText('Correo de trabajo'), {
+      target: { value: 'sofia@ejemplo.com' },
+    })
+    const branch = within(dialog).getByLabelText('Sucursal') as HTMLSelectElement
+    fireEvent.change(branch, { target: { value: branch.options[1].value } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Crear cuenta' }))
+
+    const done = await screen.findByRole('dialog', { name: 'Cuenta creada' })
+    expect(within(done).getByText('Temporal-2026')).toBeInTheDocument()
+    const sofia = db.users.find((u) => u.email === 'sofia@ejemplo.com')!
+    expect(sofia).toMatchObject({ role: 'staff', must_change_password: true })
+    expect(sofia.branch_id).toBe(branch.options[1].value)
+
+    fireEvent.click(within(done).getByRole('button', { name: 'Listo' }))
+    expect(await screen.findByText(/Creamos la cuenta de Sofía Treviño/)).toBeInTheDocument()
+    expect(screen.queryByText('Temporal-2026')).not.toBeInTheDocument()
+  })
+
+  it('invitar con un correo que ya tiene cuenta lo marca en el campo', async () => {
+    asAdmin()
+    renderRoute('/admin/usuarios')
+    fireEvent.click(await screen.findByRole('button', { name: 'Invitar personal' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Invitar personal' })
+    fireEvent.change(within(dialog).getByLabelText('Nombre completo'), { target: { value: 'Otra Ana' } })
+    fireEvent.change(within(dialog).getByLabelText('Correo de trabajo'), {
+      target: { value: 'cliente@ejemplo.com' },
+    })
+    fireEvent.click(within(dialog).getByLabelText(/Administrador: todo el panel/))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Crear cuenta' }))
+    expect(await within(dialog).findByText(/Ya existe una cuenta con ese correo/)).toBeInTheDocument()
+  })
+
   it('apagar una función actualiza las banderas', async () => {
     asAdmin()
     renderRoute('/admin/configuracion')

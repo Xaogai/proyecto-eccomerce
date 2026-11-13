@@ -7,6 +7,7 @@ import { serializeOrder } from '../db/orders'
 import type { DbOrder, DbProduct } from '../db/seed'
 import { categoryPath, categoryWithDescendants, db } from '../db/store'
 import { applyScenario } from '../scenarios'
+import type { StaffInput } from '@/api/schemas/admin'
 import { API, businessError, requireUser, validationError } from './utils'
 
 const DAY = 86_400_000
@@ -686,6 +687,39 @@ export const adminHandlers = [
     if (body.branch_id !== undefined) u.branch_id = body.branch_id
     if (u.role !== 'staff') u.branch_id = null
     return HttpResponse.json({ id: u.id })
+  }),
+
+  http.post(`${API}/admin/users`, async ({ request }) => {
+    const auth = await guard(request)
+    if ('response' in auth) return auth.response
+    const body = (await request.json()) as StaffInput
+    const email = body.email.trim().toLowerCase()
+    if (body.role === 'staff' && !body.branch_id)
+      return validationError({ branch_id: 'El staff necesita una sucursal.' })
+    if (db.users.some((u) => u.email === email))
+      return businessError(
+        409,
+        'email_taken',
+        'Ya existe una cuenta con ese correo. Cámbiale el rol en la tabla.',
+      )
+    const temporary_password = 'Temporal-2026'
+    const user = {
+      id: `u-${crypto.randomUUID().slice(0, 8)}`,
+      name: body.name.trim(),
+      email,
+      password: temporary_password,
+      role: body.role,
+      branch_id: body.role === 'staff' ? body.branch_id : null,
+      locked: false,
+      failed_attempts: 0,
+      last_login: null,
+      must_change_password: true,
+    }
+    db.users.push(user)
+    return HttpResponse.json(
+      { id: user.id, name: user.name, email, role: user.role, branch_id: user.branch_id, temporary_password },
+      { status: 201 },
+    )
   }),
 
   http.post(`${API}/admin/users/:id/unlock`, async ({ request, params }) => {

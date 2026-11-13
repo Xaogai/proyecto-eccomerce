@@ -26,6 +26,25 @@
   color: var(--color-texto-2);
 }
 
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Contraseña temporal del alta de personal: grande y espaciada para dictarla o copiarla sin errores. */
+.secret {
+  padding: 12px 16px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie-2);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
 .backLink {
   align-self: flex-start;
   display: inline-flex;

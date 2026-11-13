@@ -61,6 +61,7 @@ export interface DbUser {
   last_login: string | null
   phone?: string
   consents?: { marketing: boolean; personalization: boolean }
+  must_change_password?: boolean
 }
 
 export interface DbOrder {

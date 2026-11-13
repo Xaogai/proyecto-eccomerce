@@ -269,11 +269,15 @@ def clear_failed_logins(email: str) -> None:
         session.query(IntentoLoginFallido).filter(IntentoLoginFallido.email == email).delete()
 
 
-def get_current_user(
+def get_session_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> Usuario:
-    """Dependencia que obtiene el usuario autenticado a partir del Bearer token."""
+    """
+    Usuario del Bearer token, aunque tenga contraseña temporal.
+
+    Solo para ver el perfil y cambiar la contraseña; el resto de los endpoints usa `get_current_user`.
+    """
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -294,6 +298,21 @@ def get_current_user(
     return user
 
 
+def get_current_user(user: Usuario = Depends(get_session_user)) -> Usuario:
+    """
+    Usuario autenticado que ya tiene su propia contraseña.
+
+    Raises:
+        HTTPException 403 `password_change_required`: la cuenta la dio de alta un admin con contraseña temporal.
+    """
+    if user.debe_cambiar_password:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"code": "password_change_required", "message": "Cambia tu contraseña temporal para continuar."},
+        )
+    return user
+
+
 def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
@@ -302,7 +321,7 @@ def get_optional_user(
     if credentials is None:
         return None
     try:
-        return get_current_user(credentials, db)
+        return get_current_user(get_session_user(credentials, db))
     except HTTPException:
         return None
 

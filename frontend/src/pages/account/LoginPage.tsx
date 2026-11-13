@@ -8,7 +8,7 @@ import { useAuth } from '@/app/providers/authContext'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Checkbox, TextField } from '@/components/ui/Field'
 import { PasswordField } from '@/components/ui/PasswordField'
-import { homeFor, safeNext } from '@/features/account/session'
+import { afterLogin, safeNext } from '@/features/account/session'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import styles from './account.module.css'
 
@@ -37,7 +37,7 @@ export function LoginPage() {
     setAlert(null)
     try {
       const user = await login(values.email, values.password, values.remember)
-      navigate(next ?? homeFor(user), { replace: true })
+      navigate(afterLogin(user, next), { replace: true })
     } catch (error) {
       if (!(error instanceof ApiError)) throw error
       if (error.code === 'account_locked') {

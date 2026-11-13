@@ -500,6 +500,60 @@ describe('Mi cuenta', () => {
   })
 })
 
+describe('alta de personal', () => {
+  it('manda el alta con los nombres del backend y regresa la contraseña temporal', async () => {
+    replies.push([
+      /^post \/admin\/users$/,
+      {
+        id: 'u9',
+        nombre: 'Sofía Treviño',
+        email: 'sofia@x.com',
+        tipo_usuario: 'staff',
+        sucursal_id: 's1',
+        password_temporal: 'Abc-2345xyzQ',
+      },
+    ])
+    const created = await translate('post', '/admin/users', undefined, {
+      name: 'Sofía Treviño',
+      email: 'sofia@x.com',
+      role: 'staff',
+      branch_id: 's1',
+    })
+    expect(lastCall().body).toEqual({
+      nombre: 'Sofía Treviño',
+      email: 'sofia@x.com',
+      tipo_usuario: 'staff',
+      sucursal_id: 's1',
+    })
+    expect(created).toEqual({
+      id: 'u9',
+      name: 'Sofía Treviño',
+      email: 'sofia@x.com',
+      role: 'staff',
+      branch_id: 's1',
+      temporary_password: 'Abc-2345xyzQ',
+    })
+  })
+
+  it('el error de sucursal llega con el nombre del campo del formulario', async () => {
+    replies.push([
+      /^post \/admin\/users$/,
+      backendError(422, [
+        { loc: ['body', 'sucursal_id'], msg: 'El staff necesita una sucursal.', type: 'value_error' },
+      ]),
+    ])
+    const error = await translate('post', '/admin/users', undefined, {
+      name: 'X Y',
+      email: 'x@y.com',
+      role: 'staff',
+      branch_id: null,
+    }).catch((e: unknown) => e)
+    expect((error as { fieldErrors: Record<string, string> }).fieldErrors.branch_id).toBe(
+      'El staff necesita una sucursal.',
+    )
+  })
+})
+
 describe('administración', () => {
   const adminProduct = {
     id: 'p1',

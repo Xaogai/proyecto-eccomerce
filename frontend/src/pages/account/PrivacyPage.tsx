@@ -22,6 +22,7 @@ import {
   useUpdateConsents,
   useUpdateProfile,
 } from '@/features/account/api'
+import { type PasswordChange, passwordChangeSchema } from '@/features/account/session'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { formatDate } from '@/lib/format'
 import { orderStatusInfo, type OrderStatus } from '@/lib/orderStatus'
@@ -123,19 +124,11 @@ function ProfileSection({ profile }: { profile: Profile }) {
   )
 }
 
-const passwordSchema = z
-  .object({
-    current: z.string().min(1, 'Escribe tu contraseña actual.'),
-    password: z.string().min(8, 'Usa al menos 8 caracteres.'),
-    confirm: z.string(),
-  })
-  .refine((v) => v.password === v.confirm, { path: ['confirm'], message: 'Las contraseñas no coinciden.' })
-
 function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const change = useChangePassword()
   const { toast } = useToast()
-  const { register, handleSubmit, formState, setError, reset } = useForm<z.infer<typeof passwordSchema>>({
-    resolver: zodResolver(passwordSchema),
+  const { register, handleSubmit, formState, setError, reset } = useForm<PasswordChange>({
+    resolver: zodResolver(passwordChangeSchema),
     defaultValues: { current: '', password: '', confirm: '' },
   })
   const close = () => {

@@ -222,3 +222,4 @@ class UserResponse(BaseModel):
     acepta_personalizacion: bool = False
     sucursal_id: uuid.UUID | None = None
     sucursal_nombre: str | None = None
+    debe_cambiar_password: bool = False

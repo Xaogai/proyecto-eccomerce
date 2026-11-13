@@ -41,6 +41,11 @@
   font-size: 26px;
 }
 
+/* Sesión abierta y contraseña temporal: una sola tarjeta, sin columnas. */
+.sessionCard {
+  max-width: 560px;
+}
+
 .dark {
   background: var(--color-carbon);
   color: var(--color-superficie);

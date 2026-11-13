@@ -39,6 +39,7 @@ from backend.shared.security import (
     create_refresh_token,
     decode_token,
     get_current_user,
+    get_session_user,
     hash_password,
     record_audit_event,
     register_failed_login,
@@ -94,6 +95,7 @@ def user_response(user: Usuario) -> UserResponse:
         acepta_personalizacion=user.acepta_personalizacion,
         sucursal_id=staff.sucursal_id if staff else None,
         sucursal_nombre=staff.sucursal.nombre if staff and staff.sucursal else None,
+        debe_cambiar_password=user.debe_cambiar_password,
     )
 
 
@@ -355,7 +357,7 @@ def get_my_notifications(
 
 
 @router.get("/users/me", response_model=UserResponse)
-def get_my_profile(current_user: Usuario = Depends(get_current_user)) -> UserResponse:
+def get_my_profile(current_user: Usuario = Depends(get_session_user)) -> UserResponse:
     """Obtiene el perfil del usuario autenticado."""
     return user_response(current_user)
 
@@ -363,7 +365,7 @@ def get_my_profile(current_user: Usuario = Depends(get_current_user)) -> UserRes
 @router.post("/users/me/password")
 def change_my_password(
     payload: PasswordChangeRequest,
-    current_user: Usuario = Depends(get_current_user),
+    current_user: Usuario = Depends(get_session_user),
     repo: UserRepository = Depends(get_user_repository),
 ) -> dict[str, str]:
     """Cambia la contraseña verificando la actual (Mi cuenta, datos y privacidad)."""

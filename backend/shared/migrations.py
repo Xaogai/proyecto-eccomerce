@@ -39,7 +39,10 @@ def upgrade_database(target_engine: Engine | None = None, revision: str = "head"
         existing_tables = set(inspector.get_table_names())
         cfg.attributes["connection"] = connection
         if "usuarios" in existing_tables and "alembic_version" not in existing_tables:
-            if "respaldos_bd" in existing_tables:
+            user_columns = {c["name"] for c in inspector.get_columns("usuarios")}
+            if "debe_cambiar_password" in user_columns:
+                stamp_rev = "0005_password_temporal"
+            elif "respaldos_bd" in existing_tables:
                 stamp_rev = "0004_controles_bd"
             elif "resenas" in existing_tables:
                 stamp_rev = "0003_tienda_en_linea"
