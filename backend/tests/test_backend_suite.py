@@ -620,7 +620,7 @@ def test_additional_endpoints_and_coverage(client: InProcessASGIClient) -> None:
         headers=admin_headers,
         json={"tipo_usuario": "staff"},
     )
-    assert role_resp.status_code == 200
+    assert role_resp.status_code == 409, "un cliente no se convierte en personal"
 
     logs_resp = client.get("/api/v1/admin/audit-logs", headers=admin_headers)
     assert logs_resp.status_code == 200
@@ -667,7 +667,7 @@ def test_upgrade_database_stamps_legacy_create_all_schema(tmp_path: Path) -> Non
         upgrade_database(legacy_engine)
         with legacy_engine.connect() as conn:
             version = conn.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one()
-        assert version == "0005_password_temporal"
+        assert version == "0006_usuario_activo"
     finally:
         legacy_engine.dispose()
 

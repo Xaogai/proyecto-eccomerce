@@ -288,6 +288,7 @@ interface BAdminUser {
   sucursal_nombre: string | null
   ultimo_acceso: string | null
   bloqueado: boolean
+  activo?: boolean
   es_yo: boolean
 }
 
@@ -300,6 +301,7 @@ const toAdminUser = (u: BAdminUser): AdminUser => ({
   branch_name: u.sucursal_nombre,
   last_login: u.ultimo_acceso,
   locked: u.bloqueado,
+  active: u.activo ?? true,
   is_self: u.es_yo,
 })
 
@@ -618,6 +620,27 @@ export const adminRoutes: Route[] = [
         tipo_usuario: role,
         sucursal_id: branch_id ?? null,
       }).catch(fieldError({ sucursal_id: 'branch_id' }))
+    },
+  },
+  {
+    method: 'post',
+    path: '/admin/users/:id/disable',
+    handle: ({ params }) => bsend('post', `/admin/users/${params.id}/desactivar`),
+  },
+  {
+    method: 'post',
+    path: '/admin/users/:id/enable',
+    handle: ({ params }) => bsend('post', `/admin/users/${params.id}/reactivar`),
+  },
+  {
+    method: 'post',
+    path: '/admin/users/:id/temporary-password',
+    handle: async ({ params }) => {
+      const r = await bsend<{ password_temporal: string }>(
+        'post',
+        `/admin/users/${params.id}/password-temporal`,
+      )
+      return { temporary_password: r.password_temporal }
     },
   },
   {

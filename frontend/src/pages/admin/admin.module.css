@@ -563,3 +563,21 @@ li:first-child > .alert {
   white-space: nowrap;
   vertical-align: middle;
 }
+
+/* Usuarios y roles: botones apilados y correos que se parten para que la tabla quepa desde 1280 px. */
+.rowActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.rowActions > * {
+  white-space: nowrap;
+}
+
+.email {
+  font-size: 13px;
+  color: var(--color-texto-2);
+  overflow-wrap: anywhere;
+}

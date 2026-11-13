@@ -62,6 +62,7 @@ export interface DbUser {
   phone?: string
   consents?: { marketing: boolean; personalization: boolean }
   must_change_password?: boolean
+  active?: boolean
 }
 
 export interface DbOrder {

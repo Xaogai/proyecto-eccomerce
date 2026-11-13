@@ -48,6 +48,9 @@ export const endpoints = {
   adminUsers: '/admin/users', // EP-44
   adminUser: (id: string) => `/admin/users/${id}`, // EP-44
   adminUserUnlock: (id: string) => `/admin/users/${id}/unlock`, // EP-45
+  adminUserDisable: (id: string) => `/admin/users/${id}/disable`,
+  adminUserEnable: (id: string) => `/admin/users/${id}/enable`,
+  adminUserTemporaryPassword: (id: string) => `/admin/users/${id}/temporary-password`,
   adminReports: '/admin/reports', // EP-46
   adminReportsCsv: '/admin/reports/export.csv', // EP-46
   adminSettings: '/admin/settings', // EP-47

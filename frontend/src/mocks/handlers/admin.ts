@@ -12,6 +12,19 @@ import { API, businessError, requireUser, validationError } from './utils'
 
 const DAY = 86_400_000
 
+/** Persona del personal sobre la que actúa el admin (no la propia cuenta ni un cliente). */
+async function staffTarget(request: Request, id: string) {
+  const auth = await guard(request)
+  if ('response' in auth) return auth
+  const user = db.users.find((u) => u.id === id)
+  if (!user) return { response: businessError(404, 'not_found', 'No encontramos ese usuario.') }
+  if (user.id === auth.user.id)
+    return { response: businessError(409, 'self_change', 'No puedes hacer esto con tu propia cuenta.') }
+  if (user.role === 'cliente')
+    return { response: businessError(409, 'not_staff', 'Esta acción es solo para el personal.') }
+  return { user }
+}
+
 async function guard(request: Request) {
   const hijack = await applyScenario()
   if (hijack) return { response: hijack }
@@ -669,6 +682,7 @@ export const adminHandlers = [
         branch_name: db.stores.find((s) => s.id === u.branch_id)?.name ?? null,
         last_login: u.last_login,
         locked: u.locked,
+        active: u.active ?? true,
         is_self: u.id === auth.user.id,
       }))
     return HttpResponse.json(paginate(list, url, 25))
@@ -681,6 +695,18 @@ export const adminHandlers = [
     if (!u) return businessError(404, 'not_found', 'No encontramos ese usuario.')
     if (u.id === auth.user.id) return businessError(409, 'self_change', 'No puedes cambiar tu propio rol.')
     const body = (await request.json()) as { role?: 'cliente' | 'staff' | 'admin'; branch_id?: string | null }
+    if (body.role && body.role !== u.role && u.role === 'cliente')
+      return businessError(
+        409,
+        'client_role_locked',
+        'Los clientes no cambian de rol. Para dar acceso a alguien del personal usa «Invitar personal».',
+      )
+    if (body.role === 'cliente' && u.role !== 'cliente')
+      return businessError(
+        409,
+        'staff_to_client',
+        'El personal no pasa a cliente. Si ya no trabaja aquí, desactiva su cuenta.',
+      )
     if (body.role === 'staff' && !(body.branch_id ?? u.branch_id))
       return validationError({ branch_id: 'El staff necesita una sucursal.' })
     if (body.role) u.role = body.role
@@ -720,6 +746,28 @@ export const adminHandlers = [
       { id: user.id, name: user.name, email, role: user.role, branch_id: user.branch_id, temporary_password },
       { status: 201 },
     )
+  }),
+
+  http.post(`${API}/admin/users/:id/disable`, async ({ request, params }) => {
+    const target = await staffTarget(request, params.id as string)
+    if ('response' in target) return target.response
+    target.user.active = false
+    return HttpResponse.json({ id: target.user.id })
+  }),
+
+  http.post(`${API}/admin/users/:id/enable`, async ({ request, params }) => {
+    const target = await staffTarget(request, params.id as string)
+    if ('response' in target) return target.response
+    target.user.active = true
+    return HttpResponse.json({ id: target.user.id })
+  }),
+
+  http.post(`${API}/admin/users/:id/temporary-password`, async ({ request, params }) => {
+    const target = await staffTarget(request, params.id as string)
+    if ('response' in target) return target.response
+    target.user.password = 'Temporal-2026'
+    target.user.must_change_password = true
+    return HttpResponse.json({ temporary_password: 'Temporal-2026' })
   }),
 
   http.post(`${API}/admin/users/:id/unlock`, async ({ request, params }) => {

@@ -14,9 +14,11 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { formatDateTime, plural } from '@/lib/format'
 import styles from './admin.module.css'
 import { InviteStaffDialog } from './InviteStaffDialog'
+import { UserActions } from './UserActions'
 
 const ROLES = { cliente: 'Cliente', staff: 'Staff de sucursal', admin: 'Administrador' } as const
 type Role = keyof typeof ROLES
+const STAFF_ROLES = ['staff', 'admin'] as const
 
 const FILTERS = [
   { value: 'todos', label: 'Todos' },
@@ -25,7 +27,7 @@ const FILTERS = [
   { value: 'admin', label: 'Administradores' },
 ] as const
 
-/** Usuarios y roles (pantalla 54): invitar personal, cambiar rol y sucursal (no el propio) y desbloquear cuentas. */
+/** Usuarios y roles (pantalla 54): invitar, desactivar y dar contraseña temporal al personal, cambiar entre staff y admin, y desbloquear cuentas. */
 export function UsersPage() {
   usePageTitle('Usuarios y roles · Administración')
   const filters = useUrlFilters()
@@ -37,7 +39,7 @@ export function UsersPage() {
     page: filters.page,
   })
   const stores = useAllStores()
-  const { update, unlock } = useUserActions()
+  const { update } = useUserActions()
   const [message, setMessage] = useState('')
   const [inviting, setInviting] = useState(false)
 
@@ -125,28 +127,32 @@ export function UsersPage() {
                 cell: (u) => (
                   <span className={styles.cellMain}>
                     <strong>{u.name}</strong>
-                    <span className={styles.sku}>{u.email}</span>
+                    <span className={styles.email}>{u.email}</span>
                   </span>
                 ),
               },
               {
                 key: 'role',
                 header: 'Rol',
-                cell: (u) => (
-                  <select
-                    className={styles.tableSelect}
-                    aria-label={`Rol de ${u.name}`}
-                    value={u.role}
-                    disabled={u.is_self || update.isPending}
-                    onChange={(e) => changeRole(u, e.target.value as Role)}
-                  >
-                    {Object.entries(ROLES).map(([k, label]) => (
-                      <option key={k} value={k}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                ),
+                // Los clientes no cambian de rol; el personal solo cambia entre staff y admin.
+                cell: (u) =>
+                  u.role === 'cliente' ? (
+                    ROLES.cliente
+                  ) : (
+                    <select
+                      className={styles.tableSelect}
+                      aria-label={`Rol de ${u.name}`}
+                      value={u.role}
+                      disabled={u.is_self || !u.active || update.isPending}
+                      onChange={(e) => changeRole(u, e.target.value as Role)}
+                    >
+                      {STAFF_ROLES.map((k) => (
+                        <option key={k} value={k}>
+                          {ROLES[k]}
+                        </option>
+                      ))}
+                    </select>
+                  ),
               },
               {
                 key: 'branch',
@@ -180,28 +186,18 @@ export function UsersPage() {
                 key: 'state',
                 header: 'Estado',
                 cell: (u) =>
-                  u.locked ? <Badge tone="aviso">Bloqueada</Badge> : <Badge tone="ok">Activa</Badge>,
+                  !u.active ? (
+                    <Badge tone="neutro">Desactivada</Badge>
+                  ) : u.locked ? (
+                    <Badge tone="aviso">Bloqueada</Badge>
+                  ) : (
+                    <Badge tone="ok">Activa</Badge>
+                  ),
               },
               {
                 key: 'actions',
                 header: <span className="sr-only">Acciones</span>,
-                cell: (u) =>
-                  u.is_self ? (
-                    <span className={styles.muted}>Eres tú</span>
-                  ) : u.locked ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      aria-label={`Desbloquear a ${u.name}`}
-                      loading={unlock.isPending && unlock.variables === u.id}
-                      onClick={async () => {
-                        await unlock.mutateAsync(u.id)
-                        setMessage(`Desbloqueamos la cuenta de ${u.name}.`)
-                      }}
-                    >
-                      Desbloquear
-                    </Button>
-                  ) : null,
+                cell: (u) => <UserActions user={u} onMessage={setMessage} />,
               },
             ]}
           />

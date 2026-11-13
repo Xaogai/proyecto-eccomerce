@@ -47,7 +47,7 @@ def pg() -> Generator[Engine, None, None]:
 
 def test_migraciones_ida_y_vuelta(pg: Engine) -> None:
     with pg.connect() as conn:
-        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar_one() == "0005_password_temporal"
+        assert conn.execute(text("SELECT version_num FROM alembic_version")).scalar_one() == "0006_usuario_activo"
     downgrade_database(pg)
     with pg.connect() as conn:
         assert conn.execute(text("SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")).scalar_one() == 1

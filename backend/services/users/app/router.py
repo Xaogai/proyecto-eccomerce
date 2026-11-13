@@ -30,6 +30,7 @@ from backend.shared.configuracion import security_value
 from backend.shared.database import get_db
 from backend.shared.models import Pedido, Usuario
 from backend.shared.notifications import list_user_notifications, send_email_notification
+from backend.shared.roles import role_change_error
 from backend.shared.security import (
     bearer_scheme,
     check_account_lockout,
@@ -210,6 +211,14 @@ def login_user(
                 "intentos_restantes": max(0, security_value("intentos_maximos") - attempts),
             },
         )
+    if not user.activo:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "account_disabled",
+                "message": "Tu cuenta está desactivada. Pide a un administrador que la reactive.",
+            },
+        )
     clear_failed_logins(normalized_email)
     access_token = create_access_token(str(user.id), user.email, user.tipo_usuario)
     refresh_token = create_refresh_token(str(user.id), user.email, user.tipo_usuario, payload.recordar)
@@ -251,7 +260,7 @@ def refresh_access_token(
     revoke_token(token)
     user_id = uuid.UUID(str(claims["sub"]))
     user = repo.get_by_id(user_id)
-    if not user:
+    if not user or not user.activo:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado")
 
     new_access = create_access_token(str(user.id), user.email, user.tipo_usuario)
@@ -510,6 +519,9 @@ def change_user_role(
     target = repo.get_by_id(user_id)
     if not target:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    problem = role_change_error(target.tipo_usuario, payload.tipo_usuario)
+    if problem:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=problem)
     old_role = target.tipo_usuario
     target.tipo_usuario = payload.tipo_usuario
     repo.db.commit()

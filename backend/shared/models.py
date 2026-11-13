@@ -45,6 +45,8 @@ class Usuario(Base):
     acepta_personalizacion: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     # Cuenta creada por un admin con contraseña temporal: debe cambiarla al entrar.
     debe_cambiar_password: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Personal desactivado por un admin: no inicia sesión ni usa la sesión que tenía abierta.
+    activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     cliente: Mapped["Cliente | None"] = relationship("Cliente", back_populates="usuario", uselist=False, cascade="all, delete-orphan")
     administrador: Mapped["Administrador | None"] = relationship("Administrador", back_populates="usuario", uselist=False, cascade="all, delete-orphan")

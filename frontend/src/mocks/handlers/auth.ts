@@ -59,6 +59,12 @@ export const authHandlers = [
         attempts_left: user ? Math.max(0, MAX_ATTEMPTS - user.failed_attempts) : undefined,
       })
     }
+    if (user.active === false)
+      return businessError(
+        403,
+        'account_disabled',
+        'Tu cuenta está desactivada. Pide a un administrador que la reactive.',
+      )
     user.failed_attempts = 0
     return HttpResponse.json(session(user.id))
   }),

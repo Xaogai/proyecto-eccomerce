@@ -676,7 +676,15 @@ describe('administración', () => {
       ],
       [/^get \/admin\/orders\/o1$/, adminOrder],
       [/^post \/admin\/orders\/o1\/estado$/, adminOrder],
-      [/^get \/admin\/users\?/, page([{ ...usuario, ultimo_acceso: null, bloqueado: false, es_yo: true }])],
+      [
+        /^get \/admin\/users\?/,
+        page([{ ...usuario, ultimo_acceso: null, bloqueado: false, activo: false, es_yo: true }]),
+      ],
+      [/^post \/admin\/users\/u1\/(desactivar|reactivar)$/, { id: 'u1' }],
+      [
+        /^post \/admin\/users\/u1\/password-temporal$/,
+        { id: 'u1', email: 'x@y.com', password_temporal: 'Tmp-1234abcd' },
+      ],
       [/^patch \/admin\/users\/u1$/, { id: 'u1' }],
       [/^post \/admin\/users\/u1\/desbloquear$/, { id: 'u1' }],
       [
@@ -715,7 +723,17 @@ describe('administración', () => {
     ])
     await translate('post', '/admin/orders/o1/status', undefined, { to: 'pagado', note: 'x' })
     expect(lastCall().body).toEqual({ estado: 'confirmado', nota: 'x' })
-    await translate('get', '/admin/users', { role: 'admin' })
+    const users = (await translate('get', '/admin/users', { role: 'admin' })) as {
+      items: Array<{ active: boolean }>
+    }
+    expect(users.items[0].active).toBe(false)
+    await translate('post', '/admin/users/u1/disable')
+    expect(lastCall().url).toBe('/admin/users/u1/desactivar')
+    await translate('post', '/admin/users/u1/enable')
+    expect(lastCall().url).toBe('/admin/users/u1/reactivar')
+    expect(await translate('post', '/admin/users/u1/temporary-password')).toEqual({
+      temporary_password: 'Tmp-1234abcd',
+    })
     await translate('patch', '/admin/users/u1', undefined, { role: 'staff', branch_id: 's1' })
     expect(lastCall().body).toEqual({ tipo_usuario: 'staff', sucursal_id: 's1' })
     await translate('post', '/admin/users/u1/unlock')

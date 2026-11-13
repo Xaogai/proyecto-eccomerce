@@ -99,7 +99,45 @@ describe('Usuarios y Configuración (pantallas 54 y 56)', () => {
     asAdmin()
     renderRoute('/admin/usuarios')
     expect(await screen.findByLabelText('Rol de Luis Ramírez')).toBeDisabled()
-    expect(screen.getByLabelText('Rol de Ana López')).toBeEnabled()
+    expect(screen.getByLabelText('Rol de Sofía Treviño')).toBeEnabled()
+  })
+
+  it('los clientes no cambian de rol y el personal solo entre staff y admin', async () => {
+    asAdmin()
+    renderRoute('/admin/usuarios')
+    const sofia = (await screen.findByLabelText('Rol de Sofía Treviño')) as HTMLSelectElement
+    expect([...sofia.options].map((o) => o.textContent)).toEqual(['Staff de sucursal', 'Administrador'])
+    expect(screen.queryByLabelText('Rol de Ana López')).not.toBeInTheDocument()
+    const ana = screen.getByRole('row', { name: /Ana López/ })
+    expect(within(ana).getByText('Cliente')).toBeInTheDocument()
+    expect(within(ana).queryByRole('button', { name: /Desactivar|Nueva contraseña/ })).not.toBeInTheDocument()
+  })
+
+  it('desactivar al personal pide confirmación, le quita el acceso y se puede reactivar', async () => {
+    asAdmin()
+    renderRoute('/admin/usuarios')
+    fireEvent.click(await screen.findByRole('button', { name: 'Desactivar a Mario Olvera' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Desactivar' }))
+    expect(await screen.findByText(/Desactivamos la cuenta de Mario Olvera/)).toBeInTheDocument()
+    await waitFor(() => expect(db.users.find((u) => u.id === 'u-staff2')?.active).toBe(false))
+    const row = await screen.findByRole('row', { name: /Mario Olvera/ })
+    expect(await within(row).findByText('Desactivada')).toBeInTheDocument()
+
+    fireEvent.click(within(row).getByRole('button', { name: 'Reactivar a Mario Olvera' }))
+    await waitFor(() => expect(db.users.find((u) => u.id === 'u-staff2')?.active).toBe(true))
+  })
+
+  it('nueva contraseña temporal: confirma, la muestra una vez y pide cambiarla al entrar', async () => {
+    asAdmin()
+    renderRoute('/admin/usuarios')
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Nueva contraseña temporal para Mario Olvera' }),
+    )
+    const dialog = await screen.findByRole('dialog', { name: 'Nueva contraseña para Mario Olvera' })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Generar contraseña' }))
+    const done = await screen.findByRole('dialog', { name: 'Nueva contraseña temporal' })
+    expect(within(done).getByText('Temporal-2026')).toBeInTheDocument()
+    expect(db.users.find((u) => u.id === 'u-staff2')).toMatchObject({ must_change_password: true })
   })
 
   it('invitar personal crea la cuenta y muestra la contraseña temporal una sola vez', async () => {

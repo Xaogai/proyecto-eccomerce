@@ -23,6 +23,7 @@ from backend.shared.models import (
     Sucursal,
     Usuario,
 )
+from backend.shared.roles import STAFF_ROLES, role_change_error
 from backend.shared.security import clear_failed_logins, hash_password, record_audit_event, require_roles
 
 router = APIRouter(prefix="/api/v1/admin", tags=["Administración y Auditoría"])
@@ -128,6 +129,7 @@ def list_users(
             "sucursal_nombre": u.staff_sucursal.sucursal.nombre if u.staff_sucursal else None,
             "ultimo_acceso": ultimos.get(str(u.id)),
             "bloqueado": _locked(db, u.email),
+            "activo": u.activo,
             "es_yo": u.id == admin.id,
         }
         for u in usuarios[start : start + page_size]
@@ -236,6 +238,9 @@ def change_user(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail={"code": "self_change", "message": "No puedes cambiar tu propio rol."}
         )
+    problem = role_change_error(usuario.tipo_usuario, payload.tipo_usuario)
+    if problem:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=problem)
     anterior = usuario.tipo_usuario
     sucursal_id = _assign_role(db, usuario, payload.tipo_usuario, payload.sucursal_id)
     db.commit()
@@ -244,6 +249,73 @@ def change_user(
         {"previous_role": anterior, "new_role": payload.tipo_usuario, "sucursal_id": str(sucursal_id or "")},
     )
     return {"id": usuario.id}
+
+
+def _staff_target(db: Session, admin: Usuario, user_id: uuid.UUID) -> Usuario:
+    """
+    Persona del personal sobre la que actúa el admin.
+
+    Raises:
+        HTTPException 404: no existe.
+        HTTPException 409: es la propia cuenta del admin, o es un cliente (los clientes se gestionan solos).
+    """
+    usuario = db.get(Usuario, user_id)
+    if usuario is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    if usuario.id == admin.id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"code": "self_change", "message": "No puedes hacer esto con tu propia cuenta."},
+        )
+    if usuario.tipo_usuario not in STAFF_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"code": "not_staff", "message": "Esta acción es solo para el personal (staff y administradores)."},
+        )
+    return usuario
+
+
+@router.post("/users/{user_id}/desactivar")
+def disable_staff(
+    user_id: uuid.UUID, admin: Usuario = Depends(require_roles("admin")), db: Session = Depends(get_db)
+) -> dict[str, Any]:
+    """Quita el acceso a alguien del personal sin borrar su cuenta ni su historial; su sesión deja de servir."""
+    usuario = _staff_target(db, admin, user_id)
+    usuario.activo = False
+    db.commit()
+    record_audit_event("account_disabled", str(admin.id), f"user:{usuario.id}", {"role": usuario.tipo_usuario})
+    return {"id": usuario.id, "activo": False}
+
+
+@router.post("/users/{user_id}/reactivar")
+def enable_staff(
+    user_id: uuid.UUID, admin: Usuario = Depends(require_roles("admin")), db: Session = Depends(get_db)
+) -> dict[str, Any]:
+    """Devuelve el acceso a alguien del personal que estaba desactivado."""
+    usuario = _staff_target(db, admin, user_id)
+    usuario.activo = True
+    db.commit()
+    record_audit_event("account_enabled", str(admin.id), f"user:{usuario.id}", {"role": usuario.tipo_usuario})
+    return {"id": usuario.id, "activo": True}
+
+
+@router.post("/users/{user_id}/password-temporal")
+def reset_staff_password(
+    user_id: uuid.UUID, admin: Usuario = Depends(require_roles("admin")), db: Session = Depends(get_db)
+) -> dict[str, Any]:
+    """
+    Da otra contraseña temporal a alguien del personal (la anterior deja de servir) y le pide cambiarla al entrar.
+
+    La contraseña se regresa solo en esta respuesta y no queda en la bitácora.
+    """
+    usuario = _staff_target(db, admin, user_id)
+    password = temporary_password()
+    usuario.password_hash = hash_password(password)
+    usuario.debe_cambiar_password = True
+    db.commit()
+    clear_failed_logins(usuario.email)
+    record_audit_event("temporary_password_reset", str(admin.id), f"user:{usuario.id}")
+    return {"id": usuario.id, "email": usuario.email, "password_temporal": password}
 
 
 @router.post("/users/{user_id}/desbloquear")

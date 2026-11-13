@@ -161,16 +161,55 @@ def test_usuarios_cambio_de_rol_y_desbloqueo(client: InProcessASGIClient, db_ses
     yo = next(u for u in lista["items"] if u["es_yo"])
     assert client.patch(f"/api/v1/admin/users/{yo['id']}", headers=headers, json={"tipo_usuario": "cliente"}).status_code == 409
 
-    sin_sucursal = client.patch(f"/api/v1/admin/users/{ana.id}", headers=headers, json={"tipo_usuario": "staff"})
-    assert sin_sucursal.status_code == 422
     metepec = db_session.query(Sucursal).filter(Sucursal.nombre == "Sucursal Metepec").one()
-    ok = client.patch(
+    a_staff = client.patch(
         f"/api/v1/admin/users/{ana.id}", headers=headers, json={"tipo_usuario": "staff", "sucursal_id": str(metepec.id)}
     )
-    assert ok.status_code == 200
+    assert a_staff.status_code == 409 and a_staff.json()["detail"]["code"] == "client_role_locked"
+    viejo = client.patch(f"/api/v1/users/{ana.id}/role", headers=headers, json={"tipo_usuario": "admin"})
+    assert viejo.status_code == 409, "el endpoint anterior sigue la misma regla"
+
+    carlos = db_session.query(Usuario).filter(Usuario.email == "staff.toluca.sintetico@ferremarket.local").one()
+    a_cliente = client.patch(f"/api/v1/admin/users/{carlos.id}", headers=headers, json={"tipo_usuario": "cliente"})
+    assert a_cliente.status_code == 409 and a_cliente.json()["detail"]["code"] == "staff_to_client"
+    otra_sucursal = client.patch(
+        f"/api/v1/admin/users/{carlos.id}", headers=headers, json={"tipo_usuario": "staff", "sucursal_id": str(metepec.id)}
+    )
+    assert otra_sucursal.status_code == 200
+    assert client.patch(f"/api/v1/admin/users/{carlos.id}", headers=headers, json={"tipo_usuario": "admin"}).status_code == 200
+
     client.post(f"/api/v1/admin/users/{ana.id}/desbloquear", headers=headers)
     me = client.get("/api/v1/users/me", headers=_login(client, ana.email)).json()
-    assert me["tipo_usuario"] == "staff" and me["sucursal_nombre"] == "Sucursal Metepec"
+    assert me["tipo_usuario"] == "cliente"
+
+
+def test_desactivar_y_nueva_contrasena_temporal_del_personal(client: InProcessASGIClient, db_session: Session) -> None:
+    headers = _login(client)
+    carlos = db_session.query(Usuario).filter(Usuario.email == "staff.toluca.sintetico@ferremarket.local").one()
+    ana = db_session.query(Usuario).filter(Usuario.email == "ana.torres.sintetica@ferremarket.local").one()
+    sesion = _login(client, carlos.email)
+
+    assert client.post(f"/api/v1/admin/users/{ana.id}/desactivar", headers=headers).json()["detail"]["code"] == "not_staff"
+    assert client.post(f"/api/v1/admin/users/{carlos.id}/desactivar", headers=sesion).status_code == 403
+
+    assert client.post(f"/api/v1/admin/users/{carlos.id}/desactivar", headers=headers).status_code == 200
+    assert client.get("/api/v1/sucursal/inventario", headers=sesion).status_code == 401, "su sesión deja de servir"
+    login = client.post("/api/v1/auth/login", json={"email": carlos.email, "password": PASSWORD})
+    assert login.status_code == 403 and login.json()["detail"]["code"] == "account_disabled"
+    lista = client.get("/api/v1/admin/users", headers=headers).json()["items"]
+    assert next(u for u in lista if u["id"] == str(carlos.id))["activo"] is False
+
+    assert client.post(f"/api/v1/admin/users/{carlos.id}/reactivar", headers=headers).status_code == 200
+    nueva = client.post(f"/api/v1/admin/users/{carlos.id}/password-temporal", headers=headers).json()
+    temporal = nueva["password_temporal"]
+    assert client.post("/api/v1/auth/login", json={"email": carlos.email, "password": PASSWORD}).status_code == 401
+    entra = client.post("/api/v1/auth/login", json={"email": carlos.email, "password": temporal})
+    assert entra.status_code == 200
+    perfil = client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {entra.json()['access_token']}"}).json()
+    assert perfil["debe_cambiar_password"] is True
+
+    eventos = {e["event_type"] for e in client.get("/api/v1/admin/audit-logs", headers=headers).json()}
+    assert {"account_disabled", "account_enabled", "temporary_password_reset"} <= eventos
 
 
 def test_alta_de_staff_con_contrasena_temporal(client: InProcessASGIClient, db_session: Session) -> None:

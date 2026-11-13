@@ -9,6 +9,7 @@ import { Dialog } from '@/components/ui/Dialog'
 import { FormErrorSummary, RadioGroup, Select, TextField } from '@/components/ui/Field'
 import { useAllStores, useUserActions } from '@/features/admin/api'
 import styles from './admin.module.css'
+import { TemporaryPassword } from './TemporaryPassword'
 
 const schema = z
   .object({
@@ -33,7 +34,6 @@ export function InviteStaffDialog({
   const stores = useAllStores()
   const { create } = useUserActions()
   const [created, setCreated] = useState<StaffCreated | null>(null)
-  const [copied, setCopied] = useState(false)
   const { register, control, handleSubmit, formState, setError, reset } = useForm<Form>({
     resolver: zodResolver(schema),
     defaultValues: { name: '', email: '', role: 'staff', branch_id: '' },
@@ -45,7 +45,6 @@ export function InviteStaffDialog({
     reset()
     create.reset()
     setCreated(null)
-    setCopied(false)
     onClose(result ?? undefined)
   }
 
@@ -72,26 +71,7 @@ export function InviteStaffDialog({
         title="Cuenta creada"
         footer={<Button onClick={close}>Listo</Button>}
       >
-        <p>
-          <strong>{created.name}</strong> ya puede entrar con <strong>{created.email}</strong> y esta
-          contraseña temporal:
-        </p>
-        <p className={styles.secret}>{created.temporary_password}</p>
-        <div className={styles.actions}>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              await navigator.clipboard?.writeText(created.temporary_password)
-              setCopied(true)
-            }}
-          >
-            {copied ? 'Copiada' : 'Copiar contraseña'}
-          </Button>
-        </div>
-        <p className={styles.muted} role="status">
-          Es la única vez que la verás. Entrégala en persona o por un canal seguro; al entrar por primera vez,{' '}
-          {created.name.split(' ')[0]} tendrá que cambiarla por una propia.
-        </p>
+        <TemporaryPassword name={created.name} email={created.email} password={created.temporary_password} />
       </Dialog>
     )
   }

@@ -133,9 +133,13 @@ export const adminUserSchema = z.object({
   branch_name: z.string().nullable(),
   last_login: isoDate.nullable(),
   locked: z.boolean(),
+  /** Personal desactivado por un admin: no puede iniciar sesión. */
+  active: z.boolean(),
   is_self: z.boolean(),
 })
 export type AdminUser = z.infer<typeof adminUserSchema>
+
+export const temporaryPasswordSchema = z.object({ temporary_password: z.string() })
 
 /** Alta de personal: la contraseña temporal solo viene en esta respuesta. */
 export const staffCreatedSchema = z.object({

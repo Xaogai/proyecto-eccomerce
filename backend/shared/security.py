@@ -295,6 +295,11 @@ def get_session_user(
     user = db.query(Usuario).filter(Usuario.id == user_uuid).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado")
+    if not user.activo:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"code": "account_disabled", "message": "Tu cuenta está desactivada."},
+        )
     return user
 
 

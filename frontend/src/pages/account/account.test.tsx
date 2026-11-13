@@ -23,6 +23,13 @@ describe('iniciar sesión (B1, B4)', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Lista de deseos' })).toBeInTheDocument()
   })
 
+  it('una cuenta desactivada no entra y lo explica', async () => {
+    db.users.find((u) => u.id === 'u-staff')!.active = false
+    renderRoute('/cuenta/login')
+    await fillLogin('staff@ejemplo.com', 'Taller123')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Tu cuenta está desactivada')
+  })
+
   it('el admin va a su panel', async () => {
     const { router } = renderRoute('/cuenta/login')
     await fillLogin('admin@ejemplo.com', 'Taller123')
@@ -184,7 +191,8 @@ describe('direcciones (EP-27)', () => {
     fill('Estado', 'Estado de México')
     fill('Teléfono de contacto', '7221112233')
     fireEvent.click(within(form).getByRole('button', { name: 'Guardar' }))
-    expect(await screen.findByRole('heading', { name: 'Obra' })).toBeInTheDocument()
+    // Guardar y recargar la lista son dos peticiones: con la suite en paralelo pasan de los 3 s por defecto.
+    expect(await screen.findByRole('heading', { name: 'Obra' }, { timeout: 10_000 })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Hacer principal Obra' }))
     expect(await screen.findByText('"Obra" es ahora tu dirección principal')).toBeInTheDocument()

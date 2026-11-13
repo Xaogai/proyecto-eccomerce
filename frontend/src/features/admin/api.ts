@@ -16,6 +16,7 @@ import {
   settingsSchema,
   type StaffInput,
   staffCreatedSchema,
+  temporaryPasswordSchema,
 } from '@/api/schemas/admin'
 import { imageSchema } from '@/api/schemas/common'
 import { storeSchema } from '@/api/schemas/store'
@@ -236,6 +237,18 @@ export function useUserActions() {
     unlock: useMutation({
       mutationFn: (id: string) => send('post', endpoints.adminUserUnlock(id), ok),
       onSuccess,
+    }),
+    disable: useMutation({
+      mutationFn: (id: string) => send('post', endpoints.adminUserDisable(id), ok),
+      onSuccess,
+    }),
+    enable: useMutation({
+      mutationFn: (id: string) => send('post', endpoints.adminUserEnable(id), ok),
+      onSuccess,
+    }),
+    resetPassword: useMutation({
+      mutationFn: (id: string) =>
+        send('post', endpoints.adminUserTemporaryPassword(id), temporaryPasswordSchema),
     }),
     create: useMutation({
       mutationFn: (input: StaffInput) => send('post', endpoints.adminUsers, staffCreatedSchema, input),

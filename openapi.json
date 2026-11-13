@@ -1911,6 +1911,159 @@
         }
       }
     },
+    "/api/v1/admin/users/{user_id}/desactivar": {
+      "post": {
+        "tags": [
+          "Administración y Auditoría"
+        ],
+        "summary": "Disable Staff",
+        "description": "Quita el acceso a alguien del personal sin borrar su cuenta ni su historial; su sesión deja de servir.",
+        "operationId": "disable_staff_api_v1_admin_users__user_id__desactivar_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Disable Staff Api V1 Admin Users  User Id  Desactivar Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{user_id}/reactivar": {
+      "post": {
+        "tags": [
+          "Administración y Auditoría"
+        ],
+        "summary": "Enable Staff",
+        "description": "Devuelve el acceso a alguien del personal que estaba desactivado.",
+        "operationId": "enable_staff_api_v1_admin_users__user_id__reactivar_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Enable Staff Api V1 Admin Users  User Id  Reactivar Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{user_id}/password-temporal": {
+      "post": {
+        "tags": [
+          "Administración y Auditoría"
+        ],
+        "summary": "Reset Staff Password",
+        "description": "Da otra contraseña temporal a alguien del personal (la anterior deja de servir) y le pide cambiarla al entrar.\n\nLa contraseña se regresa solo en esta respuesta y no queda en la bitácora.",
+        "operationId": "reset_staff_password_api_v1_admin_users__user_id__password_temporal_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Reset Staff Password Api V1 Admin Users  User Id  Password Temporal Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/users/{user_id}/desbloquear": {
       "post": {
         "tags": [
